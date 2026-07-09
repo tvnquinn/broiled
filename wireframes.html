@@ -267,11 +267,30 @@
           <div class="btn float">I already worked out</div>
         </div>
       </div></div>
-      <div class="note">Reckoning banner is now absolutely positioned at the top (out of flow), so the timer centers on the full screen exactly like frame 02 instead of being pushed down by the banner. Shown once, on first open the morning after a miss.</div>
+      <div class="note">Reckoning banner is absolutely positioned at the top (out of flow), so the timer centers on the full screen exactly like frame 02. Shown on first open the morning after a miss. Same copy also fires as a <b>12:00 PM push</b> (frame 04) if the user hasn't opened the app yet.</div>
+    </div>
+
+    <div class="card" id="frame-04">
+      <div class="step"><span class="num mono">04</span><span class="title">Notification — morning reckoning</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div class="locktime">12:00</div>
+        <div class="lockdate">Thursday, June 26</div>
+        <div class="notifcard">
+          <div class="notif-icon">
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
+          </div>
+          <div class="notif-body">
+            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+            <div class="notif-title">You failed yesterday.</div>
+            <div class="notif-msg">Is this who you are, or can you be better today?</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Fires at <b>12:00 PM</b> the day after a missed workout — same copy as frame 03. Tapping opens home with the reckoning banner + today's countdown. Skipped if the user already opened the app and saw frame 03 today.</div>
     </div>
 
     <div class="card">
-      <div class="step"><span class="num mono">04</span><span class="title">Gut-check sheet</span></div>
+      <div class="step"><span class="num mono">05</span><span class="title">Gut-check sheet</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>5:47</span><span>88%</span></div>
@@ -304,7 +323,7 @@
   <div class="rail">
 
     <div class="card">
-      <div class="step"><span class="num mono">05</span><span class="title">Notification — T-30min reminder</span></div>
+      <div class="step"><span class="num mono">06</span><span class="title">Notification — T-30min reminder</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">5:30</div>
         <div class="lockdate">Wednesday, June 25</div>
@@ -323,7 +342,7 @@
     </div>
 
     <div class="card">
-      <div class="step"><span class="num mono">06</span><span class="title">Notification — miss check</span></div>
+      <div class="step"><span class="num mono">07</span><span class="title">Notification — miss check</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">6:30</div>
         <div class="lockdate">Wednesday, June 25</div>
@@ -341,8 +360,8 @@
       <div class="note">Fires at <b>deadline + workout duration + 30min.</b> Copy scales with streak. Tapping opens the snooze sheet.</div>
     </div>
 
-    <div class="card" id="frame-07">
-      <div class="step"><span class="num mono">07</span><span class="title">Snooze sheet</span></div>
+    <div class="card" id="frame-08">
+      <div class="step"><span class="num mono">08</span><span class="title">Snooze sheet</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>5:30</span><span>84%</span></div>
@@ -367,8 +386,8 @@
       <div class="note"><b>Uncapped.</b> No insult in the sheet itself — it arrives in the next miss-check notification. Tier by snooze count: 1 → MILD, 2–3 → SPICY, 4+ → NUCLEAR.</div>
     </div>
 
-    <div class="card" id="frame-08">
-      <div class="step"><span class="num mono">08</span><span class="title">Notification — success</span></div>
+    <div class="card" id="frame-09">
+      <div class="step"><span class="num mono">09</span><span class="title">Notification — success</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">5:58</div>
         <div class="lockdate">Wednesday, June 25</div>
@@ -383,7 +402,7 @@
           </div>
         </div>
       </div></div>
-      <div class="note">Fires only when HealthKit catches it <b>while backgrounded.</b> In-app confirms go straight to frame 09a, no redundant push.</div>
+      <div class="note">Fires only when HealthKit catches it <b>while backgrounded.</b> In-app confirms go straight to frame 10a, no redundant push.</div>
     </div>
 
   </div>
@@ -391,8 +410,8 @@
   <div class="section-label">Outcome states</div>
   <div class="rail">
 
-    <div class="card" id="frame-09a">
-      <div class="step"><span class="num mono">09a</span><span class="title">Home — success</span></div>
+    <div class="card" id="frame-10a">
+      <div class="step"><span class="num mono">10a</span><span class="title">Home — success</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>5:52</span><span>88%</span></div>
@@ -408,7 +427,7 @@
     </div>
 
     <div class="card">
-      <div class="step"><span class="num mono">09b</span><span class="title">Home — 4–6 day streak</span></div>
+      <div class="step"><span class="num mono">10b</span><span class="title">Home — 4–6 day streak</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>7:20</span><span>76%</span></div>
@@ -428,8 +447,8 @@
       <div class="note">Same structure as frame 03 now — the streak-escalation insult sits in an absolute top banner, the timer stays centered on the screen. Escalation ladder: 2–3 days → sharper line, 4–6 days → this tier. Two more misses and it goes quiet.</div>
     </div>
 
-    <div class="card" id="frame-10">
-      <div class="step"><span class="num mono">10</span><span class="title">Home — silence (7-day give-up)</span></div>
+    <div class="card" id="frame-11">
+      <div class="step"><span class="num mono">11</span><span class="title">Home — silence (7-day give-up)</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>—</span><span>—</span></div>
@@ -446,7 +465,7 @@
     </div>
 
     <div class="card">
-      <div class="step"><span class="num mono">11</span><span class="title">Settings</span></div>
+      <div class="step"><span class="num mono">12</span><span class="title">Settings</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>9:41</span><span>100%</span></div>

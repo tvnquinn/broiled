@@ -9,7 +9,7 @@ todos:
     content: "Phase 0: HealthKitService — deadline query (any source), manual 'I already worked out' fallback button"
     status: pending
   - id: phase0-scheduler
-    content: "Phase 0: deadline notification, uncapped escalating snooze, morning reckoning message, backhanded-celebration success state"
+    content: "Phase 0: deadline notification, 12:00 PM reckoning push, uncapped escalating snooze, morning reckoning message, backhanded-celebration success state"
     status: pending
   - id: phase0-insults
     content: "Phase 0: static curated insult list (~40 lines, mild/spicy/nuclear tagged, no persona system yet), plain in-app miss/success screens"
@@ -97,8 +97,9 @@ Phase 0 is intentionally small enough to build in days and use on your own phone
 ```mermaid
 flowchart TD
   setup[Set weekday/time/duration] --> morning[Morning: show countdown]
-  morning -->|yesterday was a miss| reckoning["You failed yesterday" + challenge line]
-  reckoning --> morning
+  morning -->|yesterday was a miss| reckoning["In-app: You failed yesterday"]
+  reckoning --> noonPush["12:00 PM reckoning push (same copy)"]
+  noonPush --> morning
   morning --> preReminder["T-30min: reminder notification"]
   preReminder --> checkTime["T+duration+30min: check HealthKit"]
   checkTime -->|workout found or manually confirmed| success[Backhanded celebration, push if backgrounded]
@@ -115,13 +116,14 @@ flowchart TD
 ```
 
 **Notification schedule (Phase 0):**
-1. **T-30min before deadline** — reminder push ("30 minutes left today.") so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
-2. **T + workout duration + 30min after deadline** — this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. If nothing's found, fires "You haven't worked out. Will you later?" and tapping opens the snooze sheet. Copy scales with streak — neutral on a clean history, pulling from the escalation ladder on a multi-day streak.
-3. **On success** — if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push. If the user is already in-app and taps "I already worked out," it just shows inline (no notification needed, they're already looking at it).
+1. **12:00 PM (day after a miss)** — morning reckoning push: "You failed yesterday." / "Is this who you are, or can you be better today?" — same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
+2. **T-30min before deadline** — reminder push ("30 minutes left today.") so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
+3. **T + workout duration + 30min after deadline** — this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. If nothing's found, fires "You haven't worked out. Will you later?" and tapping opens the snooze sheet. Copy scales with streak — neutral on a clean history, pulling from the escalation ladder on a multi-day streak.
+4. **On success** — if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push. If the user is already in-app and taps "I already worked out," it just shows inline (no notification needed, they're already looking at it).
 
 **Snooze contract:** uncapped, not a fixed 2/day limit. The snooze sheet itself doesn't show an insult — the mini-insult arrives later, in the next miss-check notification (see schedule above), and escalates per snooze count that day: **snooze 1 → MILD pool, snoozes 2–3 → SPICY pool, snooze 4+ → NUCLEAR pool**, cycling once exhausted. Snoozing re-arms the T-30min/T+duration+30min notification pair against the new deadline.
 
-**Morning reckoning, not same-day failure:** if yesterday's deadline was missed (i.e., "I'm a Quitter" was tapped, or the day ran out with no response), the *next morning's* first open leads with "You failed yesterday" + a challenge line ("Is this who you are, or can you be better today?"), then today's countdown starts underneath. No full-screen shame mid-day when the user can't do anything about it yet — the reckoning is deliberately delayed to the next morning.
+**Morning reckoning, not same-day failure:** if yesterday's deadline was missed (i.e., "I'm a Quitter" was tapped, or the day ran out with no response), the *next morning* delivers the reckoning two ways: a **12:00 PM push** (same copy as frame 03) and an **in-app banner on first open** ("You failed yesterday" + challenge line), then today's countdown underneath. No full-screen shame mid-day when the user can't do anything about it yet — the reckoning is deliberately delayed to the next calendar day. If they already opened the app and saw the banner, skip the noon push.
 
 **Silence mechanic:** after a 7-day miss streak, the app fires one final "I've accepted you're not destined to be jacked. I'm giving up on you. Talk to me when you can prove you're worth it." line and then **stops notifying entirely** — no countdowns, no morning messages, no reminders — until a workout is logged, which triggers a skeptical reactivation message and resumes normal operation.
 
@@ -264,14 +266,15 @@ Phase 1 adds `Persona`/`toneLevel` to `UserSettings` and namespaces insults by p
 1. **Onboarding — Set your schedule** — pick active weekdays, then set a deadline time **per active day** (not one shared time), plus minimum workout duration; HealthKit permission requested once, first run only
 2. **Home — Countdown (on track)** — today's countdown to deadline, manual "I already worked out" button
 3. **Home — Morning reckoning** — shown first if yesterday was a miss: "You failed yesterday" + challenge line, then today's countdown
-4. **Gut-check sheet** — shown on tapping "I already worked out": "Did you actually work out today?" / Yes, I did / ...no, I didn't
-5. **Notification — T-30min reminder** — lock-screen banner, taps into the snooze sheet
-6. **Notification — miss check** — lock-screen banner ("You haven't worked out. Will you later?"), taps into the snooze sheet
-7. **Snooze sheet** — pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
-8. **Notification — success** — lock-screen banner with the backhanded-celebration line, fires when HealthKit catches the workout in the background
-9. **Home — Success (backhanded celebration)** — in-app version, shown when the day's workout is verified/confirmed while the app is open
-10. **Home — Silence state** — after a 7-day miss streak: the finale line, no countdown, single "log a workout" action to reactivate
-11. **Settings** — edit schedule (per-day times), HealthKit permission status. No data-deletion option in Phase 0 — not needed yet.
+4. **Notification — Morning reckoning (12:00 PM)** — lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
+5. **Gut-check sheet** — shown on tapping "I already worked out": "Did you actually work out today?" / Yes, I did / ...no, I didn't
+6. **Notification — T-30min reminder** — lock-screen banner, taps into the snooze sheet
+7. **Notification — miss check** — lock-screen banner ("You haven't worked out. Will you later?"), taps into the snooze sheet
+8. **Snooze sheet** — pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
+9. **Notification — success** — lock-screen banner with the backhanded-celebration line, fires when HealthKit catches the workout in the background
+10. **Home — Success (backhanded celebration)** — in-app version, shown when the day's workout is verified/confirmed while the app is open
+11. **Home — Silence state** — after a 7-day miss streak: the finale line, no countdown, single "log a workout" action to reactivate
+12. **Settings** — edit schedule (per-day times), HealthKit permission status. No data-deletion option in Phase 0 — not needed yet.
 
 ---
 

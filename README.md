@@ -15,13 +15,41 @@ BROiled is an iOS workout accountability app with tough-love energy. Set a per-d
 1. **Onboarding** — pick workout days, set a **deadline per day**, and choose a minimum duration.
 2. **Countdown** — home screen shows time left until today's deadline (HealthKit-verified).
 3. **Miss the window** — notifications escalate (MILD → SPICY → NUCLEAR). Snooze pushes the deadline back.
-4. **Morning reckoning** — after a miss, next open starts with yesterday's failure + today's countdown.
+4. **Morning reckoning** — day after a miss: in-app banner on first open **and** a 12:00 PM push with the same copy.
 5. **Success** — backhanded celebration (bronze, not cheerleader green).
 6. **Silence** — after 7 consecutive misses, the app stops nagging until you log a workout again.
 
-Open [`wireframes.html`](wireframes.html) in a browser for all 11 Phase 0 screens with design notes.
+Open [`wireframes.html`](wireframes.html) in a browser for all 12 Phase 0 screens with design notes.
 
 ## Screenshots
+
+### Countdown (on track)
+
+![Home — on track](docs/screenshots/frame-02.png)
+
+### Morning reckoning (in-app)
+
+![Home — morning reckoning](docs/screenshots/frame-03.png)
+
+### Morning reckoning (12:00 PM push)
+
+![Notification — morning reckoning](docs/screenshots/frame-04.png)
+
+### Snooze sheet
+
+![Snooze sheet](docs/screenshots/frame-08.png)
+
+### Backhanded success
+
+![Home — success](docs/screenshots/frame-10a.png)
+
+### Lock screen notification
+
+![Notification — success](docs/screenshots/frame-09.png)
+
+### 7-day silence
+
+![Home — silence](docs/screenshots/frame-11.png)
 
 ### Full wireframe rail
 
