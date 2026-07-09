@@ -2,3 +2,9 @@ node_modules/
 package-lock.json
 package.json
 .DS_Store
+
+# Xcode (once ios/BROiledApp.xcodeproj is created locally - see ios/README.md)
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
