@@ -55,7 +55,7 @@ isProject: false
 **Project path:** [`/Users/quinnnguyen/Projects/broiled`](/Users/quinnnguyen/Projects/broiled)  
 **Bundle ID:** `com.quinnnguyen.broiled` (adjust to your Apple Developer team prefix)
 
-**Inclusivity note:** the name skews bro-y on first read; broaden via marketing copy, mixed screenshots, and Phase 1 persona voices that aren't all gym-bro (e.g. savage best friend, disappointed coach, nuclear bro). Tone slider at onboarding — user opts into brutality.
+**Inclusivity note:** Phase 0 ships with Gen-Z food-slang lexicon ("cooked," "mid," "ate," "washed," "toast") which is gender-neutral, platform-wide slang, not gym-bro-specific — this resolves the name's bro-coded first read. Phase 1 adds additional persona voices (savage best friend, disappointed coach, tough-love parent) as options beyond the meme voice.
 
 ---
 
@@ -140,97 +140,116 @@ This also fixes a real market-sizing risk: requiring an Apple Watch specifically
 
 ---
 
-## Insult pool
+## Insult pool (Phase 0 — Gen-Z meme voice)
 
-Organized by device/category with severity tags (MILD / SPICY / NUCLEAR) so Phase 0's snooze escalation and Phase 1's persona pools can both draw from the same tagged content.
+Organized by use-case slot with severity tags (MILD / SPICY / NUCLEAR) so Phase 0's snooze escalation works without mechanical changes. Primary lexicon is food/cooking metaphor tied to the BROiled brand ("cooked," "mid," "ate," "washed," "toast," "fried," "chef," "kitchen"), with a second glow-up/aura register for success moments and a bank of non-food gen-z slang ("audacity," "npc," "take the L," "skill issue") mixed in wherever it lands better than forcing a food pun. Deliberately avoids current trend-slang with a short shelf life (rizz, skibidi, gyat) in favor of terms with more staying power.
 
-**Patronizing resignation**
-- "It's okay to be soft. Not everyone was built to be looked at twice." — SPICY
-- "You don't have to be impressive. Someone has to be the friend people compare themselves to and feel better." — SPICY
-- "It's fine, really. Someone has to be the 'before' picture." — MILD
-- "Not everyone gets to be the catch. The only catch here is that you didn't work out today." — SPICY
-- "Not everyone can be the top 20%. You've proved you're the bottom 20%." — SPICY
-- "It's okay if the mirror isn't your friend right now. It's not lying to you, it's just tired of your excuses." — NUCLEAR
+**Zero-streak start (Day 0 / first log)**
+- "Kitchen's open. Prove it." — MILD
+- "Day 1. No crumbs yet — good or bad, we'll see." — MILD
+- "Prep's done. Cook time." — MILD
+- "Nobody's roasted you yet. Rare mercy." — MILD
 
-**Public perception**
-- "Somewhere a stranger just walked past you, quietly grateful they're not you." — SPICY
-- "You wanted people to look at you. Congrats, now they look at you with disgust." — NUCLEAR
-- "Hot summer bod? More like not summer bod. Stay indoors this summer because nobody wants to see you at the beach." — NUCLEAR
+**Onboarding**
+- "Lock in your kitchen hours. Time to cook."
 
-**Decline / aging urgency**
-- "You only get older and weaker from here. Today you just chose to speed it up for free." — SPICY
-- "This is the youngest and strongest you will ever be again. You spent it on the couch." — SPICY
-- "Every day you skip is a day closer to explaining to your knees why you waited." — MILD
+**Pre-deadline reminder (T-30min)**
+- "Still time to lock in, chef." — MILD
+- "Timer's running. Get cooking!" — MILD
+- "Breakfast time. Are you toasting or toast?" — MILD (morning-slot variant)
+- "Lunch time. Crunch time." — MILD (midday-slot variant)
+- "Winner winner or are you the chicken dinner?" — MILD (evening/dinner-slot variant only — the punchline needs "dinner" to land)
+- "Fire work today?" — MILD
+- "Your body's gonna be tea." — MILD
 
-**Social ranking**
-- "Your friends talk about you when you're not in the group chat. This is one of those times." — SPICY
-- "Even the friend who's nice to everyone had nothing nice to say about this." — SPICY
+**Miss check @ deadline**
+- "You snooze you lose." — MILD (doubles as the transition line into the snooze sheet)
+- "Did ya fold?" — MILD
+- "Did you clock out?" — MILD
+- "No extensions." — MILD
+- "Is it a skill issue?" — MILD
+- "Burned before you even started." — MILD
+- "The audacity to not show up." — SPICY
+- "NPC behavior." — MILD
+- "Take the L." — MILD
 
-**Deadpan / "you just go" voice**
-- "There's no secret. You just go. You didn't go. That's not complicated, you're just weak." — MILD
-- "I don't think about it, I just go. You thought about it for an hour and still didn't." — MILD
-- "It's not that deep. Get up, go. Somehow you still couldn't manage it." — MILD
-- "Nobody's coming to make you go. Nobody ever will. And you're still just sitting there." — SPICY
-- "You don't need to feel ready, you need to move. You did neither." — MILD
+**Miss check, snooze 1 (MILD)**
+- "Still marinating?"
+- "Don't let it burn."
+- "Don't make me come back."
+- "Bro said '5 more minutes.'"
+- "Bro hit snooze."
+- "Don't make me roast you later."
+- "Not very main-character of you today."
 
-**Discipline-principle-flipped-to-insult** (paraphrased training philosophies, no real names/exact quotes — publicity-rights risk)
-- "Everyone wants the body. Almost nobody wants the workout. Today you told me exactly which one you are." — SPICY
-- "Real ones rest at the end. You rested at the beginning, the middle, and the end." — SPICY
-- "Talent isn't required here. Effort is. You had neither today." — NUCLEAR
-- "It doesn't get easier. It just gets more embarrassing that you still haven't started." — SPICY
-- "You could've suffered for one hour today. Instead you get to feel like this a little longer." — SPICY
-- "Discipline was supposed to set you free today. You chose the couch instead." — MILD
-- "The part that actually changes you is the part you keep skipping. That's not a coincidence." — SPICY
-- "Your mind told you to stop before you even started. You listened to the weakest part of yourself." — NUCLEAR
-- "Everyone wants the outcome. Nobody wants the 5am part. You just proved which camp you're in." — SPICY
+**Miss check, snooze 2–3 (SPICY)**
+- "Recipe for disaster, and you're the recipe."
+- "Fire the chef, you're taking the burn today."
+- "Half-baked and proud of it apparently."
+- "Low-key embarrassing at this point."
+- "This you? Third time's not the charm."
+- "Simmer down — oh wait, you already have."
 
-**Pushing through pain / injury**
-- "Some people train through actual injuries. You couldn't train through mild inconvenience." — SPICY
-- "There's a difference between can't and won't. You didn't even test which one this was." — MILD
-- "Somebody came back stronger from a snapped Achilles. You haven't come back from a bad mood." — SPICY
+**Miss check, snooze 4+ (NUCLEAR)**
+- "Fried chicken's probably the healthiest thing you ate today."
+- "Toast."
+- "Folded."
+- "Fumbled."
+- "Ash."
 
-**Hunger**
-- "Hungry people don't need reminders. Looks like the only hunger you have is for a burger." — NUCLEAR
+*Not a must-have for Phase 0, but worth a Phase 1 note: consider a deterministic word ladder keyed to snooze count (raw → simmering → burning → fried → toast → ash) instead of a random pool, so the escalation feels structured rather than angrier-random.*
 
-**Ego death / you vs. you**
-- "It was never about anyone else. You still managed to lose to the only person who was supposed to matter — you, yesterday." — SPICY
-- "Yesterday's version of you did nothing. Today's version matched it exactly." — MILD
+**Morning reckoning (day after miss)**
+- "Yesterday? Mid. No notes." — MILD
+- "Yesterday's leftovers went bad." — MILD
+- "That workout ghosted itself." — SPICY
 
-**Sacrifice**
-- "Everyone who got what you want gave something up for it. You gave up nothing today, and it shows." — SPICY
-- "You didn't even have to sacrifice anything. You just had to show up. And you still didn't." — MILD
+**Streak 2–3 consecutive misses**
+- "This ain't a phase, this is the plot." — SPICY
+- "You're speedrunning washed." — SPICY
+- "Three days of vibes, zero days of reps." — SPICY
 
-**Early mornings**
-- "Someone else was up before the sun today, doing the thing you keep saying you'll start tomorrow." — MILD
-- "The version of you that wins starts before it's convenient. You waited for convenient. It never came." — SPICY
+**Streak 4–6 consecutive misses**
+- "Bro really said 'let it rot.'" — SPICY
+- "This is a recipe for disaster and you wrote it." — NUCLEAR
+- "ngl u kinda down bad." — NUCLEAR
 
-**Adversity as fuel**
-- "A bad day was supposed to be fuel. You just let it be an excuse instead." — MILD
-- "Some people train harder because of a bad week. You used the bad week as the reason not to." — MILD
+**7-day miss finale (then silence)**
+- "Kitchen's closed. Chef, you're fired. No room for chopped losers here." — NUCLEAR (mimics the Apprentice "[Name], you're fired" cadence via the "Chef," name-slot)
+- Then literal silence — no push copy at all until a workout is logged.
 
-**Ex**
-- "Your ex tells people they 'dodged a bullet.' Looks like they dodged a bus." — NUCLEAR
-
-**Eagle / chicken**
-- "Some people are eagles, some are chickens. At least chickens know what they are. You're still pretending." — NUCLEAR
-- "You wanted to be the eagle in the story. You're the chicken they mention once to make the eagle look better." — NUCLEAR
-
-Rough tier count: ~12 MILD / ~22 SPICY / ~9 NUCLEAR. Nuclear tier will repeat fairly quickly at snooze 3+ or the 7-day finale — worth writing more before ship, or leaning into repeats as part of the bit.
+**Reactivation (after silence break)**
+- "Redemption arc or fluke? We'll see." — MILD
+- "You a comeback king or is this just another fling?" — MILD
+- "Character development." — MILD
 
 **Backhanded celebration (success day)**
-- "Congrats, you're not a loser today. Let's see about tomorrow."
-- "You did the bare minimum required to not be a disappointment. Enjoy it."
-- "One day down. That's not a streak yet, that's a coincidence."
-- "Fine. You showed up. Don't get used to being told that."
-- "Today you were an eagle. We'll see what tomorrow's version of you is."
+- "You ATE. Barely." — MILD
+- "Certified chef — for today." — MILD
+- "Rare W. Emphasis on rare." — MILD
+- "Showed up to glow up. Barely." — MILD
+- "Aura +100 (allegedly)." — MILD
+- "Certified banger — for today." — MILD
+- "Slay, but let's not get ahead of ourselves." — MILD
+- "Understood the assignment. Barely." — MILD
 
-**Escalation ladder (consecutive misses)**
-- *2–3 days:* "Two days isn't a slip anymore. That's a decision." / "This is starting to look like a personality, not a bad week."
-- *4–6 days:* "At this point I'm not disappointed. I'm just not surprised." / "You had six chances and used all of them the same way."
-- *7 days — finale, then goes silent:* "I've accepted you're not destined to be jacked. I'm giving up on you. Talk to me when you can prove you're worth it."
-- *Reactivation:* "Oh. You're here. Let's see if that was a fluke." / "One workout doesn't undo a week of nothing. I'm watching again, though." / "You proved you can do it once. Now do it again before I actually care."
+**Rare/easter-egg line (very high streak, e.g. 100+ days)**
+- "Too hot to roast." — reserved, not part of the regular rotation; the roast persona genuinely runs out of material, a narrative beat rather than a stock line.
 
-**Content note:** avoided lines that lean on real disability/illness (amputation, chemo) as a "no excuse" comparison — reads as exploiting others' hardship rather than roasting the user, cut deliberately.
+**Manual-fallback gut-check**
+- Prompt: "Be fr rn — did you actually work out?"
+- Yes button: "No crumbs left."
+- No button: "I was capping."
+
+**Milestone rank titles (success-streak ladder, locked)**
+- **1 day:** Fresh meat, not roasted yet.
+- **7 days:** You ATE.
+- **14 days:** left no crumbs!
+- **30 days:** you're giving main character energy
+- **100 days:** it's canon now
+- **365 days:** Final boss unlocked
+
+**Content note:** as with the original pool, avoid lines that exploit real disability/illness — keep the focus on food/cooking metaphor, glow-up/aura framing, and self-directed callout slang, not punching down at others' hardship. Also avoid gendered variants of the glow-up lines (e.g. "you're that girl") to preserve the gender-neutral framing.
 
 ---
 
@@ -253,26 +272,40 @@ Rough tier count: ~12 MILD / ~22 SPICY / ~9 NUCLEAR. Nuclear tier will repeat fa
 
 @Model class UserSettings {
   var missStreak: Int
+  var successStreak: Int // consecutive success days; resets to 0 on miss; drives rank titles
   var isAbandoned: Bool // true after 7-day miss streak, suppresses all notifications until reactivated
+  
+  // Computed rank title from success-streak (not stored, generated on read)
+  var rankTitle: String {
+    switch successStreak {
+      case 1: return "Fresh meat, not roasted yet."
+      case 7: return "You ATE."
+      case 14: return "left no crumbs!"
+      case 30: return "you're giving main character energy"
+      case 100..<365: return "it's canon now"
+      case 365...: return "Final boss unlocked"
+      default: return successStreak > 0 ? "Cooking" : "Unranked"
+    }
+  }
 }
 ```
 
-Phase 1 adds `Persona`/`toneLevel` to `UserSettings` and namespaces insults by persona; Phase 2 adds `selfieAssetId`/`imageApiEnabled`.
+Phase 0 also adds a success-streak counter and a computed rankTitle property (fresh Meat → Legend ladder) to drive the milestone badge UI. Phase 1 adds `Persona`/`voice` to `UserSettings` so users can pick between meme/tough-love/etc. and namespaces insults by persona + intensity; Phase 2 adds `selfieAssetId`/`imageApiEnabled`.
 
 ---
 
 ## Phase 0 screens
 
 1. **Onboarding — Set your schedule** — pick active weekdays, then set a deadline time **per active day** (not one shared time), plus minimum workout duration; HealthKit permission requested once, first run only
-2. **Home — Countdown (on track)** — today's countdown to deadline, manual "I already worked out" button
-3. **Home — Morning reckoning** — shown first if yesterday was a miss: "You failed yesterday" + challenge line, then today's countdown
+2. **Home — Countdown (on track)** — today's countdown to deadline, current rank title displayed above or beside countdown, manual "I already worked out" button
+3. **Home — Morning reckoning** — shown first if yesterday was a miss: "You failed yesterday" + challenge line, then today's countdown with rank title
 4. **Notification — Morning reckoning (12:00 PM)** — lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
-5. **Gut-check sheet** — shown on tapping "I already worked out": "Did you actually work out today?" / Yes, I did / ...no, I didn't
+5. **Gut-check sheet** — shown on tapping "I already worked out": "Be fr rn — did you actually work out today?" / Yes, I did / ...no, I didn't
 6. **Notification — T-30min reminder** — lock-screen banner, taps into the snooze sheet
 7. **Notification — miss check** — lock-screen banner ("You haven't worked out. Will you later?"), taps into the snooze sheet
 8. **Snooze sheet** — pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
 9. **Notification — success** — lock-screen banner with the backhanded-celebration line, fires when HealthKit catches the workout in the background
-10. **Home — Success (backhanded celebration)** — in-app version, shown when the day's workout is verified/confirmed while the app is open
+10. **Home — Success (backhanded celebration)** — in-app version shown when the day's workout is verified/confirmed while the app is open, with rank title displayed
 11. **Home — Silence state** — after a 7-day miss streak: the finale line, no countdown, single "log a workout" action to reactivate
 12. **Settings** — edit schedule (per-day times), HealthKit permission status. No data-deletion option in Phase 0 — not needed yet.
 
@@ -348,3 +381,9 @@ Do not build until the Phase 0 core loop feels good in daily use.
 Use `FamilyControls` + `ManagedSettings` + `DeviceActivity` extension target.
 
 Block selected apps until habit satisfied for the day. Requires [Apple Family Controls distribution approval](https://developer.apple.com/contact/request/family-controls-distribution) per bundle ID — plan 2–4 weeks lead time. Submit entitlement request early when you start this phase, in parallel with coding.
+
+---
+
+## Reference: Phase 1 persona planning
+
+**See:** `broiled-phase-1-persona-tough-love.plan.md` for the original tough-love voice and motivation framework, reserved for Phase 1 when the persona system is built. That doc contains the full insult pool and core motivation behind the "disappointed parent/rival" angle — useful for designing additional personas (Disappointed Coach, Savage Best Friend, etc.) that use the same escalation mechanics but different emotional drivers.
