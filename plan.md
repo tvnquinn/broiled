@@ -1,10 +1,33 @@
 ---
 name: BROiled
 overview: Build BROiled - an iOS SwiftUI workout accountability app with a savage persona who holds you to a schedule you set. Miss your deadline and you're cooked; snooze and each snooze escalates the roast; hit a full week of misses and the app goes silent until you prove it wrong. Verification defaults to Apple Health (Watch, Garmin, Strava, whatever writes there) with a manual "I've locked in today" fallback. MVP (Phase 0) is deliberately small; persona voice packs, AI consequence photos, and shareable roast cards layer on in later phases.
+
+## Xcode Build Progress (Real Device Testing - July 9, 2026)
+**Status:** Waiting on macOS update to download iOS 18 device support  
+**Current device:** iPhone 16  
+**Xcode version:** Requires macOS 26.2 or later for iOS 18 support
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Create Xcode project (SwiftUI + SwiftData) | ✅ Done | Bundle ID: com.quinnnguyen.broiled |
+| Delete template files (ContentView.swift, default model) | ✅ Done | |
+| Add BROiledApp folder from repo | ✅ Done | All Swift source files imported |
+| Add HealthKit capability | ✅ Done | Debug & Release configured |
+| Add NSHealthShareUsageDescription to Info.plist | ✅ Done | Permission string added |
+| Connect iPhone 16 to Mac | ✅ Done | Plugged in via cable |
+| Enable Developer Mode on device | ✅ Done | iPhone restarted |
+| Update macOS to 26.2+ | ⏳ In Progress | Needed for iOS 18 device support files |
+| Select iPhone as run destination | ⏳ Blocked | Awaiting Xcode update |
+| Build & run app (⌘R) | ⏳ Blocked | Awaiting device support files |
+
+**Next step when macOS update completes:** Restart Xcode, select iPhone 16 from device dropdown, hit ⌘R to build and run.
+
+---
+
 todos:
   - id: phase0-scaffold
     content: "Phase 0: BROiled SwiftUI iOS 17 project at ~/Projects/broiled, SwiftData models (Habit, DayLog, UserSettings), single-habit schedule setup (weekday × time × duration)"
-    status: pending
+    status: in_progress
   - id: phase0-healthkit
     content: "Phase 0: HealthKitService - deadline query (any source), manual 'I've locked in today' fallback button"
     status: pending
