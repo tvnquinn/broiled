@@ -23,36 +23,6 @@ Open [`wireframes.html`](wireframes.html) in a browser for all 12 Phase 0 screen
 
 ## Screenshots
 
-### Countdown (on track)
-
-![Home — on track](docs/screenshots/frame-02.png)
-
-### Morning reckoning (in-app)
-
-![Home — morning reckoning](docs/screenshots/frame-03.png)
-
-### Morning reckoning (12:00 PM push)
-
-![Notification — morning reckoning](docs/screenshots/frame-04.png)
-
-### Snooze sheet
-
-![Snooze sheet](docs/screenshots/frame-08.png)
-
-### Backhanded success
-
-![Home — success](docs/screenshots/frame-10a.png)
-
-### Lock screen notification
-
-![Notification — success](docs/screenshots/frame-09.png)
-
-### 7-day silence
-
-![Home — silence](docs/screenshots/frame-11.png)
-
-### Full wireframe rail
-
 ![Phase 0 wireframes](docs/screenshots/wireframes-rail.png)
 
 ## Design
@@ -71,7 +41,7 @@ Open [`wireframes.html`](wireframes.html) in a browser for all 12 Phase 0 screen
 
 | File | Description |
 |------|-------------|
-| [`wireframes.html`](wireframes.html) | Interactive Phase 0 wireframes (v3) |
+| [`wireframes.html`](wireframes.html) | Interactive Phase 0 wireframes |
 | [`plan.md`](plan.md) | Full product & engineering plan |
 | [`logo.png`](logo.png) | App icon — flexing figure over the pot |
 | [`scripts/capture-screenshots.mjs`](scripts/capture-screenshots.mjs) | Regenerate README screenshots from wireframes |
