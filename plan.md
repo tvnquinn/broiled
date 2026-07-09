@@ -136,7 +136,7 @@ flowchart TD
 Default to reading HealthKit, with a manual fallback - no geofencing, no source-filtering games. If people self-report a workout that didn't happen, they're only lying to themselves; Strava allows manual entries for the same reason, and the psychological pressure in this app comes from the escalation/silence design, not from surveillance rigor.
 
 - **Primary:** query HealthKit for a workout meeting `minDuration` on the current day. This covers Apple Watch, Garmin (via Garmin Connect's Health sync), Strava, Peloton, gym equipment with Bluetooth, or anything else that writes an `HKWorkout` - no device requirement, no app-specific integration needed.
-- **Fallback:** if nothing's found by the deadline, a manual "I've locked in today" button in-app satisfies the day - but tapping it surfaces one gut-check before it counts: *"this app is private, lying to it is highkey embarrassing. did you work out today?"* with **"yes!"** / **"...no I lied"**. This isn't a real gate (there's no way to verify a manual claim regardless), it's a beat that makes the user say the lie out loud to themselves if they're going to tell it - which fits the theme better than pretending the button is bulletproof. "yes!" logs success normally; "...no I lied" just returns to the countdown, nothing logged.
+- **Fallback:** if nothing's found by the deadline, a manual "I've locked in today" button in-app satisfies the day - but tapping it surfaces one gut-check before it counts: *"this app is private, lying to it is embarrassing. did you work out today?"* with **"yes!"** / **"...no I lied"**. This isn't a real gate (there's no way to verify a manual claim regardless), it's a beat that makes the user say the lie out loud to themselves if they're going to tell it - which fits the theme better than pretending the button is bulletproof. "yes!" logs success normally; "...no I lied" just returns to the countdown, nothing logged.
 
 This also fixes a real market-sizing risk: requiring an Apple Watch specifically would exclude most of the target audience (only ~50% of US adults own any tracker, and Watch-specific figures are murkier), and the people who most need this app are disproportionately *less* likely to already have a disciplined tracking habit. Defaulting to HealthKit-with-fallback keeps the addressable market at "anyone who wants to work out," not "anyone who already owns a wearable."
 
@@ -236,7 +236,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "you ate - barely" - MILD (pool alternate)
 - "certified chef - for today" - MILD
 - "rare w, emphasis on rare" - MILD
-- "showed up to glow up - barely" - MILD
+- "showed up to glow up" - MILD
 - "aura +100 allegedly" - MILD
 - "certified banger - for today" - MILD
 - "slay but let's not get ahead of ourselves" - MILD
@@ -246,7 +246,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "too hot to roast" - reserved, not part of the regular rotation; the roast persona genuinely runs out of material, a narrative beat rather than a stock line.
 
 **Manual-fallback gut-check**
-- Prompt: "this app is private, lying to it is highkey embarrassing" / "did you work out today?"
+- Prompt: "this app is private, lying to it is embarrassing" / "did you work out today?"
 - Yes button: "yes!"
 - No button: "...no I lied"
 
@@ -309,7 +309,7 @@ Phase 0 also adds a success-streak counter and a computed rankTitle property (fr
 2. **Home - Countdown (on track)** - today's countdown to deadline, current rank title displayed above or beside countdown, manual "I've locked in today" button
 3. **Home - Morning reckoning** - shown first if yesterday was a miss: "you skipped yesterday" + "is this who you are, or can you be better today?", then today's countdown with rank title
 4. **Notification - Morning reckoning (12:00 PM)** - lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
-5. **Gut-check sheet** - shown on tapping "I've locked in today": "this app is private, lying to it is highkey embarrassing" / "did you work out today?" / **yes!** / **...no I lied**
+5. **Gut-check sheet** - shown on tapping "I've locked in today": "this app is private, lying to it is embarrassing" / "did you work out today?" / **yes!** / **...no I lied**
 6. **Notification - T-30min reminder** - lock-screen banner ("30 minutes left today" / "still time to lock in and complete"), taps into the snooze sheet
 7. **Notification - miss check** - lock-screen banner ("you haven't worked out" / "will you later?"), taps into the snooze sheet
 8. **Snooze sheet** - title "push it back?"; pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
