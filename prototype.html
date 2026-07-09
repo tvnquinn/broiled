@@ -171,6 +171,7 @@ function load() {
     isAbandoned: false,
     snoozeCount: 0,
     deadlineTs: null,
+    currentCycleSeconds: 90,
     demoDeadlineSec: 90,
     demoDurationSec: 20,
     todayStatus: "pending",
@@ -194,6 +195,7 @@ function showToast(title, msg, ms = 2400) {
 
 function startCountdown(seconds) {
   state.deadlineTs = Date.now() + seconds * 1000;
+  state.currentCycleSeconds = seconds;
   state.reminderFired = false;
   state.missCheckFired = false;
   save();
@@ -239,11 +241,13 @@ function fireMissCheck() {
 }
 
 function snoozeIt() {
+  const sel = document.getElementById("snoozeSelect");
+  const chosenSec = sel ? parseInt(sel.value, 10) : 60;
   state.snoozeCount += 1;
   const tier = state.snoozeCount <= 1 ? "MILD" : state.snoozeCount <= 3 ? "SPICY" : "NUCLEAR";
   const line = pick(tierForSnooze(state.snoozeCount));
-  log(`snoozed (#${state.snoozeCount}, ${tier}) - next line queued: "${line}"`);
-  startCountdown(Math.max(30, state.demoDeadlineSec - state.snoozeCount * 10));
+  log(`snoozed (#${state.snoozeCount}, ${tier}) - user picked +${chosenSec}s - next line queued: "${line}"`);
+  startCountdown(chosenSec);
   state.pendingSnoozeLine = line;
   state.view = "home";
   save();
@@ -255,6 +259,7 @@ function quitToday() {
   state.missStreak += 1;
   state.successStreak = 0;
   state.yesterdayMissed = true;
+  state.snoozeCount = 0;
   state.view = "home";
   if (state.missStreak >= 7) {
     state.isAbandoned = true;
@@ -340,18 +345,31 @@ function renderHome() {
 
   const remainingMs = state.deadlineTs - Date.now();
   const remainingSec = remainingMs / 1000;
-  const reckoningLine = state.yesterdayMissed ? pick(POOLS.reckoning) : null;
 
   let missBanner = "";
-  if (reckoningLine) {
-    missBanner = `<div class="roastbox miss compact">you skipped yesterday<div class="sub" style="font-size:11.5px;">${reckoningLine}</div></div>`;
+  if (state.yesterdayMissed) {
+    let headline, line;
+    if (state.missStreak <= 1) {
+      headline = "you skipped yesterday";
+      line = pick(POOLS.reckoning);
+    } else if (state.missStreak <= 3) {
+      headline = `${state.missStreak} days missed`;
+      line = pick(POOLS.streak23);
+    } else {
+      headline = `${state.missStreak} days missed`;
+      line = pick(POOLS.streak46);
+    }
+    missBanner = `<div class="roastbox miss compact">${headline}<div class="sub" style="font-size:11.5px;">${line}</div></div>`;
   }
 
-  let streakLine = `<div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>`;
+  const rank = rankTitle(state.successStreak);
+  let streakLine = `<div class="topline"><span class="streak">${state.successStreak} day streak</span>${state.successStreak >= 1 ? `<span class="streak" style="color:var(--accent);">${rank}</span>` : "<span></span>"}</div>`;
 
   const toast = state.toast
     ? `<div class="toast"><b>${state.toast.title}</b>${state.toast.msg}</div>`
     : "";
+
+  const deadlineTime = new Date(state.deadlineTs).toLocaleTimeString([], {hour: "numeric", minute: "2-digit", second: "2-digit"});
 
   return `
     ${toast}
@@ -359,7 +377,7 @@ function renderHome() {
     <div class="timewrap">
       <div class="tlabel">Workout in</div>
       <div class="tval" id="tval">${fmt(remainingSec)}</div>
-      <div class="tsub">rank: ${rankTitle(state.successStreak)}</div>
+      <div class="tsub">deadline ${deadlineTime}</div>
     </div>
     <div class="btn float" onclick="openGutcheck()">I've locked in today</div>
   `;
@@ -381,7 +399,6 @@ function renderGutcheck() {
 }
 
 function renderSnooze() {
-  const line = state.pendingSnoozeLine || pick(POOLS.snoozeMild);
   return `
     <div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>
     <div class="timewrap"><div class="tlabel">Workout in</div><div class="tval" style="color:var(--flame);">0:00</div></div>
@@ -390,7 +407,15 @@ function renderSnooze() {
     <div class="sheet sheet-abs">
       <div class="grabber"></div>
       <div class="sheet-title">push it back, chef</div>
-      <div class="field"><span>New deadline</span><span class="v">+${Math.max(30, state.demoDeadlineSec - state.snoozeCount * 10)}s</span></div>
+      <div class="field">
+        <span>New deadline</span>
+        <select id="snoozeSelect" style="background:transparent;border:none;color:var(--ink);font-weight:600;font-size:13px;font-family:inherit;">
+          <option value="15">+15 min</option>
+          <option value="30" selected>+30 min</option>
+          <option value="60">+1 hr</option>
+          <option value="180">+3 hr</option>
+        </select>
+      </div>
       <div class="btn primary" onclick="snoozeIt()">Snooze</div>
       <div class="btn quit" onclick="quitToday()">I'm a Quitter</div>
     </div>
@@ -445,7 +470,7 @@ setInterval(() => {
   if (!state.onboarded || state.isAbandoned) return;
   if (state.view !== "home") return;
   const remainingSec = (state.deadlineTs - Date.now()) / 1000;
-  const total = state.demoDeadlineSec;
+  const total = state.currentCycleSeconds || state.demoDeadlineSec;
 
   if (!state.reminderFired && remainingSec > 0 && remainingSec <= total * 0.3) {
     state.reminderFired = true;
