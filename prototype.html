@@ -1,0 +1,467 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>BROiled - Interactive Prototype</title>
+<style>
+  :root {
+    --page-bg: #0c0c0e; --bg: #0c0c0e; --panel: #1a1a1f; --line: #2e2e33; --line-strong: #3d3d42;
+    --ink: #f2f0ed; --ink-muted: #8a8680; --chrome: #0a0a0c;
+    --accent: #ff6b2b; --accent-soft: rgba(255, 107, 43, 0.13); --accent-border: #ff6b2b;
+    --flame: #ff3b30; --flame-soft: rgba(255, 59, 48, 0.13);
+    --success: #c9a227; --success-soft: rgba(201, 162, 39, 0.14);
+    --ash: #48484a; --ash-soft: rgba(72, 72, 74, 0.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page-bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  .wrap { display: flex; gap: 48px; max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; align-items: flex-start; flex-wrap: wrap; }
+
+  header.top { width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px 24px 0; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  header.top p { color: var(--ink-muted); font-size: 14px; line-height: 1.6; margin: 0; max-width: 62ch; }
+
+  .phone-col { flex: 0 0 auto; }
+  .phone { background: var(--chrome); border-radius: 40px; padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); width: 340px; }
+  .screen {
+    background: var(--bg); border-radius: 30px; min-height: 620px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .island { width: 90px; height: 24px; background: var(--chrome); border-radius: 12px; margin: 12px auto 4px; }
+  .statusbar { display: flex; justify-content: space-between; padding: 2px 22px 8px; font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .content { flex: 1; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+
+  .label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+  .weekdays { display: flex; gap: 7px; }
+  .weekday { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink-muted); cursor: pointer; user-select: none; }
+  .weekday.on { background: var(--ink); color: var(--panel); border-color: var(--ink); font-weight: 600; }
+  .field { display: flex; justify-content: space-between; align-items: center; border: 1.5px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+  .field .v { font-weight: 600; }
+
+  .btn { border: none; border-radius: 12px; padding: 13px; text-align: center; font-size: 14px; font-weight: 600; background: var(--ink); color: var(--bg); cursor: pointer; }
+  .btn.primary { background: var(--accent); color: var(--chrome); }
+  .btn.ghost { background: transparent; border: 1.5px dashed var(--line-strong); color: var(--ink); }
+  .btn.quit { background: transparent; border: 1.5px solid var(--flame); color: var(--flame); }
+  .btn.float { background: var(--panel); color: var(--ink); border-radius: 16px; padding: 16px; font-size: 15px; box-shadow: 0 1px 0 var(--line); }
+
+  .timewrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+  .timewrap .tlabel { font-size: 13px; color: var(--ink-muted); }
+  .timewrap .tval { font-size: 46px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .timewrap .tsub { font-size: 12.5px; color: var(--ink-muted); }
+  .topline { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1; }
+  .topline .streak { font-size: 12px; color: var(--ink-muted); }
+
+  .roastbox { background: var(--accent-soft); border-left: 3px solid var(--accent-border); border-radius: 10px; padding: 14px 14px 14px 12px; color: var(--ink); font-size: 13.5px; line-height: 1.4; }
+  .roastbox.miss { background: var(--flame-soft); border-left-color: var(--flame); }
+  .roastbox.success { background: var(--success-soft); border-left-color: var(--success); text-align: center; border-left-width: 0; border-top: 3px solid var(--success); padding-top: 16px; }
+  .roastbox.success .headline { font-weight: 700; color: var(--success); }
+  .roastbox.success .subline { font-weight: 400; margin-top: 6px; color: var(--ink-muted); }
+  .roastbox.silence { background: var(--ash-soft); border-left-color: var(--ash); color: var(--ink-muted); }
+  .roastbox .sub { font-weight: 700; font-size: 14px; color: var(--ink); margin-top: 6px; }
+  .roastbox.compact { position: absolute; top: 20px; left: 20px; right: 20px; padding: 10px 13px; font-size: 12px; }
+
+  .sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 5; }
+  .sheet-abs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; }
+  .sheet { background: var(--panel); border-radius: 22px 22px 30px 30px; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -6px 20px rgba(0,0,0,0.25); }
+  .sheet .grabber { width: 36px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 0 auto 4px; }
+  .sheet-title { font-size: 16px; font-weight: 700; }
+
+  .toast { position: absolute; top: 16px; left: 16px; right: 16px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 14px; padding: 12px 14px; font-size: 12.5px; z-index: 10; box-shadow: 0 6px 20px rgba(0,0,0,0.4); animation: slidein 0.25s ease; }
+  .toast b { display: block; font-size: 13px; margin-bottom: 2px; }
+  @keyframes slidein { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .dev-col { flex: 1 1 340px; min-width: 320px; max-width: 460px; }
+  .dev-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .dev-panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted); margin: 0; }
+  .dev-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dev-btn { background: var(--bg); border: 1px solid var(--line-strong); color: var(--ink); border-radius: 9px; padding: 9px 12px; font-size: 12.5px; cursor: pointer; }
+  .dev-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .dev-stat { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-muted); padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .dev-stat b { color: var(--ink); font-weight: 600; }
+  .log { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 11.5px; line-height: 1.6; color: var(--ink-muted); height: 220px; overflow-y: auto; font-family: ui-monospace, monospace; }
+  .log div span { color: var(--accent); }
+  .note { font-size: 11.5px; line-height: 1.55; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">Phase 0 - Live Prototype</p>
+  <h1>BROiled: Interactive Prototype</h1>
+  <p>Real state machine, compressed time. Onboard with a short demo deadline, then let it run or use the dev panel to force events instead of waiting real hours/days. State persists in this browser via localStorage - "Reset" wipes it.</p>
+</header>
+
+<div class="wrap">
+  <div class="phone-col">
+    <div class="phone"><div class="screen" id="screen">
+      <div class="island"></div>
+      <div class="statusbar"><span id="sb-time">9:41</span><span id="sb-batt">100%</span></div>
+      <div class="content" id="content"></div>
+    </div></div>
+  </div>
+
+  <div class="dev-col">
+    <div class="dev-panel">
+      <h2>Dev controls</h2>
+      <div class="dev-row">
+        <button class="dev-btn" id="btn-forceDeadline">force deadline now</button>
+        <button class="dev-btn" id="btn-simSuccess">simulate healthkit workout</button>
+        <button class="dev-btn" id="btn-forceMiss">force miss + next day</button>
+        <button class="dev-btn" id="btn-reset">reset prototype</button>
+      </div>
+      <div>
+        <div class="dev-stat"><span>view</span><b id="stat-view">-</b></div>
+        <div class="dev-stat"><span>success streak</span><b id="stat-success">0</b></div>
+        <div class="dev-stat"><span>miss streak</span><b id="stat-miss">0</b></div>
+        <div class="dev-stat"><span>snooze count (today)</span><b id="stat-snooze">0</b></div>
+        <div class="dev-stat"><span>rank title</span><b id="stat-rank">-</b></div>
+      </div>
+      <h2>Event log</h2>
+      <div class="log" id="log"></div>
+      <p class="note">This is a desktop stand-in, not the SwiftUI build - HealthKit and real push notifications are simulated. It's here to test whether the copy, escalation pacing, and flow actually feel right before writing any Swift.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = "broiled_prototype_v1";
+
+const POOLS = {
+  onboardingHeadline: "bro when are we fighting demons?",
+  reminder: ["still time to lock in, chef", "timer's running, get cooking", "your body's gonna be tea"],
+  missCheckTitle: "You haven't worked out.",
+  missCheckMsg: ["did ya fold", "did you clock out", "no extensions", "is it a skill issue", "the audacity to not show up", "npc behavior", "take the l"],
+  snoozeMild: ["still marinating", "don't let it burn", "don't make me come back", "bro said 5 more minutes", "bro hit snooze", "don't make me roast you later", "not very main character of you today"],
+  snoozeSpicy: ["recipe for disaster and you're the recipe", "fire the chef, you're taking the burn today", "half baked and proud of it apparently", "lowkey embarrassing at this point", "this you - third time's not the charm", "simmer down - oh wait you already have"],
+  snoozeNuclear: ["fried chicken's probably the healthiest thing you ate today", "toast", "folded", "fumbled", "ash"],
+  reckoning: ["yesterday - mid, no notes", "yesterday's leftovers went bad", "that workout ghosted itself"],
+  streak23: ["this ain't a phase this is the plot", "you're speedrunning washed", "three days of vibes zero days of reps"],
+  streak46: ["bro really said let it rot", "this is a recipe for disaster and you wrote it", "ngl u kinda down bad"],
+  finale: "chef, you're fired - no room for chopped losers here",
+  reactivation: ["redemption arc or fluke, we'll see", "you a comeback king or is this just another fling", "character development"],
+  success: ["you ate - barely", "certified chef - for today", "rare w, emphasis on rare", "showed up to glow up - barely", "aura +100 allegedly", "certified banger - for today", "slay but let's not get ahead of ourselves", "understood the assignment - barely"],
+};
+
+function rankTitle(streak) {
+  if (streak >= 365) return "final boss unlocked";
+  if (streak >= 100) return "it's canon now";
+  if (streak >= 30) return "you're giving main character energy";
+  if (streak >= 14) return "left no crumbs";
+  if (streak >= 7) return "you ate";
+  if (streak >= 1) return "fresh meat, not roasted yet";
+  return "unranked";
+}
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function tierForSnooze(n) { return n <= 1 ? POOLS.snoozeMild : n <= 3 ? POOLS.snoozeSpicy : POOLS.snoozeNuclear; }
+
+let state = load();
+function load() {
+  const raw = localStorage.getItem(KEY);
+  if (raw) return JSON.parse(raw);
+  return {
+    onboarded: false,
+    days: { Mon: true, Wed: true, Fri: true },
+    view: "onboarding",
+    successStreak: 0,
+    missStreak: 0,
+    isAbandoned: false,
+    snoozeCount: 0,
+    deadlineTs: null,
+    demoDeadlineSec: 90,
+    demoDurationSec: 20,
+    todayStatus: "pending",
+    yesterdayMissed: false,
+    reminderFired: false,
+    missCheckFired: false,
+    toast: null,
+  };
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function log(msg) {
+  const el = document.getElementById("log");
+  const t = new Date().toLocaleTimeString();
+  el.innerHTML = `<div><span>[${t}]</span> ${msg}</div>` + el.innerHTML;
+}
+function showToast(title, msg, ms = 2400) {
+  state.toast = { title, msg };
+  render();
+  setTimeout(() => { state.toast = null; render(); }, ms);
+}
+
+function startCountdown(seconds) {
+  state.deadlineTs = Date.now() + seconds * 1000;
+  state.reminderFired = false;
+  state.missCheckFired = false;
+  save();
+}
+
+function beginOnboarding() {
+  const active = Object.keys(state.days).filter(d => state.days[d]);
+  if (active.length === 0) { alert("pick at least one day, chef"); return; }
+  state.onboarded = true;
+  state.view = "home";
+  startCountdown(state.demoDeadlineSec);
+  save();
+  log(`onboarded - deadline in ${state.demoDeadlineSec}s, duration ${state.demoDurationSec}s`);
+  render();
+}
+
+function openGutcheck() { state.view = "gutcheck"; render(); }
+function gutcheckYes() {
+  completeToday();
+  state.view = "success";
+  render();
+  setTimeout(() => { state.view = "home"; render(); }, 2200);
+}
+function gutcheckNo() { state.view = "home"; render(); }
+
+function completeToday() {
+  state.todayStatus = "completed";
+  state.successStreak += 1;
+  state.missStreak = 0;
+  state.isAbandoned = false;
+  state.snoozeCount = 0;
+  state.yesterdayMissed = false;
+  save();
+  log(`workout logged - success streak now ${state.successStreak} (${rankTitle(state.successStreak)})`);
+}
+
+function fireMissCheck() {
+  if (state.missCheckFired) return;
+  state.missCheckFired = true;
+  showToast("You haven't worked out.", pick(POOLS.missCheckMsg));
+  log("miss-check notification fired");
+  setTimeout(() => { state.view = "snooze"; save(); render(); }, 1400);
+}
+
+function snoozeIt() {
+  state.snoozeCount += 1;
+  const tier = state.snoozeCount <= 1 ? "MILD" : state.snoozeCount <= 3 ? "SPICY" : "NUCLEAR";
+  const line = pick(tierForSnooze(state.snoozeCount));
+  log(`snoozed (#${state.snoozeCount}, ${tier}) - next line queued: "${line}"`);
+  startCountdown(Math.max(30, state.demoDeadlineSec - state.snoozeCount * 10));
+  state.pendingSnoozeLine = line;
+  state.view = "home";
+  save();
+  showToast(`snooze #${state.snoozeCount} - ${tier}`, line);
+}
+
+function quitToday() {
+  state.todayStatus = "missed";
+  state.missStreak += 1;
+  state.successStreak = 0;
+  state.yesterdayMissed = true;
+  state.view = "home";
+  if (state.missStreak >= 7) {
+    state.isAbandoned = true;
+    log(`missed ${state.missStreak} in a row - app is now silent`);
+  } else {
+    log(`marked "I'm a Quitter" - miss streak now ${state.missStreak}`);
+  }
+  state.todayStatus = "pending";
+  if (!state.isAbandoned) startCountdown(state.demoDeadlineSec);
+  save();
+  render();
+}
+
+function forceDeadlineNow() {
+  if (!state.onboarded) return;
+  state.deadlineTs = Date.now() + 1500;
+  state.reminderFired = true;
+  state.missCheckFired = false;
+  save();
+  log("dev: forced deadline to fire in ~1.5s");
+}
+function simSuccess() {
+  if (!state.onboarded) return;
+  completeToday();
+  state.view = "success";
+  render();
+  setTimeout(() => { state.view = "home"; render(); }, 2200);
+}
+function forceMissNextDay() {
+  if (!state.onboarded) return;
+  quitToday();
+  state.todayStatus = "pending";
+  startCountdown(state.demoDeadlineSec);
+  save();
+  log("dev: advanced to next day");
+  render();
+}
+function resetAll() {
+  localStorage.removeItem(KEY);
+  state = load();
+  log("dev: reset");
+  render();
+}
+
+function fmt(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`
+    : `${m}:${String(s).padStart(2,"0")}`;
+}
+
+function renderOnboarding() {
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return `
+    <div style="margin-top:8px;font-size:19px;font-weight:700;line-height:1.25;">${POOLS.onboardingHeadline}</div>
+    <div>
+      <div class="label" style="margin-bottom:8px;">Days</div>
+      <div class="weekdays">
+        ${days.map(d => `<div class="weekday ${state.days[d] ? "on" : ""}" onclick="toggleDay('${d}')">${d[0]}</div>`).join("")}
+      </div>
+    </div>
+    <div class="field"><span>Minimum duration</span><span class="v">30 min</span></div>
+    <div class="field"><span>Demo deadline in</span><span class="v">${state.demoDeadlineSec}s</span></div>
+    <div style="flex:1;"></div>
+    <div class="btn primary" onclick="beginOnboarding()">Start</div>
+  `;
+}
+window.toggleDay = (d) => { state.days[d] = !state.days[d]; save(); render(); };
+
+function renderHome() {
+  if (state.isAbandoned) {
+    return `
+      <div style="text-align:center;color:var(--ink-muted);font-size:13px;margin-top:60px;">No countdown. No notifications.</div>
+      <div class="roastbox silence" style="margin-top:18px;">
+        kitchen's closed
+        <div class="sub">${POOLS.finale}</div>
+      </div>
+      <div style="flex:1;"></div>
+      <div class="btn" onclick="reactivate()">Log a workout</div>
+    `;
+  }
+
+  const remainingMs = state.deadlineTs - Date.now();
+  const remainingSec = remainingMs / 1000;
+  const reckoningLine = state.yesterdayMissed ? pick(POOLS.reckoning) : null;
+
+  let missBanner = "";
+  if (reckoningLine) {
+    missBanner = `<div class="roastbox miss compact">you skipped yesterday<div class="sub" style="font-size:11.5px;">${reckoningLine}</div></div>`;
+  }
+
+  let streakLine = `<div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>`;
+
+  const toast = state.toast
+    ? `<div class="toast"><b>${state.toast.title}</b>${state.toast.msg}</div>`
+    : "";
+
+  return `
+    ${toast}
+    ${missBanner || streakLine}
+    <div class="timewrap">
+      <div class="tlabel">Workout in</div>
+      <div class="tval" id="tval">${fmt(remainingSec)}</div>
+      <div class="tsub">rank: ${rankTitle(state.successStreak)}</div>
+    </div>
+    <div class="btn float" onclick="openGutcheck()">I've locked in today</div>
+  `;
+}
+
+function renderGutcheck() {
+  return `
+    <div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>
+    <div class="timewrap"><div class="tlabel">Workout in</div><div class="tval">${fmt((state.deadlineTs - Date.now())/1000)}</div></div>
+    <div class="btn float" style="opacity:.4;">I've locked in today</div>
+    <div class="sheet-overlay" onclick="gutcheckNo()"></div>
+    <div class="sheet sheet-abs">
+      <div class="grabber"></div>
+      <div class="roastbox">Be fr, no flexing<div class="sub">Did you actually work out?</div></div>
+      <div class="btn" onclick="gutcheckYes()">yee🤑</div>
+      <div class="btn ghost" onclick="gutcheckNo()">I 🧢'ed</div>
+    </div>
+  `;
+}
+
+function renderSnooze() {
+  const line = state.pendingSnoozeLine || pick(POOLS.snoozeMild);
+  return `
+    <div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>
+    <div class="timewrap"><div class="tlabel">Workout in</div><div class="tval" style="color:var(--flame);">0:00</div></div>
+    <div class="btn float" style="opacity:.4;">I've locked in today</div>
+    <div class="sheet-overlay"></div>
+    <div class="sheet sheet-abs">
+      <div class="grabber"></div>
+      <div class="sheet-title">push it back, chef</div>
+      <div class="field"><span>New deadline</span><span class="v">+${Math.max(30, state.demoDeadlineSec - state.snoozeCount * 10)}s</span></div>
+      <div class="btn primary" onclick="snoozeIt()">Snooze</div>
+      <div class="btn quit" onclick="quitToday()">I'm a Quitter</div>
+    </div>
+  `;
+}
+
+function renderSuccess() {
+  const headline = pick(POOLS.success);
+  const parts = headline.split(" - ");
+  return `
+    <div class="roastbox success" style="margin-top:auto;margin-bottom:auto;">
+      <div class="headline">${parts[0]}${parts[1] ? " - " + parts[1] : ""}</div>
+      <div class="subline">${pick(POOLS.success)}</div>
+    </div>
+    <div style="text-align:center;color:var(--ink-muted);font-size:12px;">${state.successStreak} day streak - ${rankTitle(state.successStreak)}</div>
+  `;
+}
+
+window.reactivate = () => {
+  state.isAbandoned = false;
+  state.missStreak = 0;
+  completeToday();
+  log("reactivated after silence");
+  showToast("welcome back", pick(POOLS.reactivation));
+  render();
+};
+
+function render() {
+  const content = document.getElementById("content");
+  document.getElementById("sb-time").textContent = new Date().toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
+
+  if (!state.onboarded) content.innerHTML = renderOnboarding();
+  else if (state.view === "gutcheck") content.innerHTML = renderGutcheck();
+  else if (state.view === "snooze") content.innerHTML = renderSnooze();
+  else if (state.view === "success") content.innerHTML = renderSuccess();
+  else content.innerHTML = renderHome();
+
+  document.getElementById("stat-view").textContent = state.onboarded ? state.view : "onboarding";
+  document.getElementById("stat-success").textContent = state.successStreak;
+  document.getElementById("stat-miss").textContent = state.missStreak;
+  document.getElementById("stat-snooze").textContent = state.snoozeCount;
+  document.getElementById("stat-rank").textContent = rankTitle(state.successStreak);
+  save();
+}
+
+document.getElementById("btn-forceDeadline").onclick = forceDeadlineNow;
+document.getElementById("btn-simSuccess").onclick = simSuccess;
+document.getElementById("btn-forceMiss").onclick = forceMissNextDay;
+document.getElementById("btn-reset").onclick = resetAll;
+
+setInterval(() => {
+  if (!state.onboarded || state.isAbandoned) return;
+  if (state.view !== "home") return;
+  const remainingSec = (state.deadlineTs - Date.now()) / 1000;
+  const total = state.demoDeadlineSec;
+
+  if (!state.reminderFired && remainingSec > 0 && remainingSec <= total * 0.3) {
+    state.reminderFired = true;
+    showToast("30 minutes left today.", pick(POOLS.reminder));
+    log("T-30min reminder fired");
+    save();
+  }
+  if (remainingSec <= 0 && !state.missCheckFired) {
+    fireMissCheck();
+  }
+  const tval = document.getElementById("tval");
+  if (tval) tval.textContent = fmt(Math.max(0, remainingSec));
+}, 500);
+
+render();
+log("prototype loaded");
+</script>
+</body>
+</html>
