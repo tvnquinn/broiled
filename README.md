@@ -6,8 +6,6 @@ BROiled is an iOS workout accountability app with tough-love energy. Set a per-d
 
 > *Marketing:* Broke your workout streak? You're cooked.
 
-![BROiled app icon](logo.png)
-
 ## Status
 
 **Phase 0 — design & planning.** Interactive wireframes and product spec live in this repo; the SwiftUI app is not built yet.
@@ -24,30 +22,6 @@ BROiled is an iOS workout accountability app with tough-love energy. Set a per-d
 Open [`wireframes.html`](wireframes.html) in a browser for all 11 Phase 0 screens with design notes.
 
 ## Screenshots
-
-### Countdown (on track)
-
-![Home — on track](docs/screenshots/frame-02.png)
-
-### Morning reckoning
-
-![Home — morning reckoning](docs/screenshots/frame-03.png)
-
-### Snooze sheet
-
-![Snooze sheet](docs/screenshots/frame-07.png)
-
-### Backhanded success
-
-![Home — success](docs/screenshots/frame-09a.png)
-
-### Lock screen notification
-
-![Notification — success](docs/screenshots/frame-08.png)
-
-### 7-day silence
-
-![Home — silence](docs/screenshots/frame-10.png)
 
 ### Full wireframe rail
 
