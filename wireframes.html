@@ -1,25 +1,38 @@
 <title>BROiled — Phase 0 Wireframes</title>
 <style>
   :root {
-    --page-bg: #101113;
-    --bg: #1a1b1d;
-    --panel: #222326;
-    --line: #35373b;
-    --line-strong: #4c4e53;
-    --ink: #f4f2ee;
-    --ink-muted: #8c8e94;
-    --accent: #fb5519;
-    --accent-soft: #c9793e;
-    --success: #5fae86;
-    --success-soft: #1c2f26;
+    /* Char & Ember — semantic tokens */
+    --page-bg: #0c0c0e;
+    --bg: #0c0c0e;
+    --panel: #1a1a1f;
+    --line: #2e2e33;
+    --line-strong: #3d3d42;
+    --ink: #f2f0ed;
+    --ink-muted: #8a8680;
     --chrome: #0a0a0c;
-    --accent-muted: #c9793e;
+  /* Ember: countdown, primary accent, warnings */
+    --accent: #ff6b2b;
+    --accent-soft: rgba(255, 107, 43, 0.13);
+    --accent-border: #ff6b2b;
+  /* Flame: miss reckoning, destructive */
+    --flame: #ff3b30;
+    --flame-soft: rgba(255, 59, 48, 0.13);
+  /* Bronze: backhanded success — never green */
+    --success: #c9a227;
+    --success-soft: rgba(201, 162, 39, 0.14);
+  /* Ash: silence / muted states */
+    --ash: #48484a;
+    --ash-soft: rgba(72, 72, 74, 0.35);
+    --accent-muted: #8a8680;
   }
   :root[data-theme="light"] {
     --page-bg: #eae5df;
     --bg: #f4efe9; --panel: #ffffff; --line: #ddd7d0; --line-strong: #b7afa6;
-    --ink: #1a1b1d; --ink-muted: #6b6d72; --accent: #fb5519; --accent-soft: #c9793e;
-    --success: #2f6b4d; --success-soft: #e2efe7; --chrome: #17181a; --accent-muted: #c9793e;
+    --ink: #1a1b1d; --ink-muted: #6b6d72; --chrome: #17181a;
+    --accent: #e85a20; --accent-soft: rgba(232, 90, 32, 0.12); --accent-border: #e85a20;
+    --flame: #d63228; --flame-soft: rgba(214, 50, 40, 0.1);
+    --success: #9a8548; --success-soft: rgba(154, 133, 72, 0.14);
+    --ash: #6b6d72; --ash-soft: rgba(107, 109, 114, 0.15); --accent-muted: #8a8680;
   }
 
   * { box-sizing: border-box; }
@@ -90,8 +103,9 @@
   .day-time-row .t { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 
   .btn { border: none; border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; background: var(--ink); color: var(--bg); }
+  .btn.primary { background: var(--accent); color: var(--chrome); }
   .btn.ghost { background: transparent; border: 1.5px dashed var(--line-strong); color: var(--ink); }
-  .btn.quit { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+  .btn.quit { background: transparent; border: 1.5px solid var(--flame); color: var(--flame); }
   .btn.float {
     background: var(--panel); color: var(--ink); border-radius: 16px; padding: 15px; font-size: 14.5px;
     box-shadow: 0 1px 0 var(--line);
@@ -106,12 +120,34 @@
   .topline .streak { font-size: 12px; color: var(--ink-muted); }
 
   .chip { align-self: flex-start; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; font-weight: 700; }
-  .chip.success { color: var(--success); background: var(--success-soft); }
-  .chip.roast { color: var(--accent); background: var(--accent-soft); }
+  .chip.success { color: var(--success); background: var(--success-soft); border: 1px solid rgba(201, 162, 39, 0.35); }
+  .chip.roast { color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(255, 107, 43, 0.35); }
 
-  .roastbox { background: var(--accent-soft); border-radius: 12px; padding: 14px; color: var(--ink); font-size: 13.5px; line-height: 1.4; font-weight: 400; }
+  .roastbox {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 14px 14px 14px 12px;
+    color: var(--ink);
+    font-size: 13.5px;
+    line-height: 1.4;
+    font-weight: 400;
+  }
+  .roastbox.miss { background: var(--flame-soft); border-left-color: var(--flame); }
+  .roastbox.success {
+    background: var(--success-soft);
+    border-left-color: var(--success);
+    text-align: center;
+    border-left-width: 0;
+    border-top: 3px solid var(--success);
+    padding-top: 16px;
+  }
+  .roastbox.success .headline { font-weight: 700; color: var(--success); }
+  .roastbox.success .subline { font-weight: 400; margin-top: 6px; color: var(--ink-muted); }
+  .roastbox.silence { background: var(--ash-soft); border-left-color: var(--ash); color: var(--ink-muted); }
+  .roastbox.silence .sub { color: var(--ink-muted); }
   .roastbox .sub { font-weight: 700; font-size: 14px; color: var(--ink); margin-top: 6px; }
-  .roastbox.compact { padding: 11px 13px; font-size: 13px; }
+  .roastbox.compact { padding: 11px 13px 11px 11px; font-size: 13px; }
 
   .sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
   .sheet-abs { position: absolute; left: 0; right: 0; bottom: 0; }
@@ -134,8 +170,8 @@
   .locktime { font-size: 52px; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
   .lockdate { font-size: 13px; opacity: 0.75; margin-top: 4px; }
   .notifcard { width: calc(100% - 24px); margin-top: 30px; background: rgba(255,255,255,0.12); border-radius: 16px; padding: 12px 13px; display: flex; gap: 10px; }
-  .notif-icon { width: 30px; height: 30px; border-radius: 8px; background: #0a0a0c; flex-shrink: 0; overflow: hidden; }
-  .notif-icon svg { width: 100%; height: 100%; display: block; }
+  .notif-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--chrome); flex-shrink: 0; overflow: hidden; }
+  .notif-icon img { width: 100%; height: 100%; display: block; object-fit: cover; }
   .notif-body { flex: 1; min-width: 0; }
   .notif-app { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: 0.02em; opacity: 0.7; margin-bottom: 3px; }
   .notif-app .brand { font-weight: 700; }
@@ -148,24 +184,24 @@
 
 <div class="page">
   <header class="top">
-    <p class="eyebrow">BROiled — Phase 0 wireframes, v2</p>
-    <h1>Dark-first countdown, per-day scheduling, roasts via notification</h1>
-    <p>Dark is now the actual default, not a media-query fallback — every screen (including onboarding and settings, which were still light before) uses the same near-black gray, and the countdown numbers match the logo's exact orange. Onboarding supports a different deadline per active day instead of one shared time.</p>
+    <p class="eyebrow">BROiled — Phase 0 wireframes, v3</p>
+    <h1>Char &amp; Ember palette — tinted banners, not filled boxes</h1>
+    <p>v3 replaces muddy orange fills and wellness green with semantic tints: <b>ember</b> for warnings/countdown, <b>flame</b> for misses, <b>bronze</b> for backhanded wins. Color labels meaning — containers stay dark gray.</p>
     <div class="palette">
-      <span class="swatch"><i style="background:#1a1b1d;"></i>bg #1A1B1D</span>
-      <span class="swatch"><i style="background:#222326;"></i>surface #222326</span>
-      <span class="swatch"><i style="background:#ff6b2b;"></i>accent #FF6B2B</span>
-      <span class="swatch"><i style="background:#c9793e;"></i>accent-muted #C9793E</span>
-      <span class="swatch"><i style="background:#8c8e94;"></i>ink-muted #8C8E94</span>
-      <span class="swatch"><i style="background:#f4f2ee;"></i>ink #F4F2EE</span>
+      <span class="swatch"><i style="background:#0c0c0e;"></i>bg #0C0C0E</span>
+      <span class="swatch"><i style="background:#1a1a1f;"></i>surface #1A1A1F</span>
+      <span class="swatch"><i style="background:#ff6b2b;"></i>ember #FF6B2B</span>
+      <span class="swatch"><i style="background:#ff3b30;"></i>flame #FF3B30</span>
+      <span class="swatch"><i style="background:#c9a227;"></i>bronze #C9A227</span>
+      <span class="swatch"><i style="background:#48484a;"></i>ash #48484A</span>
+      <span class="swatch"><i style="background:#f2f0ed;"></i>ink #F2F0ED</span>
     </div>
   </header>
 
   <div class="section-label">Setup &amp; daily state</div>
   <div class="rail">
 
-    <div class="card">
-      <div class="step"><span class="num mono">01</span><span class="title">Onboarding — Set your schedule</span></div>
+    <div class="card" id="frame-01">
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>9:41</span><span>100%</span></div>
@@ -186,22 +222,22 @@
               <div class="day-time-row"><span class="d">Fri</span><span class="t">6:00 PM ›</span></div>
             </div>
           </div>
-          <div class="field"><span>Minimum length</span><span class="v">30 min</span></div>
+          <div class="field"><span>Minimum duration</span><span class="v">30 min</span></div>
           <div class="ph-block" style="height:34px;">HealthKit permission prompt</div>
           <div style="flex:1;"></div>
-          <div class="btn">Start</div>
+          <div class="btn primary">Start</div>
         </div>
       </div></div>
       <div class="note">Each active day gets its own time now, not one shared deadline — new days default to the most recent time picked, then are individually adjustable. HealthKit prompt shown <b>once, first run only</b> — never reappears if the schedule is edited later from Settings.</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="frame-02">
       <div class="step"><span class="num mono">02</span><span class="title">Home — on track</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>9:41</span><span>100%</span></div>
-        <div class="content" style="padding-top:2px;position:relative;">
-          <div class="topline" style="position:absolute;top:4px;left:0;right:0;"><span class="streak">3 day streak</span><span></span></div>
+        <div class="content" style="position:relative;">
+          <div class="topline" style="position:absolute;top:20px;left:0;right:0;z-index:1;"><span class="streak">3 day streak</span><span></span></div>
           <div class="timewrap">
             <div class="tlabel">Workout in</div>
             <div class="tval">2:14:07</div>
@@ -213,13 +249,13 @@
       <div class="note">"Not logged yet" chip removed — streak count moved into that top slot instead. Countdown is now the vertical anchor of the screen, matching the reference timer format (H:MM:SS, not "4h 12m").</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="frame-03">
       <div class="step"><span class="num mono">03</span><span class="title">Home — morning reckoning</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>7:15</span><span>92%</span></div>
         <div class="content" style="padding-top:2px;position:relative;">
-          <div class="roastbox compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
+          <div class="roastbox miss compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
             You failed yesterday.
             <div class="sub" style="font-size:11.5px;margin-top:3px;">Is this who you are, or can you be better today?</div>
           </div>
@@ -274,18 +310,7 @@
         <div class="lockdate">Wednesday, June 25</div>
         <div class="notifcard">
           <div class="notif-icon">
-            <svg viewBox="0 0 200 200">
-              <rect width="200" height="200" fill="#0a0a0c" rx="44"/>
-              <path d="M80,131 Q56,126 66,109 L73,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M120,131 Q144,126 134,109 L127,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="73" cy="93" r="9" fill="#ff6b2b"/>
-              <circle cx="127" cy="93" r="9" fill="#ff6b2b"/>
-              <path d="M83,133 L117,133 L110,178 L90,178 Z" fill="#ff6b2b"/>
-              <circle cx="100" cy="116" r="14" fill="#ff6b2b"/>
-              <path d="M67,151 L133,151 L127,187 C127,193 73,193 73,187 Z" fill="#797b80"/>
-              <rect x="53" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-              <rect x="132" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-            </svg>
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
           </div>
           <div class="notif-body">
             <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
@@ -304,18 +329,7 @@
         <div class="lockdate">Wednesday, June 25</div>
         <div class="notifcard">
           <div class="notif-icon">
-            <svg viewBox="0 0 200 200">
-              <rect width="200" height="200" fill="#0a0a0c" rx="44"/>
-              <path d="M80,131 Q56,126 66,109 L73,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M120,131 Q144,126 134,109 L127,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="73" cy="93" r="9" fill="#ff6b2b"/>
-              <circle cx="127" cy="93" r="9" fill="#ff6b2b"/>
-              <path d="M83,133 L117,133 L110,178 L90,178 Z" fill="#ff6b2b"/>
-              <circle cx="100" cy="116" r="14" fill="#ff6b2b"/>
-              <path d="M67,151 L133,151 L127,187 C127,193 73,193 73,187 Z" fill="#797b80"/>
-              <rect x="53" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-              <rect x="132" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-            </svg>
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
           </div>
           <div class="notif-body">
             <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
@@ -327,7 +341,7 @@
       <div class="note">Fires at <b>deadline + workout duration + 30min.</b> Copy scales with streak. Tapping opens the snooze sheet.</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="frame-07">
       <div class="step"><span class="num mono">07</span><span class="title">Snooze sheet</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
@@ -346,32 +360,21 @@
           <div class="grabber"></div>
           <div class="sheet-title">Push it back?</div>
           <div class="field"><span>New deadline</span><span class="v">8:00 PM</span></div>
-          <div class="btn">Snooze</div>
+          <div class="btn primary">Snooze</div>
           <div class="btn quit">I'm a Quitter</div>
         </div>
       </div></div>
       <div class="note"><b>Uncapped.</b> No insult in the sheet itself — it arrives in the next miss-check notification. Tier by snooze count: 1 → MILD, 2–3 → SPICY, 4+ → NUCLEAR.</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="frame-08">
       <div class="step"><span class="num mono">08</span><span class="title">Notification — success</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">5:58</div>
         <div class="lockdate">Wednesday, June 25</div>
         <div class="notifcard">
           <div class="notif-icon">
-            <svg viewBox="0 0 200 200">
-              <rect width="200" height="200" fill="#0a0a0c" rx="44"/>
-              <path d="M80,131 Q56,126 66,109 L73,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M120,131 Q144,126 134,109 L127,93" fill="none" stroke="#ff6b2b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="73" cy="93" r="9" fill="#ff6b2b"/>
-              <circle cx="127" cy="93" r="9" fill="#ff6b2b"/>
-              <path d="M83,133 L117,133 L110,178 L90,178 Z" fill="#ff6b2b"/>
-              <circle cx="100" cy="116" r="14" fill="#ff6b2b"/>
-              <path d="M67,151 L133,151 L127,187 C127,193 73,193 73,187 Z" fill="#797b80"/>
-              <rect x="53" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-              <rect x="132" y="155" width="15" height="7" rx="3.5" fill="#797b80"/>
-            </svg>
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
           </div>
           <div class="notif-body">
             <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
@@ -388,20 +391,20 @@
   <div class="section-label">Outcome states</div>
   <div class="rail">
 
-    <div class="card">
+    <div class="card" id="frame-09a">
       <div class="step"><span class="num mono">09a</span><span class="title">Home — success</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>5:52</span><span>88%</span></div>
         <div class="content" style="justify-content:center;">
-          <div class="roastbox" style="background:#5fae86;text-align:center;">
-            <div style="font-weight:700;color:#ffffff;">Congrats, you're not a loser today.</div>
-            <div style="font-weight:400;margin-top:6px;color:#ffffff;">Let's see about tomorrow.</div>
+          <div class="roastbox success">
+            <div class="headline">Congrats, you're not a loser today.</div>
+            <div class="subline">Let's see about tomorrow.</div>
           </div>
           <div style="text-align:center;color:var(--ink-muted);font-size:12px;margin-top:10px;">4 day streak</div>
         </div>
       </div></div>
-      <div class="note">Back to the simpler v1 shape: one centered box, success-soft green, no oversized second line competing with the headline. Bold is on the congrats line, not the "let's see" line.</div>
+      <div class="note">Bronze tint + top border — backhanded win, not celebration green. Bold on the congrats line; "let's see" stays muted.</div>
     </div>
 
     <div class="card">
@@ -410,7 +413,7 @@
         <div class="island"></div>
         <div class="statusbar"><span>7:20</span><span>76%</span></div>
         <div class="content" style="padding-top:2px;position:relative;">
-          <div class="roastbox compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
+          <div class="roastbox miss compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
             5 days missed.
             <div class="sub" style="font-size:11.5px;margin-top:3px;">At this point I'm not disappointed. I'm just not surprised.</div>
           </div>
@@ -425,14 +428,14 @@
       <div class="note">Same structure as frame 03 now — the streak-escalation insult sits in an absolute top banner, the timer stays centered on the screen. Escalation ladder: 2–3 days → sharper line, 4–6 days → this tier. Two more misses and it goes quiet.</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="frame-10">
       <div class="step"><span class="num mono">10</span><span class="title">Home — silence (7-day give-up)</span></div>
       <div class="phone"><div class="screen">
         <div class="island"></div>
         <div class="statusbar"><span>—</span><span>—</span></div>
         <div class="content" style="justify-content:center;gap:18px;">
           <div style="text-align:center;color:var(--ink-muted);font-size:13px;">No countdown. No notifications.</div>
-          <div class="roastbox">
+          <div class="roastbox silence">
             I've accepted you're not destined to be jacked.
             <div class="sub">I'm giving up on you. Talk to me when you can prove you're worth it.</div>
           </div>
@@ -455,7 +458,7 @@
               <span class="v">Mon, Wed, Fri</span>
               <span style="color:var(--ink-muted);font-weight:500;font-size:12.5px;">custom times ›</span>
             </div>
-            <div class="settings-row"><span class="k">HealthKit</span><span class="v" style="color:var(--success);">Connected ›</span></div>
+            <div class="settings-row"><span class="k">HealthKit</span><span class="v" style="color:var(--ink-muted);">Connected ›</span></div>
           </div>
         </div>
       </div></div>
