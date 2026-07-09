@@ -45,10 +45,10 @@ isProject: false
 | Slot | Copy |
 |------|------|
 | **App name** | BROiled |
-| **App Store subtitle** (≤30 chars) | `BROke streak? You're cooked.` (28 chars) |
-| **Marketing tagline** | Broke your workout streak? You're cooked. |
+| **App Store subtitle** (≤30 chars) | `BROke your commitment = cooked` (30 chars) |
+| **Marketing tagline** | BROke your workout commitment? You're cooked. |
 
-**Pun stack:** **BRO**iled (name) + **BRO**ke (subtitle) + **cooked** (broiled/roasted payoff). "Workout" is omitted from the subtitle - v1 is workout-only, and "streak" reads clearly in a Health & Fitness context.
+**Pun stack:** **BRO**iled (name) + **BRO**ke (subtitle) + **cooked** (broiled/roasted payoff). Reframed from "streak" to "commitment" - the point isn't that a counter reset, it's that you didn't keep your word to yourself, which is the sharper and more personal thing to get roasted for.
 
 **Wordmark:** emphasize **BRO** in both BROiled and BROke; `iled` / streak line can be lighter or flame-toned.
 
@@ -76,6 +76,8 @@ There's a mentality people describe as having "a bit of dog in you" - the extra 
 And underneath that: at some point you move out, and the one voice that never once said "good enough" goes quiet. Nobody's tracking your effort against your potential anymore. Nobody's unimpressed on your behalf. This app is built to be that voice again, on purpose - the parent who steps back in for the one thing you keep meaning to actually stick to, because you're the one who asked it to.
 
 It's not therapy and it doesn't pretend to be encouraging. It's a rival and a disappointed relative who happen to live in your lock screen, and the entire game is proving them wrong.
+
+**Why gen-z slang carries the roast:** that same energy can be delivered two ways, and the voice matters as much as the mechanic. A blunt "you're the bottom 20%" reads as a real insult - it lands as mean, not funny, especially for an audience that's grown up more sensitive to being talked down to (the "strawberry generation" bit isn't wrong, it's just not something to fight, it's something to design around). Kitchen slang ("cooked," "mid," "toast") keeps the exact same bite - the roast still stings, the silence mechanic still works, missing a day still feels bad - but it reads as a bit being run on you, not a verdict on you. That's the difference between a line you screenshot and send to a friend laughing, and one you just feel bad about. Lighter delivery, same teeth.
 
 ---
 
