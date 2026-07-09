@@ -131,25 +131,28 @@
 const KEY = "broiled_prototype_v1";
 
 const POOLS = {
-  onboardingHeadline: "bro when are we fighting demons?",
-  reminder: ["still time to lock in, chef", "timer's running, get cooking", "your body's gonna be tea"],
-  missCheckTitle: "You haven't worked out.",
-  missCheckMsg: ["did ya fold", "did you clock out", "no extensions", "is it a skill issue", "the audacity to not show up", "npc behavior", "take the l"],
-  snoozeMild: ["still marinating", "don't let it burn", "don't make me come back", "bro said 5 more minutes", "bro hit snooze", "don't make me roast you later", "not very main character of you today"],
-  snoozeSpicy: ["recipe for disaster and you're the recipe", "fire the chef, you're taking the burn today", "half baked and proud of it apparently", "lowkey embarrassing at this point", "this you - third time's not the charm", "simmer down - oh wait you already have"],
+  onboardingHeadline: "when are you working out?",
+  reminder: ["still time to lock in and complete", "timer's running, get cooking", "your body's gonna be tea", "winner winner or are you the chicken dinner"],
+  missCheckTitle: "you haven't worked out",
+  missCheckMsg: ["will you later?", "did ya fold", "did you clock out", "no extensions", "is it a skill issue", "the audacity to not show up", "npc behavior", "take the l"],
+  snoozeMild: ["still marinating", "don't let it burn", "don't make me come back", "bro really said 5 more minutes", "bro hit snooze", "don't make me roast you later"],
+  snoozeSpicy: ["you're a recipe for disaster", "fire the chef, you're taking the burn today", "half baked and proud of it apparently", "low-key embarrassing at this point", "this you - third time's not the charm", "simmer down - oh wait you already have"],
   snoozeNuclear: ["fried chicken's probably the healthiest thing you ate today", "toast", "folded", "fumbled", "ash"],
-  reckoning: ["yesterday - mid, no notes", "yesterday's leftovers went bad", "that workout ghosted itself"],
+  reckoning: ["is this who you are, or can you be better today?", "mid, no notes", "leftovers went bad", "that workout ghosted itself"],
   streak23: ["this ain't a phase this is the plot", "you're speedrunning washed", "three days of vibes zero days of reps"],
-  streak46: ["bro really said let it rot", "this is a recipe for disaster and you wrote it", "ngl u kinda down bad"],
-  finale: "chef, you're fired - no room for chopped losers here",
+  streak46: ["at this point i'm not disappointed i'm just not surprised", "bro really said let it rot", "you're down bad"],
+  silenceHeadline: "i'm giving up on you",
+  silenceSub: "no room for chopped losers here, talk to me when you're worth it",
   reactivation: ["redemption arc or fluke, we'll see", "you a comeback king or is this just another fling", "character development"],
+  successHeadline: ["you're not a loser today", "you're not a dud today"],
+  successSub: "let's see about tomorrow",
   success: ["you ate - barely", "certified chef - for today", "rare w, emphasis on rare", "showed up to glow up - barely", "aura +100 allegedly", "certified banger - for today", "slay but let's not get ahead of ourselves", "understood the assignment - barely"],
 };
 
 function rankTitle(streak) {
   if (streak >= 365) return "final boss unlocked";
   if (streak >= 100) return "it's canon now";
-  if (streak >= 30) return "you're giving main character energy";
+  if (streak >= 30) return "main character energy";
   if (streak >= 14) return "left no crumbs";
   if (streak >= 7) return "you ate";
   if (streak >= 1) return "fresh meat, not roasted yet";
@@ -235,7 +238,7 @@ function completeToday() {
 function fireMissCheck() {
   if (state.missCheckFired) return;
   state.missCheckFired = true;
-  showToast("You haven't worked out.", pick(POOLS.missCheckMsg));
+  showToast("you haven't worked out", pick(POOLS.missCheckMsg));
   log("miss-check notification fired");
   setTimeout(() => { state.view = "snooze"; save(); render(); }, 1400);
 }
@@ -333,13 +336,13 @@ window.toggleDay = (d) => { state.days[d] = !state.days[d]; save(); render(); };
 function renderHome() {
   if (state.isAbandoned) {
     return `
-      <div style="text-align:center;color:var(--ink-muted);font-size:13px;margin-top:60px;">No countdown. No notifications.</div>
+      <div style="text-align:center;color:var(--ink-muted);font-size:13px;margin-top:60px;">no countdown no notifications</div>
       <div class="roastbox silence" style="margin-top:18px;">
-        kitchen's closed
-        <div class="sub">${POOLS.finale}</div>
+        ${POOLS.silenceHeadline}
+        <div class="sub">${POOLS.silenceSub}</div>
       </div>
       <div style="flex:1;"></div>
-      <div class="btn" onclick="reactivate()">Log a workout</div>
+      <div class="btn" onclick="reactivate()">log a workout</div>
     `;
   }
 
@@ -391,9 +394,9 @@ function renderGutcheck() {
     <div class="sheet-overlay" onclick="gutcheckNo()"></div>
     <div class="sheet sheet-abs">
       <div class="grabber"></div>
-      <div class="roastbox">Be fr, no flexing<div class="sub">Did you actually work out?</div></div>
-      <div class="btn" onclick="gutcheckYes()">yee🤑</div>
-      <div class="btn ghost" onclick="gutcheckNo()">I 🧢'ed</div>
+      <div class="roastbox">this app is private, lying to it is highkey embarrassing<div class="sub">did you work out today?</div></div>
+      <div class="btn" onclick="gutcheckYes()">yes!</div>
+      <div class="btn ghost" onclick="gutcheckNo()">...no I lied</div>
     </div>
   `;
 }
@@ -406,7 +409,7 @@ function renderSnooze() {
     <div class="sheet-overlay"></div>
     <div class="sheet sheet-abs">
       <div class="grabber"></div>
-      <div class="sheet-title">push it back, chef</div>
+      <div class="sheet-title">push it back?</div>
       <div class="field">
         <span>New deadline</span>
         <select id="snoozeSelect" style="background:transparent;border:none;color:var(--ink);font-weight:600;font-size:13px;font-family:inherit;">
@@ -423,12 +426,11 @@ function renderSnooze() {
 }
 
 function renderSuccess() {
-  const headline = pick(POOLS.success);
-  const parts = headline.split(" - ");
+  const headline = pick(POOLS.successHeadline);
   return `
     <div class="roastbox success" style="margin-top:auto;margin-bottom:auto;">
-      <div class="headline">${parts[0]}${parts[1] ? " - " + parts[1] : ""}</div>
-      <div class="subline">${pick(POOLS.success)}</div>
+      <div class="headline">${headline}</div>
+      <div class="subline">${POOLS.successSub}</div>
     </div>
     <div style="text-align:center;color:var(--ink-muted);font-size:12px;">${state.successStreak} day streak - ${rankTitle(state.successStreak)}</div>
   `;
@@ -474,7 +476,7 @@ setInterval(() => {
 
   if (!state.reminderFired && remainingSec > 0 && remainingSec <= total * 0.3) {
     state.reminderFired = true;
-    showToast("30 minutes left today.", pick(POOLS.reminder));
+    showToast("30 minutes left today", pick(POOLS.reminder));
     log("T-30min reminder fired");
     save();
   }

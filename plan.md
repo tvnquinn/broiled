@@ -66,7 +66,7 @@ A shame notification by itself is just a scold - annoying, not delightful. What 
 - **Dread → relief is the core dopamine loop.** The countdown to deadline is real stakes, like a boss timer. Log the workout and the pending shame silently clears - that's a small win you get to feel *every day you succeed*, not just punishment on the days you fail.
 - **A character, not a random-insult generator.** CARROT Fit (2014, still on the App Store, 4.7★) proved this genre works for a decade on one insight: people don't get attached to "insult #47," they get attached to a personality with a consistent voice. Phase 0 ships with a static curated list; Phase 1 gives it a name and a real voice - see `phase1-persona`.
 - **The silence is scarier than the noise.** The 7-day "I'm giving up on you" mechanic - the app going completely quiet until you prove yourself - is the sharpest hook in this design. Most apps nag harder when ignored; this one does the opposite, and making the user *earn back* the app's attention is a stronger emotional beat than any single insult.
-- **Backhanded celebration closes the loop.** Success isn't met with silence or a green checkmark, it's met with grudging, sarcastic approval ("you ate - barely"). That's what makes the whole thing feel like a relationship with a character instead of a checklist.
+- **Backhanded celebration closes the loop.** Success isn't met with silence or a green checkmark, it's met with grudging, sarcastic approval ("you're not a loser today" / "you're not a dud today"). That's what makes the whole thing feel like a relationship with a character instead of a checklist.
 - **Design for screenshots eventually.** Not in Phase 0, but the weekly report and Hall of Shame (Phase 1/2) should be built to be shared - that's the real growth channel for a niche comedy app, not App Store search.
 
 ## The core motivation
@@ -111,23 +111,23 @@ flowchart TD
   quietFail --> streak{Consecutive misses}
   streak -->|2-3 days| harsher[Harsher roast]
   streak -->|4-6 days| nuclear[Nuclear roast]
-  streak -->|7 days| givingUp["kitchen's closed" - goes silent]
+  streak -->|7 days| givingUp["i'm giving up on you" - goes silent]
   givingUp -->|workout logged| reactivate[Skeptical reactivation message]
   reactivate --> morning
   success --> morning
 ```
 
 **Notification schedule (Phase 0):**
-1. **12:00 PM (day after a miss)** - morning reckoning push: "you skipped yesterday" / "yesterday - mid, no notes" - same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
-2. **T-30min before deadline** - reminder push ("30 minutes left today.") with the taunt "still time to lock in, chef" so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
-3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. If nothing's found, fires "You haven't worked out." / "did ya fold" and tapping opens the snooze sheet. Copy scales with streak - neutral on a clean history, pulling from the escalation ladder on a multi-day streak.
-4. **On success** - if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push. If the user is already in-app and taps "I've locked in today," it just shows inline (no notification needed, they're already looking at it).
+1. **12:00 PM (day after a miss)** - morning reckoning push: "you skipped yesterday" / "is this who you are, or can you be better today?" - same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
+2. **T-30min before deadline** - reminder push ("30 minutes left today") with the taunt "still time to lock in and complete" so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
+3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. If nothing's found, fires "you haven't worked out" / "will you later?" and tapping opens the snooze sheet. Copy scales with streak - neutral on a clean history, pulling from the escalation ladder on a multi-day streak.
+4. **On success** - if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"). If the user is already in-app and taps "I've locked in today," it just shows inline (no notification needed, they're already looking at it).
 
 **Snooze contract:** uncapped, not a fixed 2/day limit. The snooze sheet itself doesn't show an insult - the mini-insult arrives later, in the next miss-check notification (see schedule above), and escalates per snooze count that day: **snooze 1 → MILD pool, snoozes 2–3 → SPICY pool, snooze 4+ → NUCLEAR pool**, cycling once exhausted. Snoozing re-arms the T-30min/T+duration+30min notification pair against the new deadline.
 
-**Morning reckoning, not same-day failure:** if yesterday's deadline was missed (i.e., "I'm a Quitter" was tapped, or the day ran out with no response), the *next morning* delivers the reckoning two ways: a **12:00 PM push** (same copy as frame 03) and an **in-app banner on first open** ("you skipped yesterday" + "yesterday - mid, no notes"), then today's countdown underneath. No full-screen shame mid-day when the user can't do anything about it yet - the reckoning is deliberately delayed to the next calendar day. If they already opened the app and saw the banner, skip the noon push.
+**Morning reckoning, not same-day failure:** if yesterday's deadline was missed (i.e., "I'm a Quitter" was tapped, or the day ran out with no response), the *next morning* delivers the reckoning two ways: a **12:00 PM push** (same copy as frame 03) and an **in-app banner on first open** ("you skipped yesterday" + "is this who you are, or can you be better today?"), then today's countdown underneath. No full-screen shame mid-day when the user can't do anything about it yet - the reckoning is deliberately delayed to the next calendar day. If they already opened the app and saw the banner, skip the noon push.
 
-**Silence mechanic:** after a 7-day miss streak, the app fires one final "kitchen's closed" / "chef, you're fired - no room for chopped losers here" line and then **stops notifying entirely** - no countdowns, no morning messages, no reminders - until a workout is logged, which triggers a skeptical reactivation message and resumes normal operation.
+**Silence mechanic:** after a 7-day miss streak, the app fires one final "i'm giving up on you" / "no room for chopped losers here, talk to me when you're worth it" line and then **stops notifying entirely** - no countdowns, no morning messages, no reminders - until a workout is logged, which triggers a skeptical reactivation message and resumes normal operation.
 
 ---
 
@@ -136,7 +136,7 @@ flowchart TD
 Default to reading HealthKit, with a manual fallback - no geofencing, no source-filtering games. If people self-report a workout that didn't happen, they're only lying to themselves; Strava allows manual entries for the same reason, and the psychological pressure in this app comes from the escalation/silence design, not from surveillance rigor.
 
 - **Primary:** query HealthKit for a workout meeting `minDuration` on the current day. This covers Apple Watch, Garmin (via Garmin Connect's Health sync), Strava, Peloton, gym equipment with Bluetooth, or anything else that writes an `HKWorkout` - no device requirement, no app-specific integration needed.
-- **Fallback:** if nothing's found by the deadline, a manual "I've locked in today" button in-app satisfies the day - but tapping it surfaces one gut-check before it counts: *"Be fr, no flexing. Did you actually work out?"* with **"yee🤑"** (yes) / **"I 🧢'ed"** (no). This isn't a real gate (there's no way to verify a manual claim regardless), it's a beat that makes the user say the lie out loud to themselves if they're going to tell it - which fits the theme better than pretending the button is bulletproof. "yee🤑" logs success normally; "I 🧢'ed" just returns to the countdown, nothing logged.
+- **Fallback:** if nothing's found by the deadline, a manual "I've locked in today" button in-app satisfies the day - but tapping it surfaces one gut-check before it counts: *"this app is private, lying to it is highkey embarrassing. did you work out today?"* with **"yes!"** / **"...no I lied"**. This isn't a real gate (there's no way to verify a manual claim regardless), it's a beat that makes the user say the lie out loud to themselves if they're going to tell it - which fits the theme better than pretending the button is bulletproof. "yes!" logs success normally; "...no I lied" just returns to the countdown, nothing logged.
 
 This also fixes a real market-sizing risk: requiring an Apple Watch specifically would exclude most of the target audience (only ~50% of US adults own any tracker, and Watch-specific figures are murkier), and the people who most need this app are disproportionately *less* likely to already have a disciplined tracking habit. Defaulting to HealthKit-with-fallback keeps the addressable market at "anyone who wants to work out," not "anyone who already owns a wearable."
 
@@ -146,7 +146,7 @@ This also fixes a real market-sizing risk: requiring an Apple Watch specifically
 
 Organized by use-case slot with severity tags (MILD / SPICY / NUCLEAR) so Phase 0's snooze escalation works without mechanical changes. Primary lexicon is food/cooking metaphor tied to the BROiled brand ("cooked," "mid," "ate," "washed," "toast," "fried," "chef," "kitchen"), with a second glow-up/aura register for success moments and a bank of non-food gen-z slang ("audacity," "npc," "take the L," "skill issue") mixed in wherever it lands better than forcing a food pun. Deliberately avoids current trend-slang with a short shelf life (rizz, skibidi, gyat) in favor of terms with more staying power.
 
-All lines lowercase with minimal punctuation (no trailing periods, question marks dropped, a bare "-" for a beat instead of an em dash) - matches the copy in `wireframe_phase0.html`.
+All lines lowercase with minimal punctuation (no trailing periods, question marks dropped, a bare "-" for a beat instead of an em dash) - matches the copy in `wireframe_phase0.html`. When the reckoning headline is always "you skipped yesterday," sublines must not repeat "yesterday" (e.g. "mid, no notes" not "yesterday - mid, no notes").
 
 **Zero-streak start (Day 0 / first log)**
 - "kitchen's open, prove it" - MILD
@@ -155,11 +155,11 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "nobody's roasted you yet, rare mercy" - MILD
 
 **Onboarding**
-- "bro when are we fighting demons?" (screen headline, kept as-is)
-- "lock in your kitchen hours, time to cook"
+- "when are you working out?" (screen headline)
+- "set your schedule then prove it"
 
 **Pre-deadline reminder (T-30min)**
-- "still time to lock in, chef" - MILD
+- "still time to lock in and complete" - MILD (wireframe default)
 - "timer's running, get cooking" - MILD
 - "breakfast time - are you toasting or toast" - MILD (morning-slot variant)
 - "lunch time, crunch time" - MILD (midday-slot variant)
@@ -168,6 +168,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "your body's gonna be tea" - MILD
 
 **Miss check @ deadline**
+- "will you later?" - MILD (wireframe default)
 - "you snooze you lose" - MILD (doubles as the transition line into the snooze sheet)
 - "did ya fold" - MILD
 - "did you clock out" - MILD
@@ -182,16 +183,15 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "still marinating"
 - "don't let it burn"
 - "don't make me come back"
-- "bro said 5 more minutes"
+- "bro really said 5 more minutes"
 - "bro hit snooze"
 - "don't make me roast you later"
-- "not very main character of you today"
 
 **Miss check, snooze 2-3 (SPICY)**
-- "recipe for disaster and you're the recipe"
+- "you're a recipe for disaster"
 - "fire the chef, you're taking the burn today"
 - "half baked and proud of it apparently"
-- "lowkey embarrassing at this point"
+- "low-key embarrassing at this point"
 - "this you - third time's not the charm"
 - "simmer down - oh wait you already have"
 
@@ -205,8 +205,9 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 *Not a must-have for Phase 0, but worth a Phase 1 note: consider a deterministic word ladder keyed to snooze count (raw → simmering → burning → fried → toast → ash) instead of a random pool, so the escalation feels structured rather than angrier-random.*
 
 **Morning reckoning (day after miss)**
-- "yesterday - mid, no notes" - MILD
-- "yesterday's leftovers went bad" - MILD
+- "is this who you are, or can you be better today?" - MILD (wireframe canonical subline; headline is always "you skipped yesterday")
+- "mid, no notes" - MILD (pool alternate - no "yesterday" repeat)
+- "leftovers went bad" - MILD (pool alternate)
 - "that workout ghosted itself" - SPICY
 
 **Streak 2-3 consecutive misses**
@@ -215,12 +216,12 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "three days of vibes zero days of reps" - SPICY
 
 **Streak 4-6 consecutive misses**
-- "bro really said let it rot" - SPICY
-- "this is a recipe for disaster and you wrote it" - NUCLEAR
-- "ngl u kinda down bad" - NUCLEAR
+- "at this point i'm not disappointed i'm just not surprised" - SPICY (wireframe canonical)
+- "bro really said let it rot" - SPICY (pool alternate)
+- "you're down bad" - NUCLEAR
 
 **7-day miss finale (then silence)**
-- "kitchen's closed" / "chef, you're fired - no room for chopped losers here" - NUCLEAR (mimics the Apprentice "[Name], you're fired" cadence via the "chef," name-slot)
+- "i'm giving up on you" / "no room for chopped losers here, talk to me when you're worth it" - NUCLEAR
 - Then literal silence - no push copy at all until a workout is logged.
 
 **Reactivation (after silence break)**
@@ -229,7 +230,10 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "character development" - MILD
 
 **Backhanded celebration (success day)**
-- "you ate - barely" - MILD
+- "you're not a loser today" - MILD (wireframe canonical; pick interchangeably with dud variant)
+- "you're not a dud today" - MILD
+- "let's see about tomorrow" - MILD (canonical subline)
+- "you ate - barely" - MILD (pool alternate)
 - "certified chef - for today" - MILD
 - "rare w, emphasis on rare" - MILD
 - "showed up to glow up - barely" - MILD
@@ -242,15 +246,15 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "too hot to roast" - reserved, not part of the regular rotation; the roast persona genuinely runs out of material, a narrative beat rather than a stock line.
 
 **Manual-fallback gut-check**
-- Prompt: "be fr, no flexing" / "did you actually work out?"
-- Yes button: "yee🤑"
-- No button: "I 🧢'ed"
+- Prompt: "this app is private, lying to it is highkey embarrassing" / "did you work out today?"
+- Yes button: "yes!"
+- No button: "...no I lied"
 
 **Milestone rank titles (success-streak ladder, locked)**
 - **1 day:** fresh meat, not roasted yet
 - **7 days:** you ate
 - **14 days:** left no crumbs
-- **30 days:** you're giving main character energy
+- **30 days:** main character energy
 - **100 days:** it's canon now
 - **365 days:** final boss unlocked
 
@@ -286,7 +290,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
       case 1: return "fresh meat, not roasted yet"
       case 7: return "you ate"
       case 14: return "left no crumbs"
-      case 30: return "you're giving main character energy"
+      case 30: return "main character energy"
       case 100..<365: return "it's canon now"
       case 365...: return "final boss unlocked"
       default: return successStreak > 0 ? "Cooking" : "Unranked"
@@ -301,17 +305,17 @@ Phase 0 also adds a success-streak counter and a computed rankTitle property (fr
 
 ## Phase 0 screens
 
-1. **Onboarding - Set your schedule** - headline "bro when are we fighting demons?"; pick active weekdays, then set a deadline time **per active day** (not one shared time), plus minimum workout duration; HealthKit permission requested once, first run only
+1. **Onboarding - Set your schedule** - headline "when are you working out?"; pick active weekdays, then set a deadline time **per active day** (not one shared time), plus minimum workout duration; HealthKit permission requested once, first run only
 2. **Home - Countdown (on track)** - today's countdown to deadline, current rank title displayed above or beside countdown, manual "I've locked in today" button
-3. **Home - Morning reckoning** - shown first if yesterday was a miss: "you skipped yesterday" + "yesterday - mid, no notes", then today's countdown with rank title
+3. **Home - Morning reckoning** - shown first if yesterday was a miss: "you skipped yesterday" + "is this who you are, or can you be better today?", then today's countdown with rank title
 4. **Notification - Morning reckoning (12:00 PM)** - lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
-5. **Gut-check sheet** - shown on tapping "I've locked in today": "Be fr, no flexing" / "Did you actually work out?" / **yee🤑** (yes) / **I 🧢'ed** (no)
-6. **Notification - T-30min reminder** - lock-screen banner, taps into the snooze sheet
-7. **Notification - miss check** - lock-screen banner ("You haven't worked out." / "did ya fold"), taps into the snooze sheet
-8. **Snooze sheet** - pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
-9. **Notification - success** - lock-screen banner with the backhanded-celebration line, fires when HealthKit catches the workout in the background
-10. **Home - Success (backhanded celebration)** - in-app version shown when the day's workout is verified/confirmed while the app is open, with rank title displayed
-11. **Home - Silence state** - after a 7-day miss streak: the finale line, no countdown, single "log a workout" action to reactivate
+5. **Gut-check sheet** - shown on tapping "I've locked in today": "this app is private, lying to it is highkey embarrassing" / "did you work out today?" / **yes!** / **...no I lied**
+6. **Notification - T-30min reminder** - lock-screen banner ("30 minutes left today" / "still time to lock in and complete"), taps into the snooze sheet
+7. **Notification - miss check** - lock-screen banner ("you haven't worked out" / "will you later?"), taps into the snooze sheet
+8. **Snooze sheet** - title "push it back?"; pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
+9. **Notification - success** - lock-screen banner ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"), fires when HealthKit catches the workout in the background
+10. **Home - Success (backhanded celebration)** - in-app version: same copy as frame 09/10a, with rank title displayed
+11. **Home - Silence state** - after a 7-day miss streak: "i'm giving up on you" / "no room for chopped losers here, talk to me when you're worth it", no countdown, single "log a workout" action to reactivate
 12. **Settings** - edit schedule (per-day times), HealthKit permission status. No data-deletion option in Phase 0 - not needed yet.
 
 ---
