@@ -3,29 +3,15 @@ import { fileURLToPath } from "url";
 import path from "path";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const wireframes = `file://${path.join(root, "wireframes.html")}`;
+const inputName = process.argv[2] || "wireframe_phase0.html";
+const outputName = inputName.replace(/\.html$/, "-rail.png");
+const wireframes = `file://${path.join(root, inputName)}`;
 const outDir = path.join(root, "docs", "screenshots");
-const frames = [
-  "frame-01",
-  "frame-02",
-  "frame-03",
-  "frame-04",
-  "frame-08",
-  "frame-09",
-  "frame-10a",
-  "frame-11",
-];
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1500, height: 1200 } });
 await page.goto(wireframes);
 await page.waitForTimeout(500);
-
-for (const id of frames) {
-  const phone = page.locator(`#${id} .phone`);
-  await phone.scrollIntoViewIfNeeded();
-  await phone.screenshot({ path: path.join(outDir, `${id}.png`) });
-}
 
 await page.addStyleTag({
   content: `
@@ -45,7 +31,7 @@ await page.setViewportSize({
 });
 await page.waitForTimeout(100);
 
-await pageEl.screenshot({ path: path.join(outDir, "wireframes-rail.png") });
+await pageEl.screenshot({ path: path.join(outDir, outputName) });
 
 await browser.close();
-console.log(`Captured ${frames.length} frame screenshots and wireframes-rail.png`);
+console.log(`Captured ${outputName}`);

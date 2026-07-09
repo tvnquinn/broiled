@@ -19,11 +19,11 @@ BROiled is an iOS workout accountability app with tough-love energy. Set a per-d
 5. **Success** — backhanded celebration (bronze, not cheerleader green).
 6. **Silence** — after 7 consecutive misses, the app stops nagging until you log a workout again.
 
-Open [`wireframes.html`](wireframes.html) in a browser for all 12 Phase 0 screens with design notes.
+Open [`wireframe_phase0.html`](wireframe_phase0.html) in a browser for all 12 Phase 0 screens (gen-z/meme voice) with design notes. [`wireframe_phase1.html`](wireframe_phase1.html) is the same 12 screens with the original tough-love voice, kept as reference for the Phase 1 persona system.
 
 ## Screenshots
 
-![Phase 0 wireframes](docs/screenshots/wireframes-rail.png)
+![Phase 0 wireframes — gen-z voice](docs/screenshots/wireframe_phase0-rail.png)
 
 ## Design
 
@@ -41,17 +41,20 @@ Open [`wireframes.html`](wireframes.html) in a browser for all 12 Phase 0 screen
 
 | File | Description |
 |------|-------------|
-| [`wireframes.html`](wireframes.html) | Interactive Phase 0 wireframes |
+| [`wireframe_phase0.html`](wireframe_phase0.html) | Interactive Phase 0 wireframes — gen-z/meme voice |
+| [`wireframe_phase1.html`](wireframe_phase1.html) | Same 12 screens, original tough-love voice (Phase 1 persona reference) |
 | [`plan.md`](plan.md) | Full product & engineering plan |
+| [`phase-1-persona-tough-love.md`](phase-1-persona-tough-love.md) | Tough-love motivation & insult pool, reserved for Phase 1 |
 | [`logo.png`](logo.png) | App icon — flexing figure over the pot |
-| [`scripts/capture-screenshots.mjs`](scripts/capture-screenshots.mjs) | Regenerate README screenshots from wireframes |
+| [`scripts/capture-screenshots.mjs`](scripts/capture-screenshots.mjs) | Regenerate README screenshots from a wireframe file |
 
 Regenerate screenshots after wireframe changes:
 
 ```bash
 npm install playwright
 npx playwright install chromium
-node scripts/capture-screenshots.mjs
+node scripts/capture-screenshots.mjs wireframe_phase0.html
+node scripts/capture-screenshots.mjs wireframe_phase1.html
 ```
 
 ## Stack (planned)

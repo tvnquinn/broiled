@@ -1,0 +1,488 @@
+<title>BROiled — Phase 0 Wireframes (Gen-Z Voice)</title>
+<style>
+  :root {
+    /* Char & Ember — semantic tokens */
+    --page-bg: #0c0c0e;
+    --bg: #0c0c0e;
+    --panel: #1a1a1f;
+    --line: #2e2e33;
+    --line-strong: #3d3d42;
+    --ink: #f2f0ed;
+    --ink-muted: #8a8680;
+    --chrome: #0a0a0c;
+  /* Ember: countdown, primary accent, warnings */
+    --accent: #ff6b2b;
+    --accent-soft: rgba(255, 107, 43, 0.13);
+    --accent-border: #ff6b2b;
+  /* Flame: miss reckoning, destructive */
+    --flame: #ff3b30;
+    --flame-soft: rgba(255, 59, 48, 0.13);
+  /* Bronze: backhanded success — never green */
+    --success: #c9a227;
+    --success-soft: rgba(201, 162, 39, 0.14);
+  /* Ash: silence / muted states */
+    --ash: #48484a;
+    --ash-soft: rgba(72, 72, 74, 0.35);
+    --accent-muted: #8a8680;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #eae5df;
+    --bg: #f4efe9; --panel: #ffffff; --line: #ddd7d0; --line-strong: #b7afa6;
+    --ink: #1a1b1d; --ink-muted: #6b6d72; --chrome: #17181a;
+    --accent: #e85a20; --accent-soft: rgba(232, 90, 32, 0.12); --accent-border: #e85a20;
+    --flame: #d63228; --flame-soft: rgba(214, 50, 40, 0.1);
+    --success: #9a8548; --success-soft: rgba(154, 133, 72, 0.14);
+    --ash: #6b6d72; --ash-soft: rgba(107, 109, 114, 0.15); --accent-muted: #8a8680;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page-bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  .mono { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 1500px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  header.top { margin-bottom: 30px; max-width: 700px; }
+  .eyebrow { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 12px; letter-spacing: -0.01em; text-wrap: balance; }
+  header.top p { color: var(--ink-muted); font-size: 15px; line-height: 1.6; margin: 0 0 8px; max-width: 62ch; }
+
+  .palette { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .swatch { display: flex; align-items: center; gap: 7px; font-size: 11px; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: var(--ink-muted); }
+  .swatch i { width: 16px; height: 16px; border-radius: 5px; display: block; border: 1px solid var(--line); }
+
+  .section-label {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
+    margin: 36px 0 14px; padding-top: 20px; border-top: 1px solid var(--line);
+  }
+  .section-label:first-of-type { border-top: none; padding-top: 0; margin-top: 8px; }
+
+  .rail { display: flex; gap: 28px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x proximity; }
+  .card { flex: 0 0 auto; scroll-snap-align: start; width: 264px; display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; align-items: baseline; gap: 8px; }
+  .step .num { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 12px; color: var(--ink-muted); }
+  .step .title { font-size: 14px; font-weight: 600; }
+
+  .phone { background: var(--chrome); border-radius: 34px; padding: 10px; box-shadow: 0 1px 0 var(--line); }
+  .screen {
+    background: var(--bg); border-radius: 26px; min-height: 500px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .island { width: 84px; height: 22px; background: var(--chrome); border-radius: 12px; margin: 10px auto 4px; }
+  .statusbar { display: flex; justify-content: space-between; padding: 2px 20px 8px; font-size: 11px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .content { flex: 1; padding: 8px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+  .ph-block {
+    border: 1.5px dashed var(--line-strong); border-radius: 10px; color: var(--ink-muted);
+    font-size: 11px; padding: 8px 10px; display: flex; align-items: center; justify-content: center; text-align: center;
+  }
+
+  .label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+
+  .weekdays { display: flex; gap: 6px; }
+  .weekday {
+    width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--line-strong);
+    display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink-muted);
+  }
+  .weekday.on { background: var(--ink); color: var(--panel); border-color: var(--ink); font-weight: 600; }
+
+  .field {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1.5px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px;
+  }
+  .field .v { font-weight: 600; }
+
+  .day-time-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 12px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); font-size: 13px;
+  }
+  .day-time-row .d { font-weight: 700; width: 34px; }
+  .day-time-row .t { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+  .btn { border: none; border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; background: var(--ink); color: var(--bg); }
+  .btn.primary { background: var(--accent); color: var(--chrome); }
+  .btn.ghost { background: transparent; border: 1.5px dashed var(--line-strong); color: var(--ink); }
+  .btn.quit { background: transparent; border: 1.5px solid var(--flame); color: var(--flame); }
+  .btn.float {
+    background: var(--panel); color: var(--ink); border-radius: 16px; padding: 15px; font-size: 14.5px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+
+  /* new live-activity-style countdown */
+  .timewrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+  .timewrap .tlabel { font-size: 13px; color: var(--ink-muted); }
+  .timewrap .tval { font-size: 42px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .timewrap .tsub { font-size: 12.5px; color: var(--ink-muted); }
+  .topline { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
+  .topline .streak { font-size: 12px; color: var(--ink-muted); }
+
+  .chip { align-self: flex-start; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; font-weight: 700; }
+  .chip.success { color: var(--success); background: var(--success-soft); border: 1px solid rgba(201, 162, 39, 0.35); }
+  .chip.roast { color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(255, 107, 43, 0.35); }
+
+  .roastbox {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 14px 14px 14px 12px;
+    color: var(--ink);
+    font-size: 13.5px;
+    line-height: 1.4;
+    font-weight: 400;
+  }
+  .roastbox.miss { background: var(--flame-soft); border-left-color: var(--flame); }
+  .roastbox.success {
+    background: var(--success-soft);
+    border-left-color: var(--success);
+    text-align: center;
+    border-left-width: 0;
+    border-top: 3px solid var(--success);
+    padding-top: 16px;
+  }
+  .roastbox.success .headline { font-weight: 700; color: var(--success); }
+  .roastbox.success .subline { font-weight: 400; margin-top: 6px; color: var(--ink-muted); }
+  .roastbox.silence { background: var(--ash-soft); border-left-color: var(--ash); color: var(--ink-muted); }
+  .roastbox.silence .sub { color: var(--ink-muted); }
+  .roastbox .sub { font-weight: 700; font-size: 14px; color: var(--ink); margin-top: 6px; }
+  .roastbox.compact { padding: 11px 13px 11px 11px; font-size: 13px; }
+
+  .sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
+  .sheet-abs { position: absolute; left: 0; right: 0; bottom: 0; }
+  .dimmed { opacity: 0.32; }
+  .sheet { background: var(--panel); border-radius: 22px 22px 26px 26px; padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -6px 20px rgba(0,0,0,0.25); }
+  .sheet .grabber { width: 36px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 0 auto 4px; }
+  .sheet-title { font-size: 16px; font-weight: 700; }
+
+  .settings-row { display: flex; flex-direction: column; gap: 4px; padding: 14px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .k { color: var(--ink-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .settings-row .v { color: var(--ink); font-size: 14.5px; font-weight: 600; }
+
+
+  .lockscreen {
+    background: linear-gradient(190deg, #2c2e31 0%, #101113 60%);
+    border-radius: 26px; min-height: 500px; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; padding: 30px 0 0; color: #f2f3f5;
+  }
+  .locktime { font-size: 52px; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .lockdate { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+  .notifcard { width: calc(100% - 24px); margin-top: 30px; background: rgba(255,255,255,0.12); border-radius: 16px; padding: 12px 13px; display: flex; gap: 10px; }
+  .notif-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--chrome); flex-shrink: 0; overflow: hidden; }
+  .notif-icon img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .notif-body { flex: 1; min-width: 0; }
+  .notif-app { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: 0.02em; opacity: 0.7; margin-bottom: 3px; }
+  .notif-app .brand { font-weight: 700; }
+  .notif-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .notif-msg { font-size: 13px; line-height: 1.35; opacity: 0.95; }
+
+  .note { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 11.5px; line-height: 1.55; color: var(--ink-muted); border-left: 2px solid var(--line-strong); padding-left: 10px; }
+  .note b { color: var(--ink); font-weight: 600; }
+</style>
+
+<div class="page">
+  <header class="top">
+    <p class="eyebrow">Phase 0 Wireframes — Gen-Z Voice</p>
+    <h1>BROiled: An iPhone App Designed to Remind You To Work Out</h1>
+    <p>Twelve screens covering the true MVP loop: set a schedule once, get counted down to every day, snooze if you must, get roasted or grudgingly congratulated, and go dark for a week if you don't show up. Push Notifications as reminders.</p>
+    <div class="palette">
+      <span class="swatch"><i style="background:#0c0c0e;"></i>bg #0C0C0E</span>
+      <span class="swatch"><i style="background:#1a1a1f;"></i>surface #1A1A1F</span>
+      <span class="swatch"><i style="background:#ff6b2b;"></i>ember #FF6B2B</span>
+      <span class="swatch"><i style="background:#ff3b30;"></i>flame #FF3B30</span>
+      <span class="swatch"><i style="background:#c9a227;"></i>bronze #C9A227</span>
+      <span class="swatch"><i style="background:#48484a;"></i>ash #48484A</span>
+      <span class="swatch"><i style="background:#f2f0ed;"></i>ink #F2F0ED</span>
+    </div>
+  </header>
+
+  <div class="section-label">Setup &amp; daily state</div>
+  <div class="rail">
+
+    <div class="card" id="frame-01">
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>9:41</span><span>100%</span></div>
+        <div class="content">
+          <div style="margin-top:8px;font-size:18px;font-weight:700;line-height:1.25;">When are you working out?</div>
+          <div>
+            <div class="label" style="margin-bottom:8px;">Days</div>
+            <div class="weekdays">
+              <div class="weekday">S</div><div class="weekday on">M</div><div class="weekday">T</div>
+              <div class="weekday on">W</div><div class="weekday">T</div><div class="weekday on">F</div><div class="weekday">S</div>
+            </div>
+          </div>
+          <div>
+            <div class="label" style="margin-bottom:8px;">Deadline per day</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div class="day-time-row"><span class="d">Mon</span><span class="t">6:00 PM ›</span></div>
+              <div class="day-time-row"><span class="d">Wed</span><span class="t">7:30 PM ›</span></div>
+              <div class="day-time-row"><span class="d">Fri</span><span class="t">6:00 PM ›</span></div>
+            </div>
+          </div>
+          <div class="field"><span>Minimum duration</span><span class="v">30 min</span></div>
+          <div class="ph-block" style="height:34px;">HealthKit permission prompt</div>
+          <div style="flex:1;"></div>
+          <div class="btn primary">Start</div>
+        </div>
+      </div></div>
+      <div class="note">Each active day gets its own time now, not one shared deadline — new days default to the most recent time picked, then are individually adjustable. HealthKit prompt shown <b>once, first run only</b> — never reappears if the schedule is edited later from Settings.</div>
+    </div>
+
+    <div class="card" id="frame-02">
+      <div class="step"><span class="num mono">02</span><span class="title">Home — on track</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>9:41</span><span>100%</span></div>
+        <div class="content" style="position:relative;">
+          <div class="topline" style="position:absolute;top:20px;left:0;right:0;z-index:1;"><span class="streak">3 day streak</span><span></span></div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">2:14:07</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I already worked out</div>
+        </div>
+      </div></div>
+      <div class="note">"Not logged yet" chip removed — streak count moved into that top slot instead. Countdown is now the vertical anchor of the screen, matching the reference timer format (H:MM:SS, not "4h 12m").</div>
+    </div>
+
+    <div class="card" id="frame-03">
+      <div class="step"><span class="num mono">03</span><span class="title">Home — morning reckoning</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>7:15</span><span>92%</span></div>
+        <div class="content" style="padding-top:2px;position:relative;">
+          <div class="roastbox miss compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
+            You skipped yesterday.
+            <div class="sub" style="font-size:11.5px;margin-top:3px;">Yesterday? Mid. No notes.</div>
+          </div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">9:40:12</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I already worked out</div>
+        </div>
+      </div></div>
+      <div class="note">Reckoning banner is absolutely positioned at the top (out of flow), so the timer centers on the full screen exactly like frame 02. Shown on first open the morning after a miss. Same copy also fires as a <b>12:00 PM push</b> (frame 04) if the user hasn't opened the app yet.</div>
+    </div>
+
+    <div class="card" id="frame-04">
+      <div class="step"><span class="num mono">04</span><span class="title">Notification — morning reckoning</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div class="locktime">12:00</div>
+        <div class="lockdate">Thursday, June 26</div>
+        <div class="notifcard">
+          <div class="notif-icon">
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
+          </div>
+          <div class="notif-body">
+            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+            <div class="notif-title">You skipped yesterday.</div>
+            <div class="notif-msg">Yesterday? Mid. No notes.</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Fires at <b>12:00 PM</b> the day after a missed workout — same copy as frame 03. Tapping opens home with the reckoning banner + today's countdown. Skipped if the user already opened the app and saw frame 03 today.</div>
+    </div>
+
+    <div class="card">
+      <div class="step"><span class="num mono">05</span><span class="title">Gut-check sheet</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>5:47</span><span>88%</span></div>
+        <div class="content dimmed" style="padding-top:2px;position:relative;">
+          <div class="topline" style="position:absolute;top:4px;left:0;right:0;"><span class="streak">3 day streak</span><span></span></div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">2:14:07</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I already worked out</div>
+        </div>
+        <div class="sheet-overlay"></div>
+        <div class="sheet sheet-abs">
+          <div class="grabber"></div>
+          <div class="roastbox">
+            This is a private app. We just want the truth.
+            <div class="sub">Be fr rn — did you actually work out?</div>
+          </div>
+          <div class="btn">No crumbs left.</div>
+          <div class="btn ghost">I was capping.</div>
+        </div>
+      </div></div>
+      <div class="note">Bold swapped: the accusation is now regular weight, <b>"Be fr rn — did you actually work out?"</b> carries the emphasis since that's the actual question being asked. Buttons double as gen-z-flavored yes/no. Not a real gate — makes the user say the lie out loud if they're going to tell it.</div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Reminder &amp; miss-check notifications</div>
+  <div class="rail">
+
+    <div class="card">
+      <div class="step"><span class="num mono">06</span><span class="title">Notification — T-30min reminder</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div class="locktime">5:30</div>
+        <div class="lockdate">Wednesday, June 25</div>
+        <div class="notifcard">
+          <div class="notif-icon">
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
+          </div>
+          <div class="notif-body">
+            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+            <div class="notif-title">30 minutes left today.</div>
+            <div class="notif-msg">Still time to lock in, chef.</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Fires T-30min before today's deadline (per-day time from frame 01). Tapping opens the <b>snooze sheet</b> directly.</div>
+    </div>
+
+    <div class="card">
+      <div class="step"><span class="num mono">07</span><span class="title">Notification — miss check</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div class="locktime">6:30</div>
+        <div class="lockdate">Wednesday, June 25</div>
+        <div class="notifcard">
+          <div class="notif-icon">
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
+          </div>
+          <div class="notif-body">
+            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+            <div class="notif-title">You haven't worked out.</div>
+            <div class="notif-msg">Did ya fold?</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Fires at <b>deadline + workout duration + 30min.</b> Copy scales with streak. Tapping opens the snooze sheet.</div>
+    </div>
+
+    <div class="card" id="frame-08">
+      <div class="step"><span class="num mono">08</span><span class="title">Snooze sheet</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>5:30</span><span>84%</span></div>
+        <div class="content dimmed" style="padding-top:2px;position:relative;">
+          <div class="topline" style="position:absolute;top:4px;left:0;right:0;"><span class="streak">3 day streak</span><span></span></div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">0:29:41</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I already worked out</div>
+        </div>
+        <div class="sheet-overlay"></div>
+        <div class="sheet sheet-abs">
+          <div class="grabber"></div>
+          <div class="sheet-title">Push it back, chef?</div>
+          <div class="field"><span>New deadline</span><span class="v">8:00 PM</span></div>
+          <div class="btn primary">Snooze</div>
+          <div class="btn quit">I'm a Quitter</div>
+        </div>
+      </div></div>
+      <div class="note"><b>Uncapped.</b> No insult in the sheet itself — it arrives in the next miss-check notification. Tier by snooze count: 1 → MILD ("Still marinating?"), 2–3 → SPICY ("Fire the chef, you're taking the burn today."), 4+ → NUCLEAR ("Toast.").</div>
+    </div>
+
+    <div class="card" id="frame-09">
+      <div class="step"><span class="num mono">09</span><span class="title">Notification — success</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div class="locktime">5:58</div>
+        <div class="lockdate">Wednesday, June 25</div>
+        <div class="notifcard">
+          <div class="notif-icon">
+            <img src="logo.png" alt="BROiled" width="30" height="30" />
+          </div>
+          <div class="notif-body">
+            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+            <div class="notif-title">You ATE. Barely.</div>
+            <div class="notif-msg">Certified chef — for today.</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Fires only when HealthKit catches it <b>while backgrounded.</b> In-app confirms go straight to frame 10a, no redundant push.</div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Outcome states</div>
+  <div class="rail">
+
+    <div class="card" id="frame-10a">
+      <div class="step"><span class="num mono">10a</span><span class="title">Home — success</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>5:52</span><span>88%</span></div>
+        <div class="content" style="justify-content:center;">
+          <div class="roastbox success">
+            <div class="headline">You ATE. Barely.</div>
+            <div class="subline">Certified chef — for today.</div>
+          </div>
+          <div style="text-align:center;color:var(--ink-muted);font-size:12px;margin-top:10px;">4 day streak</div>
+        </div>
+      </div></div>
+      <div class="note">Bronze tint + top border — backhanded win, not celebration green. Bold on the congrats line; "let's see" stays muted.</div>
+    </div>
+
+    <div class="card">
+      <div class="step"><span class="num mono">10b</span><span class="title">Home — 4–6 day streak</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>7:20</span><span>76%</span></div>
+        <div class="content" style="padding-top:2px;position:relative;">
+          <div class="roastbox miss compact" style="position:absolute;top:4px;left:0;right:0;padding:8px 12px;font-size:11.5px;">
+            5 days missed.
+            <div class="sub" style="font-size:11.5px;margin-top:3px;">Bro really said "let it rot."</div>
+          </div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">10:05:41</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I already worked out</div>
+        </div>
+      </div></div>
+      <div class="note">Same structure as frame 03 now — the streak-escalation insult sits in an absolute top banner, the timer stays centered on the screen. Escalation ladder: 2–3 days → sharper line, 4–6 days → this tier. Two more misses and it goes quiet.</div>
+    </div>
+
+    <div class="card" id="frame-11">
+      <div class="step"><span class="num mono">11</span><span class="title">Home — silence (7-day give-up)</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>—</span><span>—</span></div>
+        <div class="content" style="justify-content:center;gap:18px;">
+          <div style="text-align:center;color:var(--ink-muted);font-size:13px;">No countdown. No notifications.</div>
+          <div class="roastbox silence">
+            Kitchen's closed.
+            <div class="sub">Chef, you're fired. No room for chopped losers here.</div>
+          </div>
+          <div class="btn">Log a workout</div>
+        </div>
+      </div></div>
+      <div class="note">Triggered after 7 consecutive missed days. Every notification path suppressed until a workout is logged.</div>
+    </div>
+
+    <div class="card">
+      <div class="step"><span class="num mono">12</span><span class="title">Settings</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>9:41</span><span>100%</span></div>
+        <div class="content">
+          <div style="font-size:19px;font-weight:700;margin-top:8px;">Settings</div>
+          <div>
+            <div class="settings-row">
+              <span class="k">Schedule</span>
+              <span class="v">Mon, Wed, Fri</span>
+              <span style="color:var(--ink-muted);font-weight:500;font-size:12.5px;">custom times ›</span>
+            </div>
+            <div class="settings-row"><span class="k">HealthKit</span><span class="v" style="color:var(--ink-muted);">Connected ›</span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">Label and value stack instead of sitting on one cramped line, and "custom times" is its own line under the day list rather than crammed after it. Dropped the delete-data row for now — not needed yet.</div>
+    </div>
+
+  </div>
+</div>
