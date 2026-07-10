@@ -7,8 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		73C8350630004071000183F4 /* broiledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C8350530004071000183F4 /* broiledApp.swift */; };
-		73C8350830004071000183F4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C8350730004071000183F4 /* ContentView.swift */; };
+		7399D3FA300062B9007FC0E9 /* GutCheckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3EF300062B9007FC0E9 /* GutCheckSheet.swift */; };
+		7399D3FB300062B9007FC0E9 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3ED300062B9007FC0E9 /* NotificationService.swift */; };
+		7399D3FC300062B9007FC0E9 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E8300062B9007FC0E9 /* UserSettings.swift */; };
+		7399D3FD300062B9007FC0E9 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3EB300062B9007FC0E9 /* HealthKitService.swift */; };
+		7399D3FE300062B9007FC0E9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F2300062B9007FC0E9 /* RootView.swift */; };
+		7399D3FF300062B9007FC0E9 /* SnoozeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F5300062B9007FC0E9 /* SnoozeSheet.swift */; };
+		7399D400300062B9007FC0E9 /* DayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E6300062B9007FC0E9 /* DayLog.swift */; };
+		7399D401300062B9007FC0E9 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F8300062B9007FC0E9 /* Theme.swift */; };
+		7399D402300062B9007FC0E9 /* Habit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E7300062B9007FC0E9 /* Habit.swift */; };
+		7399D403300062B9007FC0E9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F3300062B9007FC0E9 /* SettingsView.swift */; };
+		8449D56D12C152A17535BDB1 /* ScheduleEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C539B0495BDEE146920A58B8 /* ScheduleEditView.swift */; };
+		7399D404300062B9007FC0E9 /* BROiledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F7300062B9007FC0E9 /* BROiledApp.swift */; };
+		7399D405300062B9007FC0E9 /* DayScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3EA300062B9007FC0E9 /* DayScheduler.swift */; };
+		7399D406300062B9007FC0E9 /* InsultPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3EC300062B9007FC0E9 /* InsultPool.swift */; };
+		7399D407300062B9007FC0E9 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F0300062B9007FC0E9 /* HomeView.swift */; };
+		7399D408300062B9007FC0E9 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F1300062B9007FC0E9 /* OnboardingView.swift */; };
+		7399D409300062B9007FC0E9 /* SilenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F4300062B9007FC0E9 /* SilenceView.swift */; };
 		73C8350A30004073000183F4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73C8350930004073000183F4 /* Assets.xcassets */; };
 		73C8350D30004073000183F4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73C8350C30004073000183F4 /* Preview Assets.xcassets */; };
 		73C8351730004073000183F4 /* broiledTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C8351630004073000183F4 /* broiledTests.swift */; };
@@ -34,9 +49,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7399D3E6300062B9007FC0E9 /* DayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLog.swift; sourceTree = "<group>"; };
+		7399D3E7300062B9007FC0E9 /* Habit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit.swift; sourceTree = "<group>"; };
+		7399D3E8300062B9007FC0E9 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		7399D3EA300062B9007FC0E9 /* DayScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayScheduler.swift; sourceTree = "<group>"; };
+		7399D3EB300062B9007FC0E9 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		7399D3EC300062B9007FC0E9 /* InsultPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsultPool.swift; sourceTree = "<group>"; };
+		7399D3ED300062B9007FC0E9 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		7399D3EF300062B9007FC0E9 /* GutCheckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GutCheckSheet.swift; sourceTree = "<group>"; };
+		7399D3F0300062B9007FC0E9 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		7399D3F1300062B9007FC0E9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		7399D3F2300062B9007FC0E9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		7399D3F3300062B9007FC0E9 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C539B0495BDEE146920A58B8 /* ScheduleEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleEditView.swift; sourceTree = "<group>"; };
+		7399D3F4300062B9007FC0E9 /* SilenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilenceView.swift; sourceTree = "<group>"; };
+		7399D3F5300062B9007FC0E9 /* SnoozeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoozeSheet.swift; sourceTree = "<group>"; };
+		7399D3F7300062B9007FC0E9 /* BROiledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BROiledApp.swift; sourceTree = "<group>"; };
+		7399D3F8300062B9007FC0E9 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		73C8350230004071000183F4 /* broiled.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = broiled.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		73C8350530004071000183F4 /* broiledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = broiledApp.swift; sourceTree = "<group>"; };
-		73C8350730004071000183F4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		73C8350930004073000183F4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		73C8350C30004073000183F4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		73C8351230004073000183F4 /* broiledTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = broiledTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +74,7 @@
 		73C8351C30004073000183F4 /* broiledUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = broiledUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		73C8352030004073000183F4 /* broiledUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = broiledUITests.swift; sourceTree = "<group>"; };
 		73C8352230004073000183F4 /* broiledUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = broiledUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		73C835313000427B000183F4 /* broiled.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = broiled.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +102,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7399D3E9300062B9007FC0E9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				7399D3E6300062B9007FC0E9 /* DayLog.swift */,
+				7399D3E7300062B9007FC0E9 /* Habit.swift */,
+				7399D3E8300062B9007FC0E9 /* UserSettings.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7399D3EE300062B9007FC0E9 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				7399D3EA300062B9007FC0E9 /* DayScheduler.swift */,
+				7399D3EB300062B9007FC0E9 /* HealthKitService.swift */,
+				7399D3EC300062B9007FC0E9 /* InsultPool.swift */,
+				7399D3ED300062B9007FC0E9 /* NotificationService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		7399D3F6300062B9007FC0E9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7399D3EF300062B9007FC0E9 /* GutCheckSheet.swift */,
+				7399D3F0300062B9007FC0E9 /* HomeView.swift */,
+				7399D3F1300062B9007FC0E9 /* OnboardingView.swift */,
+				7399D3F2300062B9007FC0E9 /* RootView.swift */,
+				7399D3F3300062B9007FC0E9 /* SettingsView.swift */,
+				C539B0495BDEE146920A58B8 /* ScheduleEditView.swift */,
+				7399D3F4300062B9007FC0E9 /* SilenceView.swift */,
+				7399D3F5300062B9007FC0E9 /* SnoozeSheet.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7399D3F9300062B9007FC0E9 /* BROiledApp */ = {
+			isa = PBXGroup;
+			children = (
+				7399D3E9300062B9007FC0E9 /* Models */,
+				7399D3EE300062B9007FC0E9 /* Services */,
+				7399D3F6300062B9007FC0E9 /* Views */,
+				7399D3F7300062B9007FC0E9 /* BROiledApp.swift */,
+				7399D3F8300062B9007FC0E9 /* Theme.swift */,
+			);
+			name = BROiledApp;
+			path = ../ios/BROiledApp;
+			sourceTree = SOURCE_ROOT;
+		};
 		73C834F930004071000183F4 = {
 			isa = PBXGroup;
 			children = (
@@ -94,9 +174,9 @@
 		73C8350430004071000183F4 /* broiled */ = {
 			isa = PBXGroup;
 			children = (
-				73C8350530004071000183F4 /* broiledApp.swift */,
-				73C8350730004071000183F4 /* ContentView.swift */,
+				73C835313000427B000183F4 /* broiled.entitlements */,
 				73C8350930004073000183F4 /* Assets.xcassets */,
+				7399D3F9300062B9007FC0E9 /* BROiledApp */,
 				73C8350B30004073000183F4 /* Preview Content */,
 			);
 			path = broiled;
@@ -257,8 +337,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73C8350830004071000183F4 /* ContentView.swift in Sources */,
-				73C8350630004071000183F4 /* broiledApp.swift in Sources */,
+				7399D3FA300062B9007FC0E9 /* GutCheckSheet.swift in Sources */,
+				7399D3FB300062B9007FC0E9 /* NotificationService.swift in Sources */,
+				7399D3FC300062B9007FC0E9 /* UserSettings.swift in Sources */,
+				7399D3FD300062B9007FC0E9 /* HealthKitService.swift in Sources */,
+				7399D3FE300062B9007FC0E9 /* RootView.swift in Sources */,
+				7399D3FF300062B9007FC0E9 /* SnoozeSheet.swift in Sources */,
+				7399D400300062B9007FC0E9 /* DayLog.swift in Sources */,
+				7399D401300062B9007FC0E9 /* Theme.swift in Sources */,
+				7399D402300062B9007FC0E9 /* Habit.swift in Sources */,
+				7399D403300062B9007FC0E9 /* SettingsView.swift in Sources */,
+				8449D56D12C152A17535BDB1 /* ScheduleEditView.swift in Sources */,
+				7399D404300062B9007FC0E9 /* BROiledApp.swift in Sources */,
+				7399D405300062B9007FC0E9 /* DayScheduler.swift in Sources */,
+				7399D406300062B9007FC0E9 /* InsultPool.swift in Sources */,
+				7399D407300062B9007FC0E9 /* HomeView.swift in Sources */,
+				7399D408300062B9007FC0E9 /* OnboardingView.swift in Sources */,
+				7399D409300062B9007FC0E9 /* SilenceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,17 +509,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = broiled/broiled.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"broiled/Preview Content\"";
 				DEVELOPMENT_TEAM = QKHRHY7F7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your workout data to provide personalized reminders";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -443,17 +541,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = broiled/broiled.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"broiled/Preview Content\"";
 				DEVELOPMENT_TEAM = QKHRHY7F7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your workout data to provide personalized reminders";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -470,7 +571,6 @@
 		73C8352A30004073000183F4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -490,7 +590,6 @@
 		73C8352B30004073000183F4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -510,7 +609,6 @@
 		73C8352D30004073000183F4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QKHRHY7F7D;
@@ -528,7 +626,6 @@
 		73C8352E30004073000183F4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QKHRHY7F7D;

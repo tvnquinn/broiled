@@ -2,27 +2,47 @@ import SwiftUI
 
 struct SettingsView: View {
     let habit: Habit
+    let settings: UserSettings
     let health: HealthKitService
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var showScheduleEditor = false
 
     var body: some View {
         ZStack {
             Theme.bg.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 0) {
-                Text("Settings").font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.ink).padding(.vertical, 16)
+                HStack {
+                    Text("Settings").font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.ink)
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 22))
+                            .foregroundStyle(Theme.inkMuted)
+                    }
+                }
+                .padding(.vertical, 16)
 
-                row(key: "SCHEDULE", value: scheduleSummary, trailing: "custom times ›")
-                row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›")
+                Button { showScheduleEditor = true } label: {
+                    row(key: "SCHEDULE", value: scheduleSummary, trailing: "custom times ›")
+                }
+                .buttonStyle(.plain)
+
+                row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›", trailing: "")
 
                 Spacer()
             }
             .padding(20)
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showScheduleEditor) {
+            ScheduleEditView(habit: habit, settings: settings)
+        }
     }
 
     private var scheduleSummary: String {
         let names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        let days = habit.schedule.map { names[$0.weekday - 1] }
+        let days = WeekdaySchedule.sortedMondayFirst(habit.schedule.map(\.weekday)).map { names[$0 - 1] }
         return days.isEmpty ? "Not set" : days.joined(separator: ", ")
     }
 

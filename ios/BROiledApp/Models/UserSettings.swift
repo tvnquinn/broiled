@@ -41,6 +41,13 @@ final class UserSettings {
         return todayDeadlineOverride
     }
 
+    /// Drops any locked-in override for today so a freshly edited schedule takes effect
+    /// immediately instead of being masked by a stale snooze/onboarding deadline.
+    func clearTodayOverride() {
+        todayDeadlineOverride = nil
+        todayDeadlineOverrideDateKey = nil
+    }
+
     /// Locked milestone ladder - see plan.md "Insult pool" section.
     var rankTitle: String {
         switch successStreak {

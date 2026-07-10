@@ -1,20 +1,34 @@
 import SwiftUI
 
-struct OnboardingView: View {
+struct ScheduleEditView: View {
     let habit: Habit
-    let onStart: (Date) -> Void
+    let settings: UserSettings
 
-    @State private var activeDays: Set<Int> = [2, 4, 6] // Mon, Wed, Fri (Calendar: 1=Sun)
-    @State private var timesByWeekday: [Int: Date] = [:]
-    @State private var minDuration = 30
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+
+    @State private var activeDays: Set<Int>
+    @State private var timesByWeekday: [Int: Date]
+    @State private var minDuration: Int
 
     private let weekdaySymbols = ["S", "M", "T", "W", "T", "F", "S"]
+
+    init(habit: Habit, settings: UserSettings) {
+        self.habit = habit
+        self.settings = settings
+        let schedule = habit.schedule
+        _activeDays = State(initialValue: Set(schedule.map(\.weekday)))
+        _timesByWeekday = State(initialValue: Dictionary(uniqueKeysWithValues: schedule.map { entry in
+            (entry.weekday, Calendar.current.date(bySettingHour: entry.hour, minute: entry.minute, second: 0, of: Date()) ?? Date())
+        }))
+        _minDuration = State(initialValue: habit.minDurationMinutes)
+    }
 
     var body: some View {
         ZStack {
             Theme.bg.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 20) {
-                Text(InsultPool.onboardingHeadline)
+                Text("Edit schedule")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.ink)
                     .padding(.top, 24)
@@ -74,9 +88,9 @@ struct OnboardingView: View {
                 Spacer()
 
                 Button {
-                    commit()
+                    save()
                 } label: {
-                    Text("Start")
+                    Text("Save")
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(14)
@@ -109,7 +123,7 @@ struct OnboardingView: View {
         return names[weekday - 1]
     }
 
-    private func commit() {
+    private func save() {
         let calendar = Calendar.current
         let schedule: [WeekdaySchedule] = WeekdaySchedule.sortedMondayFirst(activeDays).map { weekday in
             let time = timesByWeekday[weekday] ?? defaultTime()
@@ -119,8 +133,17 @@ struct OnboardingView: View {
         habit.schedule = schedule
         habit.minDurationMinutes = minDuration
 
-        let today = Date()
-        let deadline = habit.deadline(for: today) ?? calendar.date(byAdding: .day, value: 1, to: today) ?? today
-        onStart(deadline)
+        // The old locked-in deadline would otherwise keep masking today's freshly edited
+        // time - see UserSettings.todayOverride.
+        settings.clearTodayOverride()
+        try? context.save()
+
+        if let newDeadline = habit.deadline(for: Date()) {
+            NotificationService.shared.scheduleDeadlinePair(deadline: newDeadline, durationMinutes: minDuration)
+        } else {
+            NotificationService.shared.cancelDeadlinePair()
+        }
+
+        dismiss()
     }
 }

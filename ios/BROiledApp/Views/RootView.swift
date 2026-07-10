@@ -7,6 +7,7 @@ struct RootView: View {
     @Environment(\.modelContext) private var context
     @Query private var habits: [Habit]
     @Query private var allSettings: [UserSettings]
+    @Query private var dayLogs: [DayLog]
 
     @State private var health = HealthKitService()
     @State private var scheduler: DayScheduler?
@@ -15,6 +16,7 @@ struct RootView: View {
     enum ActiveSheet: Identifiable {
         case gutCheck
         case snooze
+        case settings
         var id: Int { hashValue }
     }
 
@@ -34,9 +36,11 @@ struct RootView: View {
                         habit: habit,
                         settings: settings,
                         health: health,
+                        isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
                         onLoggedTapped: { sheet = .gutCheck },
                         onMissCheckFired: { sheet = .snooze },
-                        onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) }
+                        onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) },
+                        onSettingsTapped: { sheet = .settings }
                     )
                     .sheet(item: $sheet) { active in
                         switch active {
@@ -52,6 +56,8 @@ struct RootView: View {
                                 onQuit: { quitToday(habit: habit, settings: settings); sheet = nil }
                             )
                             .presentationDetents([.medium])
+                        case .settings:
+                            SettingsView(habit: habit, settings: settings, health: health)
                         }
                     }
                 }
@@ -69,6 +75,13 @@ struct RootView: View {
             await NotificationService.shared.requestAuthorization()
             if let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded {
                 engine.reconcile(habit: habit, settings: settings)
+                if !settings.isAbandoned {
+                    let todayKey = DateKey.string(from: Date())
+                    let completedToday = dayLogs.first { $0.dateKey == todayKey }?.status == .completed
+                    if !completedToday, let deadline = settings.todayOverride() ?? habit.deadline(for: Date()) {
+                        engine.startCycle(deadline: deadline, habit: habit)
+                    }
+                }
             }
         }
     }

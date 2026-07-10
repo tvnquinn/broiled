@@ -50,7 +50,9 @@ final class DayScheduler {
 
     func recordSuccess(on date: Date, settings: UserSettings, viaHealthKit: Bool) {
         let key = DateKey.string(from: date)
-        let log = fetchDayLog(key: key) ?? DayLog(dateKey: key)
+        let existing = fetchDayLog(key: key)
+        guard existing?.status ?? .pending == .pending else { return } // already resolved today - don't double-count the streak
+        let log = existing ?? DayLog(dateKey: key)
         log.status = .completed
         log.verifiedByHealthKit = viaHealthKit
         if log.modelContext == nil { context.insert(log) }
@@ -64,7 +66,9 @@ final class DayScheduler {
     }
 
     func recordMiss(dateKey: String, settings: UserSettings) {
-        let log = fetchDayLog(key: dateKey) ?? DayLog(dateKey: dateKey)
+        let existing = fetchDayLog(key: dateKey)
+        guard existing?.status ?? .pending == .pending else { return } // already resolved - don't double-count the streak
+        let log = existing ?? DayLog(dateKey: dateKey)
         log.status = .missed
         if log.modelContext == nil { context.insert(log) }
 

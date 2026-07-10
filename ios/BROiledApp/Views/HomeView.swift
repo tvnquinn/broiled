@@ -53,8 +53,8 @@ struct HomeView: View {
                 if yesterdayMissed {
                     let banner = InsultPool.morningBanner(missStreak: settings.missStreak)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(banner.headline).font(.system(size: 12, weight: .regular))
-                        Text(banner.line).font(.system(size: 12, weight: .bold))
+                        Text(banner.headline).font(.system(size: 14, weight: .regular))
+                        Text(banner.line).font(.system(size: 14, weight: .bold))
                     }
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -64,10 +64,10 @@ struct HomeView: View {
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.flame, lineWidth: 0).padding(.leading, -3))
                 } else {
                     HStack {
-                        Text("\(settings.successStreak) day streak").font(.caption).foregroundStyle(Theme.inkMuted)
+                        Text("\(settings.successStreak) day streak").font(.system(size: 14)).foregroundStyle(Theme.inkMuted)
                         Spacer()
                         if settings.successStreak >= 1 {
-                            Text(settings.rankTitle).font(.caption.bold()).foregroundStyle(Theme.accent)
+                            Text(settings.rankTitle).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.accent)
                         }
                     }
                 }
@@ -76,10 +76,10 @@ struct HomeView: View {
                 if isCompletedToday {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(successHeadline ?? InsultPool.successHeadline[0])
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 17, weight: .bold))
                             .foregroundStyle(Theme.success)
                         Text(InsultPool.successSub)
-                            .font(.system(size: 13))
+                            .font(.system(size: 15))
                             .foregroundStyle(Theme.inkMuted)
                     }
                     .frame(maxWidth: .infinity)
@@ -95,13 +95,13 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else {
                     VStack(spacing: 6) {
-                        Text("Workout in").font(.subheadline).foregroundStyle(Theme.inkMuted)
+                        Text("Workout in").font(.system(size: 17)).foregroundStyle(Theme.inkMuted)
                         Text(format(remaining))
-                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .font(.system(size: 46, weight: .bold, design: .rounded))
                             .foregroundStyle(remaining > 0 ? Theme.accent : Theme.flame)
                             .monospacedDigit()
                         Text("deadline \(deadline.formatted(date: .omitted, time: .shortened))")
-                            .font(.system(size: 12.5))
+                            .font(.system(size: 14.5))
                             .foregroundStyle(Theme.inkMuted)
                     }
                 }

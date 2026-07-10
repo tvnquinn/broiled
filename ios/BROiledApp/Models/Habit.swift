@@ -8,6 +8,16 @@ struct WeekdaySchedule: Codable, Identifiable, Equatable {
     var minute: Int
 
     var id: Int { weekday }
+
+    /// Display/storage order is always Monday-first (MTWTFSS), independent of Calendar's
+    /// Sunday=1 convention and independent of the order days were selected in - a Swift
+    /// `Set<Int>` has no stable iteration order, so anything built directly from one needs
+    /// this to avoid landing in effectively-random order.
+    static func mondayFirstRank(_ weekday: Int) -> Int { (weekday + 5) % 7 }
+
+    static func sortedMondayFirst(_ weekdays: some Sequence<Int>) -> [Int] {
+        weekdays.sorted { mondayFirstRank($0) < mondayFirstRank($1) }
+    }
 }
 
 @Model
