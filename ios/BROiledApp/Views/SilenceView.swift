@@ -8,13 +8,13 @@ struct SilenceView: View {
             Theme.bg.ignoresSafeArea()
             VStack(spacing: 18) {
                 Spacer()
-                Text("No countdown. No notifications.")
+                Text("no countdown no notifications")
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.inkMuted)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("kitchen's closed").font(.system(size: 13.5)).foregroundStyle(Theme.inkMuted)
-                    Text(InsultPool.finale).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
+                    Text(InsultPool.silenceHeadline).font(.system(size: 13.5)).foregroundStyle(Theme.inkMuted)
+                    Text(InsultPool.silenceSub).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
@@ -24,7 +24,7 @@ struct SilenceView: View {
                 Spacer()
 
                 Button(action: onLogWorkout) {
-                    Text("Log a workout")
+                    Text("log a workout")
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(14)

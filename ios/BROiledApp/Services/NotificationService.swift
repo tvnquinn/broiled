@@ -27,8 +27,8 @@ final class NotificationService {
         if reminderDate > Date() {
             schedule(
                 id: NotificationID.reminder,
-                title: "30 minutes left today.",
-                body: InsultPool.reminder.randomElement() ?? InsultPool.reminder[0],
+            title: "30 minutes left today",
+            body: InsultPool.reminder.randomElement() ?? InsultPool.reminder[0],
                 date: reminderDate
             )
         }
@@ -36,7 +36,7 @@ final class NotificationService {
         let missCheckDate = deadline.addingTimeInterval(Double(durationMinutes * 60) + 30 * 60)
         schedule(
             id: NotificationID.missCheck,
-            title: "You haven't worked out.",
+            title: "you haven't worked out",
             body: InsultPool.missCheckMsg.randomElement() ?? InsultPool.missCheckMsg[0],
             date: missCheckDate
         )
@@ -74,8 +74,8 @@ final class NotificationService {
     /// Fires immediately - used when HealthKit catches a workout while backgrounded.
     func fireSuccessPush() {
         let content = UNMutableNotificationContent()
-        content.title = InsultPool.success.randomElement() ?? InsultPool.success[0]
-        content.body = InsultPool.success.randomElement() ?? InsultPool.success[0]
+        content.title = InsultPool.successHeadline.randomElement() ?? InsultPool.successHeadline[0]
+        content.body = InsultPool.successSub
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(identifier: NotificationID.success, content: content, trigger: trigger)

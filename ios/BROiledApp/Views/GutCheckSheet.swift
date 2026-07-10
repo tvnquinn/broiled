@@ -11,8 +11,8 @@ struct GutCheckSheet: View {
                 Capsule().fill(Theme.lineStrong).frame(width: 36, height: 4).padding(.top, 10)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Be fr, no flexing").font(.system(size: 13.5)).foregroundStyle(Theme.ink)
-                    Text("Did you actually work out?").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
+                    Text(InsultPool.gutCheckPrompt).font(.system(size: 13.5)).foregroundStyle(Theme.ink)
+                    Text(InsultPool.gutCheckQuestion).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
@@ -20,7 +20,7 @@ struct GutCheckSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
                 Button(action: onYes) {
-                    Text("yee🤑")
+                    Text(InsultPool.gutCheckYes)
                         .font(.system(size: 14, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(13)
@@ -29,7 +29,7 @@ struct GutCheckSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 Button(action: onNo) {
-                    Text("I 🧢'ed")
+                    Text(InsultPool.gutCheckNo)
                         .font(.system(size: 14, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(13)

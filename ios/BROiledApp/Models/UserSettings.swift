@@ -46,7 +46,7 @@ final class UserSettings {
         switch successStreak {
         case 365...: return "final boss unlocked"
         case 100..<365: return "it's canon now"
-        case 30..<100: return "you're giving main character energy"
+        case 30..<100: return "main character energy"
         case 14..<30: return "left no crumbs"
         case 7..<14: return "you ate"
         case 1..<7: return "fresh meat, not roasted yet"
