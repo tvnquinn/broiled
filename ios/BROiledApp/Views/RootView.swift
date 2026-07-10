@@ -71,8 +71,13 @@ struct RootView: View {
             bootstrapIfNeeded()
             let engine = DayScheduler(context: context)
             scheduler = engine
-            await health.requestAuthorization()
-            await NotificationService.shared.requestAuthorization()
+            // UI tests skip the HealthKit/notification system permission prompts - those are
+            // OS chrome, not app behavior under test, and HealthKit's sheet isn't a standard
+            // alert XCUITest can reliably dismiss.
+            if !ProcessInfo.processInfo.arguments.contains("UI-TESTING") {
+                await health.requestAuthorization()
+                await NotificationService.shared.requestAuthorization()
+            }
             if let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded {
                 engine.reconcile(habit: habit, settings: settings)
                 if !settings.isAbandoned {

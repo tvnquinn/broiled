@@ -30,7 +30,12 @@ final class DayScheduler {
 
         while cursor < today {
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
-            settleIfUnresolved(next, habit: habit, settings: settings, calendar: calendar)
+            // Only settle days strictly before today - today's deadline may not have
+            // passed yet, so it must be left for the live countdown/miss-check flow to
+            // resolve, not blanket-marked missed the moment the app launches.
+            if next < today {
+                settleIfUnresolved(next, habit: habit, settings: settings, calendar: calendar)
+            }
             cursor = next
         }
         settings.lastSettledDateKey = DateKey.string(from: today)

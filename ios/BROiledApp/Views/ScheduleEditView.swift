@@ -48,6 +48,7 @@ struct ScheduleEditView: View {
                                     .clipShape(Circle())
                                     .overlay(Circle().stroke(Theme.lineStrong, lineWidth: activeDays.contains(weekday) ? 0 : 1.5))
                             }
+                            .accessibilityIdentifier("dayToggle-\(weekday)")
                         }
                     }
                 }

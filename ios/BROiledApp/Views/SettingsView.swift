@@ -20,6 +20,7 @@ struct SettingsView: View {
                             .font(.system(size: 22))
                             .foregroundStyle(Theme.inkMuted)
                     }
+                    .accessibilityIdentifier("closeSettingsButton")
                 }
                 .padding(.vertical, 16)
 
@@ -27,6 +28,7 @@ struct SettingsView: View {
                     row(key: "SCHEDULE", value: scheduleSummary, trailing: "custom times ›")
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("scheduleRowButton")
 
                 row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›", trailing: "")
 

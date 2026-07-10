@@ -48,6 +48,7 @@ struct HomeView: View {
                             .font(.system(size: 17))
                             .foregroundStyle(Theme.inkMuted)
                     }
+                    .accessibilityIdentifier("settingsButton")
                 }
 
                 if yesterdayMissed {

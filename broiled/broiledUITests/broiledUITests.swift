@@ -1,41 +1,101 @@
-//
-//  broiledUITests.swift
-//  broiledUITests
-//
-//  Created by Quinn Nguyen on 7/9/26.
-//
-
 import XCTest
 
-final class broiledUITests: XCTestCase {
+final class BroiledUITests: XCTestCase {
+    var app: XCUIApplication!
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        app = XCUIApplication()
+        // Fresh in-memory store per launch, and skips the HealthKit/notification system
+        // permission prompts - see BROiledApp.swift / RootView.swift.
+        app.launchArguments = ["UI-TESTING"]
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    // MARK: - Onboarding
 
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
+    func testOnboardingLeadsToHomeCountdown() throws {
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 5))
+        startButton.tap()
+
+        XCTAssertTrue(app.staticTexts["Workout in"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["I've locked in today"].exists)
+    }
+
+    // MARK: - Logging a workout
+
+    func testLoggingWorkoutShowsGutCheckThenLockedInState() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        let lockedInButton = app.buttons["I've locked in today"]
+        XCTAssertTrue(lockedInButton.waitForExistence(timeout: 5))
+        lockedInButton.tap()
+
+        let yesButton = app.buttons["yes!"]
+        XCTAssertTrue(yesButton.waitForExistence(timeout: 5), "gut-check sheet should appear")
+        yesButton.tap()
+
+        let doneButton = app.buttons["Locked in ✓"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(doneButton.isEnabled, "should be disabled after logging today")
+    }
+
+    func testGutCheckNoReturnsToCountdownWithoutLogging() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        app.buttons["I've locked in today"].tap()
+
+        let noButton = app.buttons["...no I lied"]
+        XCTAssertTrue(noButton.waitForExistence(timeout: 5))
+        noButton.tap()
+
+        // Declining the gut-check should leave the countdown running, not log a success.
+        XCTAssertTrue(app.staticTexts["Workout in"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["I've locked in today"].exists)
+    }
+
+    // MARK: - Settings
+
+    func testSettingsOpensAndCloses() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        let settingsButton = app.buttons["settingsButton"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 5))
+
+        app.buttons["closeSettingsButton"].tap()
+
+        XCTAssertTrue(app.staticTexts["Workout in"].waitForExistence(timeout: 5), "closing Settings should return to Home")
+    }
+
+    func testScheduleEditorOpensFromSettingsAndSaves() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        app.buttons["settingsButton"].tap()
+        XCTAssertTrue(app.buttons["scheduleRowButton"].waitForExistence(timeout: 5))
+        app.buttons["scheduleRowButton"].tap()
+
+        XCTAssertTrue(app.staticTexts["Edit schedule"].waitForExistence(timeout: 5))
+
+        let saveButton = app.buttons["Save"]
+        XCTAssertTrue(saveButton.exists)
+        saveButton.tap()
+
+        // Back on the Settings screen after saving.
+        XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 5))
     }
 
     func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
+        measure(metrics: [XCTApplicationLaunchMetric()]) {
+            XCUIApplication().launch()
         }
     }
 }
