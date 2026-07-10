@@ -8,7 +8,7 @@ struct SilenceView: View {
             Theme.bg.ignoresSafeArea()
             VStack(spacing: 18) {
                 Spacer()
-                Text("no countdown no notifications")
+                Text(InsultPool.silenceStatusLine)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.inkMuted)
 
@@ -24,7 +24,7 @@ struct SilenceView: View {
                 Spacer()
 
                 Button(action: onLogWorkout) {
-                    Text("log a workout")
+                    Text(InsultPool.logWorkoutButton)
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(14)

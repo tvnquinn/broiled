@@ -133,12 +133,22 @@ enum InsultPool {
     static let gutCheckYes = "yes!"
     static let gutCheckNo = "...no I lied"
 
+    static let snoozeSheetTitle = "push it back?"
+    static let silenceStatusLine = "no countdown no notifications"
+    static let logWorkoutButton = "log a workout"
+    static let lockedInButton = "I've locked in today"
+    static let lockedInDoneButton = "Locked in ✓"
+
+    static func successHeadlineLine() -> String {
+        successHeadline.randomElement() ?? successHeadline[0]
+    }
+
     /// Morning-after banner headline + line, tiered by consecutive miss count.
     /// 7+ is handled separately by the silence state, not this function.
     static func morningBanner(missStreak: Int) -> (headline: String, line: String) {
         switch missStreak {
         case ...1:
-            return ("you skipped yesterday", reckoning.randomElement() ?? reckoningCanonical)
+            return ("you skipped yesterday", reckoningCanonical)
         case 2...3:
             return ("\(missStreak) days missed", streak23.randomElement() ?? streak23[0])
         default:

@@ -13,7 +13,7 @@ struct SnoozeSheet: View {
             VStack(spacing: 14) {
                 Capsule().fill(Theme.lineStrong).frame(width: 36, height: 4).padding(.top, 10)
 
-                Text("push it back?")
+                Text(InsultPool.snoozeSheetTitle)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity, alignment: .leading)

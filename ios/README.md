@@ -1,10 +1,17 @@
 # BROiled iOS - Phase 0 source
 
 Real Swift/SwiftUI/SwiftData/HealthKit/UserNotifications code implementing the Phase 0
-loop from `plan.md`. There's no `.xcodeproj` in this folder on purpose - hand-writing one
-without Xcode available to verify it opens correctly is more likely to hand you a broken
-project than a working one. Instead, create the project shell in Xcode (a couple minutes)
-and drop these files in.
+loop from `plan.md`.
+
+**Xcode project:** open `broiled/broiled.xcodeproj` at the repo root. It references
+`ios/BROiledApp/` directly (not a copied duplicate), so copy edits in
+`ios/BROiledApp/Services/InsultPool.swift` are what the app builds. After pulling copy
+changes, use **Product → Clean Build Folder** in Xcode, then rebuild.
+
+**Copy source of truth:** `InsultPool.swift` mirrors `plan.md` and `wireframe_phase0.html`.
+Views should read UI strings from `InsultPool` constants, not hardcode lines in SwiftUI.
+
+There's also a manual setup path below if you prefer creating a fresh Xcode project.
 
 ## Setup
 
