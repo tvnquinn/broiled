@@ -64,7 +64,7 @@ struct HomeView: View {
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.flame, lineWidth: 0).padding(.leading, -3))
                 } else {
                     HStack {
-                        Text("\(settings.successStreak) day streak").font(.system(size: 14)).foregroundStyle(Theme.inkMuted)
+                        Text("\(settings.successStreak) day streak").font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
                         Spacer()
                         if settings.successStreak >= 1 {
                             Text(settings.rankTitle).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.accent)
@@ -76,7 +76,7 @@ struct HomeView: View {
                 if isCompletedToday {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(successHeadline ?? InsultPool.successHeadline[0])
-                            .font(.system(size: 17, weight: .bold))
+                            .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(Theme.success)
                         Text(InsultPool.successSub)
                             .font(.system(size: 15))
@@ -95,13 +95,13 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else {
                     VStack(spacing: 6) {
-                        Text("Workout in").font(.system(size: 17)).foregroundStyle(Theme.inkMuted)
+                        Text("Workout in").font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
                         Text(format(remaining))
                             .font(.system(size: 46, weight: .bold, design: .rounded))
                             .foregroundStyle(remaining > 0 ? Theme.accent : Theme.flame)
                             .monospacedDigit()
                         Text("deadline \(deadline.formatted(date: .omitted, time: .shortened))")
-                            .font(.system(size: 14.5))
+                            .font(.system(size: 15))
                             .foregroundStyle(Theme.inkMuted)
                     }
                 }
@@ -118,6 +118,17 @@ struct HomeView: View {
                 }
                 .disabled(isCompletedToday)
                 .opacity(isCompletedToday ? 0.4 : 1)
+
+                if !isCompletedToday && remaining <= 0 {
+                    Button(action: onMissCheckFired) {
+                        Text("Push it back")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(13)
+                            .foregroundStyle(Theme.flame)
+                    }
+                    .padding(.top, 4)
+                }
             }
             .padding(20)
         }

@@ -8,7 +8,7 @@ enum Theme {
     static let line = Color(hex: 0x2E2E33)
     static let lineStrong = Color(hex: 0x3D3D42)
     static let ink = Color(hex: 0xF2F0ED)
-    static let inkMuted = Color(hex: 0x8A8680)
+    static let inkMuted = Color(hex: 0xF2F0ED, alpha: 0.65)
     static let chrome = Color(hex: 0x0A0A0C)
 
     static let accent = Color(hex: 0xFF6B2B)       // ember - countdown, primary CTAs
