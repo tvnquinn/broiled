@@ -177,12 +177,17 @@
   .notif-app .brand { font-weight: 700; }
   .notif-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
   .notif-msg { font-size: 13px; line-height: 1.35; opacity: 0.95; }
-  /* Expanded interactive-notification action buttons (iOS stacks them under the card) */
-  .notif-stack { width: calc(100% - 24px); margin-top: 8px; border-radius: 16px; overflow: hidden; }
-  .notif-actions { display: flex; }
-  .notif-action { flex: 1; text-align: center; padding: 12px 8px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.12); color: #f2f3f5; }
-  .notif-action.yes { color: var(--accent); }
-  .notif-action + .notif-action { border-left: 1px solid rgba(0,0,0,0.25); }
+  /* v0.2 rich notifications (Notification Content Extension): the long-press expanded
+     state is a big card with a large icon, roomy copy, and full-width stacked buttons -
+     the collapsed banner stays a normal small notification (iOS constraint). */
+  .notifcard.expanded { padding: 16px 15px; border-radius: 20px; flex-direction: column; gap: 12px; }
+  .notif-head { display: flex; gap: 12px; align-items: center; }
+  .notifcard.expanded .notif-icon { width: 44px; height: 44px; border-radius: 11px; }
+  .notifcard.expanded .notif-title { font-size: 16px; margin-bottom: 3px; }
+  .notifcard.expanded .notif-msg { font-size: 13.5px; }
+  .notif-bigactions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .notif-bigaction { text-align: center; padding: 14px; border-radius: 12px; font-size: 14.5px; font-weight: 700; background: rgba(255,255,255,0.14); color: #f2f3f5; }
+  .notif-bigaction.primary { background: var(--accent); color: var(--chrome); }
 
   .note { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 11.5px; line-height: 1.55; color: var(--ink-muted); border-left: 2px solid var(--line-strong); padding-left: 10px; }
   .note b { color: var(--ink); font-weight: 600; }
@@ -329,22 +334,28 @@
   <div class="rail">
 
     <div class="card">
-      <div class="step"><span class="num mono">06</span><span class="title">Notification - T-30min reminder</span></div>
+      <div class="step"><span class="num mono">06</span><span class="title">Notification - T-30min reminder (expanded)</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">5:30</div>
         <div class="lockdate">Wednesday, June 25</div>
-        <div class="notifcard">
-          <div class="notif-icon">
-            <img src="logo.png" alt="BROiled" width="30" height="30" />
+        <div class="notifcard expanded">
+          <div class="notif-head">
+            <div class="notif-icon">
+              <img src="logo.png" alt="BROiled" width="44" height="44" />
+            </div>
+            <div class="notif-body">
+              <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+              <div class="notif-title">30 minutes left today</div>
+              <div class="notif-msg">still time to lock in and complete</div>
+            </div>
           </div>
-          <div class="notif-body">
-            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
-            <div class="notif-title">30 minutes left today</div>
-            <div class="notif-msg">still time to lock in and complete</div>
+          <div class="notif-bigactions">
+            <div class="notif-bigaction primary">Snooze</div>
+            <div class="notif-bigaction">I'm heading out</div>
           </div>
         </div>
       </div></div>
-      <div class="note">Fires T-30min before today's deadline (per-day time from frame 01). Tapping opens the <b>snooze sheet</b> directly.</div>
+      <div class="note">Fires T-30min before today's deadline (per-day time from frame 01). <b>v0.2 rich notification</b> - shown here in the long-press <b>expanded</b> state (Notification Content Extension: big icon, big stacked buttons; the collapsed banner stays a normal small notification - iOS doesn't allow buttons on collapsed banners). <b>Snooze</b> opens the app to the snooze sheet; <b>I'm heading out</b> just dismisses.</div>
     </div>
 
     <div class="card">
@@ -352,24 +363,24 @@
       <div class="phone"><div class="lockscreen">
         <div class="locktime">6:30</div>
         <div class="lockdate">Wednesday, June 25</div>
-        <div class="notifcard">
-          <div class="notif-icon">
-            <img src="logo.png" alt="BROiled" width="30" height="30" />
+        <div class="notifcard expanded">
+          <div class="notif-head">
+            <div class="notif-icon">
+              <img src="logo.png" alt="BROiled" width="44" height="44" />
+            </div>
+            <div class="notif-body">
+              <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
+              <div class="notif-title">are you working out right now?</div>
+              <div class="notif-msg">tap yes if you're mid-session</div>
+            </div>
           </div>
-          <div class="notif-body">
-            <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
-            <div class="notif-title">are you working out right now?</div>
-            <div class="notif-msg">tap yes if you're mid-session, chef</div>
-          </div>
-        </div>
-        <div class="notif-stack">
-          <div class="notif-actions">
-            <div class="notif-action yes">yes, i'm working out 💪</div>
-            <div class="notif-action">no</div>
+          <div class="notif-bigactions">
+            <div class="notif-bigaction primary">I'm working out 💪</div>
+            <div class="notif-bigaction">Snooze</div>
           </div>
         </div>
       </div></div>
-      <div class="note">Fires at <b>deadline + workout duration + 30min.</b> <b>Asks instead of accusing</b> - a flat "you didn't work out" is unfair if you're still mid-session. <b>Yes</b> gives grace and re-checks after another workout's worth of time (HealthKit needs time to log a finished session); <b>No</b> (or a plain tap) opens the snooze sheet.</div>
+      <div class="note">Fires at <b>deadline + workout duration + 30min.</b> <b>Asks instead of accusing</b> - a flat "you didn't work out" is unfair if you're still mid-session. <b>I'm working out</b> gives grace and re-checks after another workout's worth of time (HealthKit needs time to log a finished session); <b>Snooze</b> (or a plain tap) opens the snooze sheet. Same expanded rich-notification treatment as frame 06.</div>
     </div>
 
     <div class="card" id="frame-08">
@@ -390,12 +401,41 @@
         <div class="sheet sheet-abs">
           <div class="grabber"></div>
           <div class="sheet-title">push it back?</div>
-          <div class="field"><span>New deadline</span><span class="v">8:00 PM</span></div>
+          <div class="field"><span>New deadline</span><span class="v" style="color:var(--accent);">7:45 PM ▾</span></div>
           <div class="btn primary">Snooze</div>
+          <div class="btn ghost">push to tomorrow</div>
           <div class="btn quit">I'm a Quitter</div>
         </div>
       </div></div>
-      <div class="note"><b>Uncapped.</b> No insult in the sheet itself - it arrives in the next miss-check notification. Tier by snooze count: 1 → MILD ("bro really said 5 more minutes"), 2-3 → SPICY ("low-key embarrassing at this point"), 4+ → NUCLEAR ("toast").</div>
+      <div class="note"><b>v0.2 redesign.</b> "New deadline" is now a real <b>time picker</b> (any time later today), not fixed +30min steps. <b>push to tomorrow</b>: on a rest-day tomorrow it's allowed but costs an extra insult on the spot ("bold move putting today's work on tomorrow's you") - today drops out of streak math and the deadline moves to tomorrow at the same time. If tomorrow is already scheduled → frame 08b. Snooze tiers unchanged: 1 → MILD, 2-3 → SPICY, 4+ → NUCLEAR.</div>
+    </div>
+
+    <div class="card" id="frame-08b">
+      <div class="step"><span class="num mono">08b</span><span class="title">Snooze - tomorrow already scheduled</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>5:31</span><span>84%</span></div>
+        <div class="content dimmed" style="padding-top:2px;position:relative;">
+          <div class="topline" style="position:absolute;top:4px;left:18px;right:18px;"><span class="streak">3 day streak</span><span></span></div>
+          <div class="timewrap">
+            <div class="tlabel">Workout in</div>
+            <div class="tval">0:28:12</div>
+            <div class="tsub">deadline 6:00 PM</div>
+          </div>
+          <div class="btn float">I've locked in today</div>
+        </div>
+        <div class="sheet-overlay"></div>
+        <div class="sheet sheet-abs">
+          <div class="grabber"></div>
+          <div class="sheet-title">push it back?</div>
+          <div class="roastbox miss" style="font-size:12.5px;">
+            tomorrow's already a workout day. pushing today onto it doesn't merge them - today just becomes a miss
+          </div>
+          <div class="btn" style="background:var(--flame);color:var(--chrome);">take the miss</div>
+          <div class="btn ghost">nvm, I'll work out</div>
+        </div>
+      </div></div>
+      <div class="note">Shown when <b>push to tomorrow</b> is tapped and tomorrow is already on the schedule (confirmed decision: workouts don't merge). <b>take the miss</b> routes through the normal quit path - today logs as a miss, tomorrow stays its own normal day. <b>nvm</b> returns to the snooze sheet.</div>
     </div>
 
     <div class="card" id="frame-09">
@@ -414,7 +454,7 @@
           </div>
         </div>
       </div></div>
-      <div class="note">Fires only when HealthKit catches it <b>while backgrounded.</b> In-app confirms go straight to frame 10a, no redundant push.</div>
+      <div class="note">Fires only when HealthKit catches it <b>while backgrounded</b> - v0.2 makes this actually work via <b>HealthKit background delivery</b> (HKObserverQuery); previously nothing ran in the background so this push never fired. Detection also cancels the pending miss-check so you don't get asked "are you working out?" after finishing. <b>Milestone days</b> (1/7/14/30/100/365) lead with their rank line instead ("you ate" / "left no crumbs"...). In-app confirms go straight to frame 10a, no redundant push.</div>
     </div>
 
   </div>

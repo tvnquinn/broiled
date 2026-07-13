@@ -5,6 +5,7 @@ struct HomeView: View {
     let settings: UserSettings
     let health: HealthKitService
     let isCompletedToday: Bool
+    let notificationsDenied: Bool
     let onLoggedTapped: () -> Void
     let onMissCheckFired: () -> Void
     let onAutoSuccess: () -> Void
@@ -49,6 +50,33 @@ struct HomeView: View {
                             .foregroundStyle(Theme.inkMuted)
                     }
                     .accessibilityIdentifier("settingsButton")
+                }
+
+                // v0.2 Wave 1: the entire consequence engine is notifications - if they're
+                // denied, say so loudly and deep-link to system Settings.
+                if notificationsDenied {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(InsultPool.notificationsDeniedTitle).font(.system(size: 14, weight: .bold))
+                        Text(InsultPool.notificationsDeniedBody).font(.system(size: 13))
+                        Button {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            Text(InsultPool.notificationsDeniedButton)
+                                .font(.system(size: 13, weight: .semibold))
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 14)
+                                .background(Theme.flame)
+                                .foregroundStyle(Theme.chrome)
+                                .clipShape(RoundedRectangle(cornerRadius: 9))
+                        }
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.flame.opacity(0.13))
+                    .foregroundStyle(Theme.ink)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
 
                 if yesterdayMissed {

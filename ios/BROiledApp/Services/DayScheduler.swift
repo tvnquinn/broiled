@@ -45,9 +45,13 @@ final class DayScheduler {
     private func settleIfUnresolved(_ day: Date, habit: Habit, settings: UserSettings, calendar: Calendar) {
         let key = DateKey.string(from: day)
         if let existing = fetchDayLog(key: key), existing.status != .pending {
-            return // already resolved (completed or explicitly missed)
+            return // already resolved (completed, explicitly missed, or deferred to tomorrow)
         }
-        guard habit.isActiveDay(day, calendar: calendar) else { return } // not a scheduled day, not a miss
+        // A day counts as active if it's on the weekly schedule OR it carries a pushed
+        // deadline override (push-to-tomorrow onto a rest day) - ghosting a deferred
+        // workout still costs a miss.
+        let carriesOverride = settings.todayDeadlineOverrideDateKey == key
+        guard habit.isActiveDay(day, calendar: calendar) || carriesOverride else { return }
         recordMiss(dateKey: key, settings: settings)
     }
 
@@ -85,6 +89,20 @@ final class DayScheduler {
         } else {
             notifications.scheduleMorningReckoning(missStreak: settings.missStreak)
         }
+        try? context.save()
+    }
+
+    /// v0.2 push-to-tomorrow (rest-day tomorrow only): today drops out of streak math -
+    /// not a success, not a miss - and the caller moves the deadline override onto
+    /// tomorrow so the obligation follows. If tomorrow is a scheduled day, callers must
+    /// use recordMiss instead (confirmed decision: pushing onto a scheduled day doesn't
+    /// merge workouts, today just becomes a miss).
+    func recordDeferred(dateKey: String) {
+        let existing = fetchDayLog(key: dateKey)
+        guard existing?.status ?? .pending == .pending else { return }
+        let log = existing ?? DayLog(dateKey: dateKey)
+        log.status = .deferred
+        if log.modelContext == nil { context.insert(log) }
         try? context.save()
     }
 

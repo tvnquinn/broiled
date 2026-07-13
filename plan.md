@@ -145,7 +145,7 @@ flowchart TD
 **Notification schedule (Phase 0):**
 1. **12:00 PM (day after a miss)** - morning reckoning push: "you skipped yesterday" / "is this who you are, or can you be better today?" - same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
 2. **T-30min before deadline** - reminder push ("30 minutes left today") with the taunt "still time to lock in and complete" so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
-3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. **It asks, it doesn't accuse:** the notification is an interactive "are you working out right now?" / "tap yes if you're mid-session, chef" with two actions - **"yes, i'm working out 💪"** and **"no"**. A flat "you didn't work out" is unfair when a workout started near the deadline can still be running when the check fires. **Yes** gives grace (no penalty) and re-arms the check for roughly one more workout's worth of time so HealthKit can log the finished session; **No** (or a plain tap) opens the snooze sheet. Copy scales with streak on the morning reckoning, but the miss-check question itself stays neutral by design.
+3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. **It asks, it doesn't accuse:** the notification is an interactive "are you working out right now?" / "tap yes if you're mid-session" with two actions - **"yes, i'm working out 💪"** and **"no"**. A flat "you didn't work out" is unfair when a workout started near the deadline can still be running when the check fires. **Yes** gives grace (no penalty) and re-arms the check for roughly one more workout's worth of time so HealthKit can log the finished session; **No** (or a plain tap) opens the snooze sheet. Copy scales with streak on the morning reckoning, but the miss-check question itself stays neutral by design.
 4. **On success** - if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"). If the user is already in-app and taps "I've locked in today," it just shows inline (no notification needed, they're already looking at it).
 
 **Snooze contract:** uncapped, not a fixed 2/day limit. The snooze sheet itself doesn't show an insult - the mini-insult arrives later, in the next miss-check notification (see schedule above), and escalates per snooze count that day: **snooze 1 → MILD pool, snoozes 2–3 → SPICY pool, snooze 4+ → NUCLEAR pool**, cycling once exhausted. Snoozing re-arms the T-30min/T+duration+30min notification pair against the new deadline.
@@ -169,14 +169,14 @@ This also fixes a real market-sizing risk: requiring an Apple Watch specifically
 
 ## Insult pool (Phase 0 - Gen-Z meme voice)
 
-Organized by use-case slot with severity tags (MILD / SPICY / NUCLEAR) so Phase 0's snooze escalation works without mechanical changes. Primary lexicon is food/cooking metaphor tied to the BROiled brand ("cooked," "mid," "ate," "washed," "toast," "fried," "chef," "kitchen"), with a second glow-up/aura register for success moments and a bank of non-food gen-z slang ("audacity," "npc," "take the L," "skill issue") mixed in wherever it lands better than forcing a food pun. Deliberately avoids current trend-slang with a short shelf life (rizz, skibidi, gyat) in favor of terms with more staying power.
+Organized by use-case slot with severity tags (MILD / SPICY / NUCLEAR) so Phase 0's snooze escalation works without mechanical changes. Primary lexicon is food/cooking metaphor tied to the BROiled brand ("cooked," "mid," "ate," "washed," "toast," "fried," "roasted," "chopped"), with a second glow-up/aura register for success moments and a bank of non-food gen-z slang ("audacity," "npc," "take the L," "skill issue") mixed in wherever it lands better than forcing a food pun. Deliberately avoids current trend-slang with a short shelf life (rizz, skibidi, gyat) in favor of terms with more staying power.
 
 All lines lowercase with minimal punctuation (no trailing periods, question marks dropped, a bare "-" for a beat instead of an em dash) - matches the copy in `wireframe_phase0.html`. When the reckoning headline is always "you skipped yesterday," sublines must not repeat "yesterday" (e.g. "mid, no notes" not "yesterday - mid, no notes").
 
 **Zero-streak start (Day 0 / first log)**
-- "kitchen's open, prove it" - MILD
+- "doors open, prove it" - MILD
 - "day 1 - no crumbs yet, good or bad we'll see" - MILD
-- "prep's done, cook time" - MILD
+- "day 1. clock's running" - MILD
 - "nobody's roasted you yet, rare mercy" - MILD
 
 **Onboarding**
@@ -185,7 +185,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 
 **Pre-deadline reminder (T-30min)**
 - "still time to lock in and complete" - MILD (wireframe default)
-- "timer's running, get cooking" - MILD
+- "timer's running, move" - MILD
 - "breakfast time - are you toasting or toast" - MILD (morning-slot variant)
 - "lunch time, crunch time" - MILD (midday-slot variant)
 - "winner winner or are you the chicken dinner" - MILD (evening/dinner-slot variant only - the punchline needs "dinner" to land)
@@ -214,7 +214,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 
 **Miss check, snooze 2-3 (SPICY)**
 - "you're a recipe for disaster"
-- "fire the chef, you're taking the burn today"
+- "somebody's getting roasted today and it's you"
 - "half baked and proud of it apparently"
 - "low-key embarrassing at this point"
 - "this you - third time's not the charm"
@@ -259,7 +259,7 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "you're not a dud today" - MILD
 - "let's see about tomorrow" - MILD (canonical subline)
 - "you ate - barely" - MILD (pool alternate)
-- "certified chef - for today" - MILD
+- "michelin behavior - for today" - MILD
 - "rare w, emphasis on rare" - MILD
 - "showed up to glow up" - MILD
 - "aura +100 allegedly" - MILD

@@ -1,11 +1,24 @@
 import SwiftUI
 
+/// v0.2 snooze redesign: a real time picker (any time later today) replaces the fixed
+/// +15/+30/+1h/+3h options, plus a distinct "push to tomorrow" path:
+/// - tomorrow is a rest day -> allowed, but it costs an extra insult on the spot
+/// - tomorrow is already scheduled -> warning that today just becomes a miss (confirmed
+///   decision: workouts don't merge), then routes through the normal quit path.
 struct SnoozeSheet: View {
-    let onSnooze: (Int) -> Void
+    /// Whether tomorrow is already on the weekly schedule.
+    let tomorrowIsScheduled: Bool
+    /// Snooze to an exact time later today.
+    let onSnooze: (Date) -> Void
+    /// Rest-day tomorrow path - caller defers today and moves the deadline to tomorrow.
+    let onPushToTomorrow: () -> Void
+    /// Scheduled-tomorrow path - today becomes a miss via the normal quit flow.
+    let onTakeMiss: () -> Void
     let onQuit: () -> Void
 
-    @State private var selectedMinutes = 30
-    private let options = [15, 30, 60, 180]
+    @State private var newDeadline = Date().addingTimeInterval(30 * 60)
+    @State private var showTomorrowConfirm = false
+    @State private var tomorrowInsult = InsultPool.tomorrowInsults.randomElement() ?? InsultPool.tomorrowInsults[0]
 
     var body: some View {
         ZStack {
@@ -21,18 +34,15 @@ struct SnoozeSheet: View {
                 HStack {
                     Text("New deadline").foregroundStyle(Theme.ink)
                     Spacer()
-                    Picker("", selection: $selectedMinutes) {
-                        ForEach(options, id: \.self) { minutes in
-                            Text(label(for: minutes)).tag(minutes)
-                        }
-                    }
-                    .tint(Theme.ink)
+                    DatePicker("", selection: $newDeadline, in: Date()..., displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .tint(Theme.accent)
                 }
                 .padding(12)
                 .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line, style: StrokeStyle(lineWidth: 1.5, dash: [4])))
 
                 Button {
-                    onSnooze(selectedMinutes)
+                    onSnooze(newDeadline)
                 } label: {
                     Text("Snooze")
                         .font(.system(size: 14, weight: .semibold))
@@ -41,6 +51,62 @@ struct SnoozeSheet: View {
                         .background(Theme.accent)
                         .foregroundStyle(Theme.chrome)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .accessibilityIdentifier("snoozeConfirmButton")
+
+                if showTomorrowConfirm {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(tomorrowIsScheduled ? InsultPool.tomorrowAlreadyScheduledWarning : tomorrowInsult)
+                            .font(.system(size: 13.5))
+                            .foregroundStyle(Theme.ink)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        if tomorrowIsScheduled {
+                            Button(action: onTakeMiss) {
+                                Text(InsultPool.tomorrowConfirmMiss)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(12)
+                                    .background(Theme.flame)
+                                    .foregroundStyle(Theme.chrome)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            Button {
+                                showTomorrowConfirm = false
+                            } label: {
+                                Text(InsultPool.tomorrowCancel)
+                                    .font(.system(size: 13.5, weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(10)
+                                    .foregroundStyle(Theme.inkMuted)
+                            }
+                        } else {
+                            Button(action: onPushToTomorrow) {
+                                Text("do it")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(12)
+                                    .background(Theme.ink)
+                                    .foregroundStyle(Theme.bg)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
+                    }
+                    .padding(12)
+                    .background(tomorrowIsScheduled ? Theme.flame.opacity(0.13) : Theme.accent.opacity(0.13))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    Button {
+                        showTomorrowConfirm = true
+                    } label: {
+                        Text(InsultPool.tomorrowOptionLabel)
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(13)
+                            .foregroundStyle(Theme.ink)
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.lineStrong, style: StrokeStyle(lineWidth: 1.5, dash: [4])))
+                    }
+                    .accessibilityIdentifier("pushToTomorrowButton")
                 }
 
                 Button(action: onQuit) {
@@ -55,9 +121,5 @@ struct SnoozeSheet: View {
             .padding(20)
         }
         .preferredColorScheme(.dark)
-    }
-
-    private func label(for minutes: Int) -> String {
-        minutes < 60 ? "+\(minutes) min" : "+\(minutes / 60) hr"
     }
 }

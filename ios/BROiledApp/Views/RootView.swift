@@ -12,6 +12,8 @@ struct RootView: View {
     @State private var health = HealthKitService()
     @State private var scheduler: DayScheduler?
     @State private var sheet: ActiveSheet?
+    @State private var notificationsDenied = false
+    @Environment(\.scenePhase) private var scenePhase
 
     enum ActiveSheet: Identifiable {
         case gutCheck
@@ -37,6 +39,7 @@ struct RootView: View {
                         settings: settings,
                         health: health,
                         isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
+                        notificationsDenied: notificationsDenied,
                         onLoggedTapped: { sheet = .gutCheck },
                         onMissCheckFired: { sheet = .snooze },
                         onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) },
@@ -52,10 +55,13 @@ struct RootView: View {
                             .presentationDetents([.medium])
                         case .snooze:
                             SnoozeSheet(
-                                onSnooze: { minutes in snooze(minutes: minutes, habit: habit, settings: settings); sheet = nil },
+                                tomorrowIsScheduled: tomorrowIsScheduled(habit: habit),
+                                onSnooze: { newDeadline in snooze(to: newDeadline, habit: habit, settings: settings); sheet = nil },
+                                onPushToTomorrow: { pushToTomorrow(habit: habit, settings: settings); sheet = nil },
+                                onTakeMiss: { quitToday(habit: habit, settings: settings); sheet = nil },
                                 onQuit: { quitToday(habit: habit, settings: settings); sheet = nil }
                             )
-                            .presentationDetents([.medium])
+                            .presentationDetents([.large])
                         case .settings:
                             SettingsView(habit: habit, settings: settings, health: health)
                         }
@@ -84,6 +90,8 @@ struct RootView: View {
             if !ProcessInfo.processInfo.arguments.contains("UI-TESTING") {
                 await health.requestAuthorization()
                 await NotificationService.shared.requestAuthorization()
+                notificationsDenied = await NotificationService.shared.isDenied()
+                startBackgroundWorkoutObserver()
             }
             if let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded {
                 engine.reconcile(habit: habit, settings: settings)
@@ -94,6 +102,40 @@ struct RootView: View {
                         engine.startCycle(deadline: deadline, habit: habit)
                     }
                 }
+            }
+        }
+        // Re-check on every foreground so the denied banner clears the moment the user
+        // flips notifications back on in system Settings.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { notificationsDenied = await NotificationService.shared.isDenied() }
+        }
+    }
+
+    /// v0.2 Wave 1: when a workout syncs to HealthKit while backgrounded, settle the day,
+    /// fire the success push (the previously-orphaned `fireSuccessPush`), and let
+    /// recordSuccess cancel the now-stale miss-check. Fetches fresh from the context
+    /// because the observer can fire hours after this view captured its @Query snapshots.
+    private func startBackgroundWorkoutObserver() {
+        health.startObservingWorkouts { [context] in
+            Task { @MainActor in
+                let habit = try? context.fetch(FetchDescriptor<Habit>()).first
+                let settings = try? context.fetch(FetchDescriptor<UserSettings>()).first
+                guard let habit, let settings, settings.hasOnboarded, !settings.isAbandoned else { return }
+
+                let engine = DayScheduler(context: context)
+                let today = Date()
+                let todayKey = DateKey.string(from: today)
+                guard engine.dayLog(for: today)?.status ?? .pending == .pending else { return }
+                // Only auto-settle scheduled days (or a deferred obligation pushed onto
+                // today) - rest-day bonus workouts are the Wave 2 flow.
+                let isActive = habit.isActiveDay(today) || settings.todayDeadlineOverrideDateKey == todayKey
+                guard isActive else { return }
+
+                let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
+                guard found else { return }
+                engine.recordSuccess(on: today, settings: settings, viaHealthKit: true)
+                NotificationService.shared.fireSuccessPush(successStreak: settings.successStreak)
             }
         }
     }
@@ -116,12 +158,34 @@ struct RootView: View {
         scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: viaHealthKit)
     }
 
-    private func snooze(minutes: Int, habit: Habit, settings: UserSettings) {
+    private func snooze(to newDeadline: Date, habit: Habit, settings: UserSettings) {
         let key = DateKey.string(from: Date())
         _ = scheduler?.recordSnooze(dateKey: key)
-        let newDeadline = Date().addingTimeInterval(Double(minutes * 60))
         settings.setTodayOverride(newDeadline)
         scheduler?.startCycle(deadline: newDeadline, habit: habit)
+        try? context.save()
+    }
+
+    private func tomorrowIsScheduled(habit: Habit) -> Bool {
+        guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) else { return false }
+        return habit.isActiveDay(tomorrow)
+    }
+
+    /// Rest-day-tomorrow only (the sheet routes scheduled tomorrows to onTakeMiss).
+    /// Today drops out of streak math; the deadline override moves onto tomorrow at the
+    /// same time-of-day, and reconcile() treats that day as active so ghosting it is a miss.
+    private func pushToTomorrow(habit: Habit, settings: UserSettings) {
+        let todayKey = DateKey.string(from: Date())
+        scheduler?.recordDeferred(dateKey: todayKey)
+
+        let calendar = Calendar.current
+        let currentDeadline = settings.todayOverride() ?? habit.deadline(for: Date()) ?? Date()
+        let comps = calendar.dateComponents([.hour, .minute], from: currentDeadline)
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date()),
+           let tomorrowDeadline = calendar.date(bySettingHour: comps.hour ?? 18, minute: comps.minute ?? 0, second: 0, of: tomorrow) {
+            settings.setOverride(deadline: tomorrowDeadline)
+            scheduler?.startCycle(deadline: tomorrowDeadline, habit: habit)
+        }
         try? context.save()
     }
 

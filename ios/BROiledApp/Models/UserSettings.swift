@@ -36,6 +36,15 @@ final class UserSettings {
         todayDeadlineOverrideDateKey = DateKey.string(from: Date())
     }
 
+    /// v0.2 push-to-tomorrow: the override can now target a future day (the deadline's own
+    /// day), so a rest-day tomorrow can carry today's pushed obligation. `todayOverride()`
+    /// only returns it once the calendar reaches that day, and reconcile() treats the
+    /// override's day as active so silently blowing the deferred workout still costs a miss.
+    func setOverride(deadline: Date) {
+        todayDeadlineOverride = deadline
+        todayDeadlineOverrideDateKey = DateKey.string(from: deadline)
+    }
+
     func todayOverride(calendar: Calendar = .current) -> Date? {
         guard todayDeadlineOverrideDateKey == DateKey.string(from: Date()) else { return nil }
         return todayDeadlineOverride
@@ -49,8 +58,10 @@ final class UserSettings {
     }
 
     /// Locked milestone ladder - see plan.md "Insult pool" section.
-    var rankTitle: String {
-        switch successStreak {
+    var rankTitle: String { Self.rankTitle(forStreak: successStreak) }
+
+    static func rankTitle(forStreak streak: Int) -> String {
+        switch streak {
         case 365...: return "final boss unlocked"
         case 100..<365: return "it's canon now"
         case 30..<100: return "main character energy"

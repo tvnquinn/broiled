@@ -141,11 +141,11 @@ const KEY = "broiled_prototype_v1";
 
 const POOLS = {
   onboardingHeadline: "when are you working out?",
-  reminder: ["still time to lock in and complete", "timer's running, get cooking", "your body's gonna be tea", "winner winner or are you the chicken dinner"],
+  reminder: ["still time to lock in and complete", "timer's running, move", "your body's gonna be tea", "winner winner or are you the chicken dinner"],
   missCheckTitle: "you haven't worked out",
   missCheckMsg: ["will you later?", "did ya fold", "did you clock out", "no extensions", "is it a skill issue", "the audacity to not show up", "npc behavior", "take the l"],
   snoozeMild: ["still marinating", "don't let it burn", "don't make me come back", "bro really said 5 more minutes", "bro hit snooze", "don't make me roast you later"],
-  snoozeSpicy: ["you're a recipe for disaster", "fire the chef, you're taking the burn today", "half baked and proud of it apparently", "low-key embarrassing at this point", "this you - third time's not the charm", "simmer down - oh wait you already have"],
+  snoozeSpicy: ["you're a recipe for disaster", "somebody's getting roasted today and it's you", "half baked and proud of it apparently", "low-key embarrassing at this point", "this you - third time's not the charm", "simmer down - oh wait you already have"],
   snoozeNuclear: ["fried chicken's probably the healthiest thing you ate today", "toast", "folded", "fumbled", "ash"],
   reckoning: ["is this who you are, or can you be better today?", "mid, no notes", "leftovers went bad", "that workout ghosted itself"],
   streak23: ["this ain't a phase this is the plot", "you're speedrunning washed", "three days of vibes zero days of reps"],
@@ -153,9 +153,10 @@ const POOLS = {
   silenceHeadline: "i'm giving up on you",
   silenceSub: "no room for chopped losers here, talk to me when you're worth it",
   reactivation: ["redemption arc or fluke, we'll see", "you a comeback king or is this just another fling", "character development"],
+  tomorrowInsults: ["bold move putting today's work on tomorrow's you", "tomorrow-you is gonna love this. they won't", "procrastination arc, love that for you"],
   successHeadline: ["you're not a loser today", "you're not a dud today"],
   successSub: "let's see about tomorrow",
-  success: ["you ate - barely", "certified chef - for today", "rare w, emphasis on rare", "showed up to glow up", "aura +100 allegedly", "certified banger - for today", "slay but let's not get ahead of ourselves", "understood the assignment - barely"],
+  success: ["you ate - barely", "michelin behavior - for today", "rare w, emphasis on rare", "showed up to glow up", "aura +100 allegedly", "certified banger - for today", "slay but let's not get ahead of ourselves", "understood the assignment - barely"],
 };
 
 function rankTitle(streak) {
@@ -215,7 +216,7 @@ function startCountdown(seconds) {
 
 function beginOnboarding() {
   const active = Object.keys(state.days).filter(d => state.days[d]);
-  if (active.length === 0) { alert("pick at least one day, chef"); return; }
+  if (active.length === 0) { alert("pick at least one day"); return; }
   state.onboarded = true;
   state.view = "home";
   startCountdown(state.demoDeadlineSec);
@@ -251,10 +252,10 @@ function fireMissCheck() {
   // Interactive question instead of a flat accusation - you might be mid-workout.
   state.toast = {
     title: "are you working out right now?",
-    msg: "tap yes if you're mid-session, chef",
+    msg: "tap yes if you're mid-session",
     actions: [
       { label: "yes, i'm working out 💪", yes: true, fn: "missCheckYes" },
-      { label: "no", fn: "missCheckNo" },
+      { label: "snooze", fn: "missCheckNo" },
     ],
   };
   render();
@@ -267,7 +268,7 @@ window.missCheckYes = () => {
   const graceSec = Math.max(state.currentCycleSeconds || 90, 60);
   startCountdown(graceSec);
   log(`said "yes, working out" - grace, re-checking in ${graceSec}s`);
-  showToast("bet, we'll check back", "finish strong, chef");
+  showToast("bet, we'll check back", "finish strong");
 };
 
 window.missCheckNo = () => {
@@ -278,8 +279,8 @@ window.missCheckNo = () => {
 };
 
 function snoozeIt() {
-  const sel = document.getElementById("snoozeSelect");
-  const chosenSec = sel ? parseInt(sel.value, 10) : 60;
+  const sel = document.getElementById("snoozeSecs");
+  const chosenSec = Math.max(15, sel ? parseInt(sel.value, 10) || 60 : 60);
   state.snoozeCount += 1;
   const tier = state.snoozeCount <= 1 ? "MILD" : state.snoozeCount <= 3 ? "SPICY" : "NUCLEAR";
   const line = pick(tierForSnooze(state.snoozeCount));
@@ -438,7 +439,30 @@ function renderGutcheck() {
   `;
 }
 
+function tomorrowIsScheduled() {
+  // Real schedule awareness: tomorrow's weekday vs the days picked at onboarding.
+  const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const tomorrow = names[(new Date().getDay() + 1) % 7];
+  return !!state.days[tomorrow];
+}
+
 function renderSnooze() {
+  // v0.2 redesign: real time picker (demo: seconds field), push-to-tomorrow with both
+  // branches - rest-day tomorrow costs an insult; scheduled tomorrow warns today = miss.
+  let tomorrowBlock;
+  if (!state.tomorrowConfirm) {
+    tomorrowBlock = `<div class="btn ghost" onclick="askTomorrow()">push to tomorrow</div>`;
+  } else if (tomorrowIsScheduled()) {
+    tomorrowBlock = `
+      <div class="roastbox miss" style="font-size:12.5px;">tomorrow's already a workout day. pushing today onto it doesn't merge them - today just becomes a miss</div>
+      <div class="btn" style="background:var(--flame);color:var(--chrome);" onclick="takeTheMiss()">take the miss</div>
+      <div class="btn ghost" onclick="cancelTomorrow()">nvm, I'll work out</div>`;
+  } else {
+    tomorrowBlock = `
+      <div class="roastbox" style="font-size:12.5px;">${state.tomorrowInsult}</div>
+      <div class="btn" onclick="confirmTomorrow()">do it</div>
+      <div class="btn ghost" onclick="cancelTomorrow()">nvm, I'll work out</div>`;
+  }
   return `
     <div class="topline"><span class="streak">${state.successStreak} day streak</span><span></span></div>
     <div class="timewrap"><div class="tlabel">Workout in</div><div class="tval" style="color:var(--flame);">0:00</div></div>
@@ -448,19 +472,33 @@ function renderSnooze() {
       <div class="grabber"></div>
       <div class="sheet-title">push it back?</div>
       <div class="field">
-        <span>New deadline</span>
-        <select id="snoozeSelect" style="background:transparent;border:none;color:var(--ink);font-weight:600;font-size:13px;font-family:inherit;">
-          <option value="15">+15 min</option>
-          <option value="30" selected>+30 min</option>
-          <option value="60">+1 hr</option>
-          <option value="180">+3 hr</option>
-        </select>
+        <span>New deadline (demo secs)</span>
+        <input id="snoozeSecs" type="number" min="15" value="60" style="background:transparent;border:none;color:var(--accent);font-weight:600;font-size:13px;font-family:inherit;width:70px;text-align:right;" />
       </div>
       <div class="btn primary" onclick="snoozeIt()">Snooze</div>
+      ${tomorrowBlock}
       <div class="btn quit" onclick="quitToday()">I'm a Quitter</div>
     </div>
   `;
 }
+
+window.askTomorrow = () => {
+  state.tomorrowConfirm = true;
+  state.tomorrowInsult = pick(POOLS.tomorrowInsults);
+  render();
+};
+window.cancelTomorrow = () => { state.tomorrowConfirm = false; render(); };
+window.takeTheMiss = () => { state.tomorrowConfirm = false; quitToday(); };
+window.confirmTomorrow = () => {
+  // Rest-day tomorrow: today drops out of streak math (neither success nor miss),
+  // deadline moves to "tomorrow" (demo: a fresh full cycle).
+  state.tomorrowConfirm = false;
+  state.snoozeCount = 0;
+  state.view = "home";
+  startCountdown(state.demoDeadlineSec * 2);
+  log(`pushed to tomorrow (rest day) - today deferred, no streak change - "${state.tomorrowInsult}"`);
+  showToast("pushed to tomorrow", state.tomorrowInsult);
+};
 
 function renderSuccess() {
   const headline = pick(POOLS.successHeadline);

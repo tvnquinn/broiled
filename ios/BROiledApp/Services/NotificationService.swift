@@ -123,14 +123,29 @@ final class NotificationService {
     }
 
     /// Fires immediately - used when HealthKit catches a workout while backgrounded.
-    func fireSuccessPush() {
+    /// Milestone days (1/7/14/30/100/365) lead with their rank-ladder line instead of
+    /// the generic backhanded congrats.
+    func fireSuccessPush(successStreak: Int) {
+        let milestones: Set<Int> = [1, 7, 14, 30, 100, 365]
         let content = UNMutableNotificationContent()
-        content.title = InsultPool.successHeadline.randomElement() ?? InsultPool.successHeadline[0]
-        content.body = InsultPool.successSub
+        if milestones.contains(successStreak) {
+            content.title = UserSettings.rankTitle(forStreak: successStreak)
+            content.body = "\(successStreak) day streak. \(InsultPool.successSub)"
+        } else {
+            content.title = InsultPool.successHeadline.randomElement() ?? InsultPool.successHeadline[0]
+            content.body = InsultPool.successSub
+        }
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(identifier: NotificationID.success, content: content, trigger: trigger)
         center.add(request)
+    }
+
+    /// v0.2 Wave 1: surface a persistent in-app warning when notifications are denied -
+    /// the entire consequence engine depends on them.
+    func isDenied() async -> Bool {
+        let settings = await center.notificationSettings()
+        return settings.authorizationStatus == .denied
     }
 
     func cancelAll() {
@@ -176,13 +191,18 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         completionHandler()
     }
 
-    /// Show the notification even if the app is foregrounded, so the Yes/No prompt is
-    /// never silently swallowed.
+    /// Show notifications even when the app is foregrounded, so the Yes/No prompt is
+    /// never silently swallowed - EXCEPT the success push, which duplicates the in-app
+    /// success banner the user is already looking at (it exists for the backgrounded case).
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound])
+        if notification.request.identifier == NotificationID.success {
+            completionHandler([])
+        } else {
+            completionHandler([.banner, .sound])
+        }
     }
 }

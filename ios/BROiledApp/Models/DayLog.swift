@@ -5,6 +5,10 @@ enum DayStatus: String, Codable {
     case pending
     case completed
     case missed
+    /// v0.2: the day's obligation was pushed onto tomorrow (only allowed when tomorrow
+    /// is a rest day). Neither a success nor a miss - the day drops out of streak math,
+    /// and reconcile() must not settle it as a miss.
+    case deferred
 }
 
 @Model

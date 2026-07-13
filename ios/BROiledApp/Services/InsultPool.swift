@@ -8,15 +8,15 @@ enum InsultPool {
     static let onboardingHeadline = "when are you working out?"
 
     static let zeroStreak = [
-        "kitchen's open, prove it",
+        "doors open, prove it",
         "day 1 - no crumbs yet, good or bad we'll see",
-        "prep's done, cook time",
+        "day 1. clock's running",
         "nobody's roasted you yet, rare mercy",
     ]
 
     static let reminder = [
         "still time to lock in and complete",
-        "timer's running, get cooking",
+        "timer's running, move",
         "breakfast time - are you toasting or toast",
         "lunch time, crunch time",
         "winner winner or are you the chicken dinner",
@@ -42,7 +42,7 @@ enum InsultPool {
     /// near the deadline can still be running when the check fires). Yes -> grace + a
     /// later re-check; No -> the miss/snooze flow.
     static let missCheckQuestion = "are you working out right now?"
-    static let missCheckQuestionBody = "tap yes if you're mid-session, chef"
+    static let missCheckQuestionBody = "tap yes if you're mid-session"
     static let missCheckYesAction = "yes, i'm working out 💪"
     static let missCheckNoAction = "no"
 
@@ -57,7 +57,7 @@ enum InsultPool {
 
     static let snoozeSpicy = [
         "you're a recipe for disaster",
-        "fire the chef, you're taking the burn today",
+        "somebody's getting roasted today and it's you",
         "half baked and proud of it apparently",
         "low-key embarrassing at this point",
         "this you - third time's not the charm",
@@ -124,7 +124,7 @@ enum InsultPool {
 
     static let successAlternates = [
         "you ate - barely",
-        "certified chef - for today",
+        "michelin behavior - for today",
         "rare w, emphasis on rare",
         "showed up to glow up",
         "aura +100 allegedly",
@@ -143,6 +143,25 @@ enum InsultPool {
     static let gutCheckNo = "...no I lied"
 
     static let snoozeSheetTitle = "push it back?"
+
+    // Push-to-tomorrow (snooze redesign, v0.2 Wave 1)
+    static let tomorrowOptionLabel = "push to tomorrow"
+    /// Extra insult thrown when the user punts today's workout onto a rest day.
+    static let tomorrowInsults = [
+        "bold move putting today's work on tomorrow's you",
+        "tomorrow-you is gonna love this. they won't",
+        "procrastination arc, love that for you",
+    ]
+    /// Warning shown when tomorrow is already a scheduled day - snoozing there
+    /// doesn't merge workouts, today just becomes a miss (confirmed v0.2 decision).
+    static let tomorrowAlreadyScheduledWarning = "tomorrow's already a workout day. pushing today onto it doesn't merge them - today just becomes a miss"
+    static let tomorrowConfirmMiss = "take the miss"
+    static let tomorrowCancel = "nvm, I'll work out"
+
+    // Notifications-denied guard (v0.2 Wave 1)
+    static let notificationsDeniedTitle = "notifications are off"
+    static let notificationsDeniedBody = "this app is literally a notification. turn them back on or nothing here works"
+    static let notificationsDeniedButton = "fix in Settings"
     static let silenceStatusLine = "no countdown no notifications"
     static let logWorkoutButton = "log a workout"
     static let lockedInButton = "I've locked in today"
