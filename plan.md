@@ -421,3 +421,36 @@ Block selected apps until habit satisfied for the day. Requires [Apple Family Co
 ## Reference: Phase 1 persona planning
 
 **See:** `broiled-phase-1-persona-tough-love.plan.md` for the original tough-love voice and motivation framework, reserved for Phase 1 when the persona system is built. That doc contains the full insult pool and core motivation behind the "disappointed parent/rival" angle - useful for designing additional personas (Disappointed Coach, Savage Best Friend, etc.) that use the same escalation mechanics but different emotional drivers.
+
+---
+
+## v0.2 update plan (post daily-use feedback)
+
+Driven by real on-device usage of the Phase 0 build. Organized in three waves; each item ships across all four surfaces (wireframe, prototype, iOS code, this plan) before moving on.
+
+### Wave 1 - bugs, copy, daily frictions
+
+1. **De-chef copy sweep.** Drop the chef-persona addressing ("chef", "fire the chef", "certified chef", "get cooking"-style user-as-cook lines); keep the food-*state* slang that is the brand payoff (cooked, toast, roast, ate, chopped, rare W). Full keep/cut table lives in the session notes; InsultPool.swift is the source of truth, wireframes/prototype sync to it.
+2. **Snooze redesign.** Real time picker (any time later today) replaces the fixed +15/+30/+1h/+3h options. New distinct option: **push to tomorrow** - allowed with an extra insult if tomorrow is a rest day; if tomorrow is already a scheduled day, warn that snoozing to tomorrow does not merge workouts and **today becomes a miss** (confirmed decision), then route through the normal quit path.
+3. **Fix the success push.** `fireSuccessPush()` exists but is never called (root cause of the "notification 09 never showed" bug), and nothing detects workouts while backgrounded. Fix: wire it into the success path AND add HealthKit background delivery (`HKObserverQuery` + `enableBackgroundDelivery`) so a workout that syncs while backgrounded fires the success push, cancels the pending miss-check, and settles the day. Milestone days (1/7/14/30/100/365) use their rank-ladder line as the push copy instead of the generic one.
+4. **Notifications-denied guard.** If notification permission is denied, the entire consequence engine silently dies. Persistent in-app warning banner + deep link to system Settings.
+
+### Wave 2 - richer notifications, workout types, rest days
+
+5. **Rich notifications (Notification Content Extension).** Big expanded layout with large action buttons (iOS constraint: collapsed banners cannot show buttons; actions appear on long-press/expand - the extension makes the expanded state big and custom).
+   - **Frame 06 (T-30min reminder):** actions = "Snooze" (opens app to snooze sheet) + "I'm heading out" (dismisses).
+   - **Frame 07 (miss check):** actions = "I'm working out 💪" (grace + later re-check, mechanic already built) + "Snooze" (opens app to snooze sheet) - replaces the yes/no pair.
+6. **Workout types.** New `WorkoutEntry` model (date, type, source healthKit/manual, duration, note) supporting **multiple workouts per day**; `DayLog` still owns the day's status. Schedule gains optional per-day workout type (Apple-Fitness-style picker + free text); notifications become "30 min till <type>"; HealthKit-detected workouts show their real type.
+7. **Rest-day flow + bonus workouts.** Fixes a real bug: Home currently renders a red 0:00 countdown on non-scheduled days (deadline falls back to `Date()`). Proper rest-day state with "log a bonus workout" (HealthKit-detected or manual). Bonus workouts are recorded in history but never advance the streak: "cute. bonus workouts don't buy back missed ones - no streak freezes here."
+8. **Pause mode.** Settings gains a date-range pause: no notifications, no misses, streak frozen (not broken, not growing). Generic-guilt copy, not travel-specific: "paused. your muscles didn't get the memo, but fine." / resume: "break's over. hope you're not."
+
+### Wave 3 - the Burn Book, Live Activity, widgets
+
+9. **The Burn Book (collection/history page).** Chronological list of date + line received + type (roast/compliment). Unlock trackers: "X/N insults unlocked", "X/N compliments unlocked". Badge ladder where the badge names are themselves insults: 5 = "certified punching bag", 10 = "glutton for punishment", 25 = "roast magnet", 50 = "well done", all insults = "fully roasted"; compliments: 5 = "barely tolerable", 10 = "annoyingly consistent", all = "too hot to roast" (the reserved easter-egg line becomes the crown badge).
+10. **Live Activity countdown** (lock screen + Dynamic Island). This is the answer to "persistent countdown banner" - a pinned notification is not possible on iOS and the Live Activity is the system-native, user-dismissible mechanism. Pulled forward from Phase 1.
+11. **Home-screen widget** (streak + today's countdown) and a **best-streak stat**.
+
+### Parked to Phase 2
+
+- **User-generated insults**: once all insults/compliments are unlocked, users write their own for other people. Needs sharing + moderation infra; the unlock trackers ship in Wave 3 so the carrot is visible early.
+- **Share cards for badge unlocks** ("I just unlocked 'glutton for punishment'") - the screenshot-bait growth loop, alongside the existing Phase 2 share-card plans.
