@@ -159,9 +159,12 @@ struct HomeView: View {
         let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
         if found {
             onAutoSuccess()
-        } else {
-            onMissCheckFired()
         }
+        // If not found, we do NOT auto-open the snooze sheet - that would declare failure
+        // while the user might still be mid-workout. The interactive "are you working out?"
+        // notification (which fires at this same time and presents even in the foreground)
+        // is the single surface for that decision. The manual "Push it back" button below
+        // stays available as a fallback if notifications are disabled.
     }
 
     private func format(_ interval: TimeInterval) -> String {

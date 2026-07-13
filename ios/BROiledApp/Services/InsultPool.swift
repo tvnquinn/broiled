@@ -37,6 +37,15 @@ enum InsultPool {
         "take the l",
     ]
 
+    /// The miss-check notification asks rather than accuses - firing a flat "you didn't
+    /// work out" is unfair when the user might be mid-workout (a 40-min session started
+    /// near the deadline can still be running when the check fires). Yes -> grace + a
+    /// later re-check; No -> the miss/snooze flow.
+    static let missCheckQuestion = "are you working out right now?"
+    static let missCheckQuestionBody = "tap yes if you're mid-session, chef"
+    static let missCheckYesAction = "yes, i'm working out 💪"
+    static let missCheckNoAction = "no"
+
     static let snoozeMild = [
         "still marinating",
         "don't let it burn",
@@ -145,14 +154,21 @@ enum InsultPool {
 
     /// Morning-after banner headline + line, tiered by consecutive miss count.
     /// 7+ is handled separately by the silence state, not this function.
+    ///
+    /// Deterministic by `missStreak` on purpose: the line must NOT change on every
+    /// re-render (HomeView re-renders once a second off its countdown timer, which used
+    /// to make the banner cycle through the whole pool and spoil the other roasts). One
+    /// stable line per day of failure - and because the streak count increments each
+    /// missed day, the line naturally rotates day to day. This also keeps the in-app
+    /// banner and the morning push in sync, since both call this with the same streak.
     static func morningBanner(missStreak: Int) -> (headline: String, line: String) {
         switch missStreak {
         case ...1:
             return ("you skipped yesterday", reckoningCanonical)
         case 2...3:
-            return ("\(missStreak) days missed", streak23.randomElement() ?? streak23[0])
+            return ("\(missStreak) days missed", streak23[abs(missStreak) % streak23.count])
         default:
-            return ("\(missStreak) days missed", streak46.randomElement() ?? streak46Canonical)
+            return ("\(missStreak) days missed", streak46[abs(missStreak) % streak46.count])
         }
     }
 }

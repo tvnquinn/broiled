@@ -177,6 +177,12 @@
   .notif-app .brand { font-weight: 700; }
   .notif-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
   .notif-msg { font-size: 13px; line-height: 1.35; opacity: 0.95; }
+  /* Expanded interactive-notification action buttons (iOS stacks them under the card) */
+  .notif-stack { width: calc(100% - 24px); margin-top: 8px; border-radius: 16px; overflow: hidden; }
+  .notif-actions { display: flex; }
+  .notif-action { flex: 1; text-align: center; padding: 12px 8px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.12); color: #f2f3f5; }
+  .notif-action.yes { color: var(--accent); }
+  .notif-action + .notif-action { border-left: 1px solid rgba(0,0,0,0.25); }
 
   .note { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 11.5px; line-height: 1.55; color: var(--ink-muted); border-left: 2px solid var(--line-strong); padding-left: 10px; }
   .note b { color: var(--ink); font-weight: 600; }
@@ -342,7 +348,7 @@
     </div>
 
     <div class="card">
-      <div class="step"><span class="num mono">07</span><span class="title">Notification - miss check</span></div>
+      <div class="step"><span class="num mono">07</span><span class="title">Notification - miss check (asks, doesn't accuse)</span></div>
       <div class="phone"><div class="lockscreen">
         <div class="locktime">6:30</div>
         <div class="lockdate">Wednesday, June 25</div>
@@ -352,12 +358,18 @@
           </div>
           <div class="notif-body">
             <div class="notif-app"><span class="brand">BROiled</span><span>now</span></div>
-            <div class="notif-title">you haven't worked out</div>
-            <div class="notif-msg">will you later?</div>
+            <div class="notif-title">are you working out right now?</div>
+            <div class="notif-msg">tap yes if you're mid-session, chef</div>
+          </div>
+        </div>
+        <div class="notif-stack">
+          <div class="notif-actions">
+            <div class="notif-action yes">yes, i'm working out 💪</div>
+            <div class="notif-action">no</div>
           </div>
         </div>
       </div></div>
-      <div class="note">Fires at <b>deadline + workout duration + 30min.</b> Copy scales with streak. Tapping opens the snooze sheet.</div>
+      <div class="note">Fires at <b>deadline + workout duration + 30min.</b> <b>Asks instead of accusing</b> - a flat "you didn't work out" is unfair if you're still mid-session. <b>Yes</b> gives grace and re-checks after another workout's worth of time (HealthKit needs time to log a finished session); <b>No</b> (or a plain tap) opens the snooze sheet.</div>
     </div>
 
     <div class="card" id="frame-08">

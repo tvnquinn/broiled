@@ -128,9 +128,11 @@ flowchart TD
   morning --> preReminder["T-30min: reminder notification"]
   preReminder --> checkTime["T+duration+30min: check HealthKit"]
   checkTime -->|workout found or manually confirmed| success[Backhanded celebration, push if backgrounded]
-  checkTime -->|not found| missNotif["Miss notification: tap opens snooze sheet"]
-  missNotif -->|Snooze| snoozeInsult[New deadline set, escalates each snooze] --> preReminder
-  missNotif -->|"I'm a Quitter"| quietFail[Logs quietly, no same-day screen]
+  checkTime -->|not found| missNotif["'are you working out?' notification (yes/no)"]
+  missNotif -->|"Yes, working out"| grace[Grace: no penalty, re-check later] --> checkTime
+  missNotif -->|"No" / tap| snoozeSheet[Snooze sheet]
+  snoozeSheet -->|Snooze| snoozeInsult[New deadline set, escalates each snooze] --> preReminder
+  snoozeSheet -->|"I'm a Quitter"| quietFail[Logs quietly, no same-day screen]
   quietFail --> streak{Consecutive misses}
   streak -->|2-3 days| harsher[Harsher roast]
   streak -->|4-6 days| nuclear[Nuclear roast]
@@ -143,7 +145,7 @@ flowchart TD
 **Notification schedule (Phase 0):**
 1. **12:00 PM (day after a miss)** - morning reckoning push: "you skipped yesterday" / "is this who you are, or can you be better today?" - same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
 2. **T-30min before deadline** - reminder push ("30 minutes left today") with the taunt "still time to lock in and complete" so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
-3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. If nothing's found, fires "you haven't worked out" / "will you later?" and tapping opens the snooze sheet. Copy scales with streak - neutral on a clean history, pulling from the escalation ladder on a multi-day streak.
+3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. **It asks, it doesn't accuse:** the notification is an interactive "are you working out right now?" / "tap yes if you're mid-session, chef" with two actions - **"yes, i'm working out 💪"** and **"no"**. A flat "you didn't work out" is unfair when a workout started near the deadline can still be running when the check fires. **Yes** gives grace (no penalty) and re-arms the check for roughly one more workout's worth of time so HealthKit can log the finished session; **No** (or a plain tap) opens the snooze sheet. Copy scales with streak on the morning reckoning, but the miss-check question itself stays neutral by design.
 4. **On success** - if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"). If the user is already in-app and taps "I've locked in today," it just shows inline (no notification needed, they're already looking at it).
 
 **Snooze contract:** uncapped, not a fixed 2/day limit. The snooze sheet itself doesn't show an insult - the mini-insult arrives later, in the next miss-check notification (see schedule above), and escalates per snooze count that day: **snooze 1 → MILD pool, snoozes 2–3 → SPICY pool, snooze 4+ → NUCLEAR pool**, cycling once exhausted. Snoozing re-arms the T-30min/T+duration+30min notification pair against the new deadline.
@@ -334,7 +336,7 @@ Phase 0 also adds a success-streak counter and a computed rankTitle property (fr
 4. **Notification - Morning reckoning (12:00 PM)** - lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
 5. **Gut-check sheet** - shown on tapping "I've locked in today": "this app is private, lying to it is embarrassing" / "did you work out today?" / **yes!** / **...no I lied**
 6. **Notification - T-30min reminder** - lock-screen banner ("30 minutes left today" / "still time to lock in and complete"), taps into the snooze sheet
-7. **Notification - miss check** - lock-screen banner ("you haven't worked out" / "will you later?"), taps into the snooze sheet
+7. **Notification - miss check** - interactive lock-screen banner asking "are you working out right now?" with **yes, i'm working out 💪** / **no** actions. Yes = grace + later re-check; No (or plain tap) opens the snooze sheet
 8. **Snooze sheet** - title "push it back?"; pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
 9. **Notification - success** - lock-screen banner ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"), fires when HealthKit catches the workout in the background
 10. **Home - Success (backhanded celebration)** - in-app version: same copy as frame 09/10a, with rank title displayed

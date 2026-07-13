@@ -78,6 +78,9 @@
 
   .toast { position: absolute; top: 16px; left: 16px; right: 16px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 14px; padding: 12px 14px; font-size: 12.5px; z-index: 10; box-shadow: 0 6px 20px rgba(0,0,0,0.4); animation: slidein 0.25s ease; }
   .toast b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .toast-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .toast-action { flex: 1; text-align: center; padding: 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; background: var(--bg); border: 1px solid var(--line-strong); color: var(--ink); }
+  .toast-action.yes { color: var(--accent); border-color: var(--accent); }
   @keyframes slidein { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
   .dev-col { flex: 1 1 340px; min-width: 320px; max-width: 460px; }
@@ -244,10 +247,35 @@ function completeToday() {
 function fireMissCheck() {
   if (state.missCheckFired) return;
   state.missCheckFired = true;
-  showToast("you haven't worked out", pick(POOLS.missCheckMsg));
-  log("miss-check notification fired");
-  setTimeout(() => { state.view = "snooze"; save(); render(); }, 1400);
+  log("miss-check notification fired (asks, doesn't accuse)");
+  // Interactive question instead of a flat accusation - you might be mid-workout.
+  state.toast = {
+    title: "are you working out right now?",
+    msg: "tap yes if you're mid-session, chef",
+    actions: [
+      { label: "yes, i'm working out 💪", yes: true, fn: "missCheckYes" },
+      { label: "no", fn: "missCheckNo" },
+    ],
+  };
+  render();
 }
+
+window.missCheckYes = () => {
+  // Grace: don't penalize, re-check after another workout's worth of time.
+  state.toast = null;
+  state.missCheckFired = false;
+  const graceSec = Math.max(state.currentCycleSeconds || 90, 60);
+  startCountdown(graceSec);
+  log(`said "yes, working out" - grace, re-checking in ${graceSec}s`);
+  showToast("bet, we'll check back", "finish strong, chef");
+};
+
+window.missCheckNo = () => {
+  state.toast = null;
+  state.view = "snooze";
+  save();
+  render();
+};
 
 function snoozeIt() {
   const sel = document.getElementById("snoozeSelect");
@@ -374,8 +402,11 @@ function renderHome() {
   const rank = rankTitle(state.successStreak);
   let streakLine = `<div class="topline"><span class="streak">${state.successStreak} day streak</span>${state.successStreak >= 1 ? `<span class="streak" style="color:var(--accent);">${rank}</span>` : "<span></span>"}</div>`;
 
+  const toastActions = state.toast?.actions
+    ? `<div class="toast-actions">${state.toast.actions.map(a => `<div class="toast-action${a.yes ? " yes" : ""}" onclick="${a.fn}()">${a.label}</div>`).join("")}</div>`
+    : "";
   const toast = state.toast
-    ? `<div class="toast"><b>${state.toast.title}</b>${state.toast.msg}</div>`
+    ? `<div class="toast"><b>${state.toast.title}</b>${state.toast.msg}${toastActions}</div>`
     : "";
 
   const deadlineTime = new Date(state.deadlineTs).toLocaleTimeString([], {hour: "numeric", minute: "2-digit", second: "2-digit"});

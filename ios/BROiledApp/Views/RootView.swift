@@ -60,6 +60,13 @@ struct RootView: View {
                             SettingsView(habit: habit, settings: settings, health: health)
                         }
                     }
+                    // The miss-check notification's "no" action (or a plain tap) opens the
+                    // snooze/quit sheet. "yes" is handled entirely in the notification
+                    // delegate (grace re-check) and never needs to open the app.
+                    .onReceive(NotificationCenter.default.publisher(for: NotificationDelegate.didDeclineWorkout)) { _ in
+                        let completedToday = dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed
+                        if !completedToday { sheet = .snooze }
+                    }
                 }
             } else {
                 ProgressView().tint(Theme.accent)

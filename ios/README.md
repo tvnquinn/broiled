@@ -72,16 +72,21 @@ There's also a manual setup path below if you prefer creating a fresh Xcode proj
   `lastSettledDateKey` on every launch is what actually keeps `successStreak`/
   `missStreak` trustworthy, not the notification timing itself.
 
+**Interactive miss-check (implemented):** the miss-check notification is an
+"are you working out right now?" prompt with **yes / no** actions instead of a flat
+accusation - firing "you didn't work out" is unfair when a workout started near the
+deadline can still be running when the check fires. **Yes** gives grace (no penalty) and
+re-arms the check for another workout's worth of time; **No** (or a plain tap) opens the
+snooze sheet. Foreground and background both route through this one question surface
+(`NotificationDelegate` + `NotificationDelegate.didDeclineWorkout`).
+
 **Not implemented yet / genuine gaps to know about**:
-- **No background HealthKit observer.** The miss-check only runs while the app is in the
-  foreground (the `Timer` in `HomeView` firing `checkOutcome()` when the countdown hits
-  zero) or via the scheduled local notification's static copy - it does not actively
-  re-query HealthKit in the background and cancel/update the already-scheduled miss-check
-  notification if you happen to work out between backgrounding and the deadline. In
-  practice the notification will still fire with generic copy even if you already worked
-  out; tapping it just opens the snooze sheet, and hitting "I've locked in today" from
-  there still works, but it's not as seamless as a true background observer would be.
-  `HKObserverQuery` + background delivery is the real fix, deferred for now.
+- **No background HealthKit observer.** The app can't re-query HealthKit in the background
+  and auto-resolve the day if you work out between backgrounding and the deadline - it
+  relies on the foreground `checkOutcome()` (auto-success if a workout is found) plus the
+  interactive miss-check notification above. This is why the notification asks rather than
+  asserts: without a background observer it can't *know* whether you're mid-session, so it
+  asks. `HKObserverQuery` + background delivery is the real fix, deferred for now.
 - **No Live Activity / Dynamic Island countdown** - that's explicitly Phase 1 in the plan.
 - **No unit tests.** `DayScheduler`'s reconciliation logic is the highest-risk piece
   (see the earlier "how is the streak stored" discussion) and deserves test coverage
