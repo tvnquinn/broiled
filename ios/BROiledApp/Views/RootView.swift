@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+import os
+
+let rootLog = Logger(subsystem: "com.quinnnguyen.broiled", category: "root")
 
 /// Coordinates onboarding vs. home vs. silence, and owns the singleton Habit/UserSettings
 /// rows (Phase 0 is single-habit, so there's always exactly one of each after onboarding).
@@ -40,7 +43,10 @@ struct RootView: View {
                         health: health,
                         isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
                         notificationsDenied: notificationsDenied,
-                        onLoggedTapped: { sheet = .gutCheck },
+                        onLoggedTapped: {
+                            rootLog.info("locked-in tapped; presenting gut-check (was: \(String(describing: sheet)))")
+                            sheet = .gutCheck
+                        },
                         onMissCheckFired: { sheet = .snooze },
                         onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) },
                         onSettingsTapped: { sheet = .settings }
@@ -84,6 +90,9 @@ struct RootView: View {
             bootstrapIfNeeded()
             let engine = DayScheduler(context: context)
             scheduler = engine
+            let todayKey = DateKey.string(from: Date())
+            let todayStatus = dayLogs.first { $0.dateKey == todayKey }?.status
+            rootLog.info("launch: habits=\(habits.count) settings=\(allSettings.count) dayLogs=\(dayLogs.count) onboarded=\(allSettings.first?.hasOnboarded ?? false) abandoned=\(allSettings.first?.isAbandoned ?? false) missStreak=\(allSettings.first?.missStreak ?? -1) successStreak=\(allSettings.first?.successStreak ?? -1) today=\(todayKey) todayStatus=\(String(describing: todayStatus))")
             // UI tests skip the HealthKit/notification system permission prompts - those are
             // OS chrome, not app behavior under test, and HealthKit's sheet isn't a standard
             // alert XCUITest can reliably dismiss.
