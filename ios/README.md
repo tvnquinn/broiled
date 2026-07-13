@@ -38,7 +38,9 @@ There's also a manual setup path below if you prefer creating a fresh Xcode proj
 
 4. **Add the HealthKit capability**: select the project → target → **Signing &
    Capabilities** → **+ Capability** → **HealthKit**. Xcode generates the entitlement
-   file automatically.
+   file automatically. **v0.2: also tick the "Background Delivery" checkbox** under the
+   HealthKit capability - the success push / background workout detection
+   (`enableBackgroundDelivery` in HealthKitService) silently no-ops without it.
 
 5. **Add Info.plist keys** (target → Info tab → add rows, or edit raw Info.plist):
    - `NSHealthShareUsageDescription` → something like *"BROiled checks whether you've
