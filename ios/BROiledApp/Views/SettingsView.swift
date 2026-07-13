@@ -9,37 +9,44 @@ struct SettingsView: View {
     @State private var showScheduleEditor = false
 
     var body: some View {
-        ZStack {
-            Theme.bg.ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text("Settings").font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.ink)
-                    Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundStyle(Theme.inkMuted)
+        // NavigationStack push instead of a nested sheet: presenting a .sheet from inside
+        // another .sheet silently failed to present on iOS 26 (verified via UI-test video -
+        // the tap landed, the editor never appeared). A drill-in with a back button is the
+        // idiomatic Settings pattern anyway.
+        NavigationStack {
+            ZStack {
+                Theme.bg.ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text("Settings").font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.ink)
+                        Spacer()
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                        .accessibilityIdentifier("closeSettingsButton")
                     }
-                    .accessibilityIdentifier("closeSettingsButton")
+                    .padding(.vertical, 16)
+
+                    Button { showScheduleEditor = true } label: {
+                        row(key: "SCHEDULE", value: scheduleSummary, trailing: "custom times ›")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("scheduleRowButton")
+
+                    row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›", trailing: "")
+
+                    Spacer()
                 }
-                .padding(.vertical, 16)
-
-                Button { showScheduleEditor = true } label: {
-                    row(key: "SCHEDULE", value: scheduleSummary, trailing: "custom times ›")
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("scheduleRowButton")
-
-                row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›", trailing: "")
-
-                Spacer()
+                .padding(20)
             }
-            .padding(20)
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $showScheduleEditor) {
+                ScheduleEditView(habit: habit, settings: settings)
+            }
         }
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $showScheduleEditor) {
-            ScheduleEditView(habit: habit, settings: settings)
-        }
     }
 
     private var scheduleSummary: String {
@@ -59,5 +66,9 @@ struct SettingsView: View {
         }
         .padding(.vertical, 14)
         .overlay(Rectangle().frame(height: 1).foregroundStyle(Theme.line), alignment: .bottom)
+        // Without an explicit content shape, the transparent Spacer gap between the two
+        // texts is NOT tappable in a .plain-style Button - taps on the middle of the row
+        // silently did nothing (caught by the UI test, which taps the row's exact center).
+        .contentShape(Rectangle())
     }
 }

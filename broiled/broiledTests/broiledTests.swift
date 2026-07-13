@@ -108,7 +108,7 @@ final class BroiledTests: XCTestCase {
 
     // MARK: - DateKey
 
-    func testDateKeyRoundTrip() {
+    func testDateKeyRoundTrip() throws {
         let date = Date()
         let key = DateKey.string(from: date)
         let roundTripped = try XCTUnwrap(DateKey.date(from: key))
@@ -255,5 +255,190 @@ final class BroiledTests: XCTestCase {
 
         XCTAssertEqual(settings.successStreak, 1)
         XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .completed)
+    }
+}
+
+/// v0.2 Wave 1 coverage: banner determinism, snooze escalation tiers, push-to-tomorrow
+/// deferral mechanics, the ghosted-deferral miss, and the de-chef copy sweep.
+final class Wave1Tests: XCTestCase {
+
+    // MARK: - Morning banner (flicker-bug regression)
+
+    /// Regression test for the real-device bug where the 2+ day banner cycled through the
+    /// whole roast pool every second (HomeView re-renders per tick and morningBanner used
+    /// .randomElement()). The line must be a pure function of the miss streak.
+    func testMorningBannerIsDeterministicPerStreak() {
+        for streak in [1, 2, 3, 4, 5, 6] {
+            let first = InsultPool.morningBanner(missStreak: streak)
+            for _ in 0..<20 {
+                let again = InsultPool.morningBanner(missStreak: streak)
+                XCTAssertEqual(again.headline, first.headline, "streak \(streak)")
+                XCTAssertEqual(again.line, first.line, "streak \(streak) line must not re-roll")
+            }
+        }
+    }
+
+    func testMorningBannerTiers() {
+        let one = InsultPool.morningBanner(missStreak: 1)
+        XCTAssertEqual(one.headline, "you skipped yesterday")
+        XCTAssertEqual(one.line, InsultPool.reckoningCanonical)
+
+        for streak in [2, 3] {
+            let banner = InsultPool.morningBanner(missStreak: streak)
+            XCTAssertEqual(banner.headline, "\(streak) days missed")
+            XCTAssertTrue(InsultPool.streak23.contains(banner.line), "streak \(streak) pulls from streak23")
+        }
+
+        for streak in [4, 5, 6] {
+            let banner = InsultPool.morningBanner(missStreak: streak)
+            XCTAssertEqual(banner.headline, "\(streak) days missed")
+            XCTAssertTrue(InsultPool.streak46.contains(banner.line), "streak \(streak) pulls from streak46")
+        }
+    }
+
+    // MARK: - Snooze escalation tiers
+
+    func testSnoozeLineTiers() {
+        for _ in 0..<20 {
+            XCTAssertTrue(InsultPool.snoozeMild.contains(InsultPool.snoozeLine(forSnoozeCount: 1)))
+            XCTAssertTrue(InsultPool.snoozeSpicy.contains(InsultPool.snoozeLine(forSnoozeCount: 2)))
+            XCTAssertTrue(InsultPool.snoozeSpicy.contains(InsultPool.snoozeLine(forSnoozeCount: 3)))
+            XCTAssertTrue(InsultPool.snoozeNuclear.contains(InsultPool.snoozeLine(forSnoozeCount: 4)))
+            XCTAssertTrue(InsultPool.snoozeNuclear.contains(InsultPool.snoozeLine(forSnoozeCount: 9)))
+        }
+    }
+
+    // MARK: - De-chef sweep guard
+
+    /// Locks in the v0.2 copy decision: no chef-persona addressing anywhere in the pools.
+    func testNoChefReferencesAnywhere() {
+        let allLines: [String] = InsultPool.zeroStreak + InsultPool.reminder
+            + InsultPool.missCheckMsg + InsultPool.snoozeMild + InsultPool.snoozeSpicy
+            + InsultPool.snoozeNuclear + InsultPool.reckoning + InsultPool.streak23
+            + InsultPool.streak46 + InsultPool.reactivation + InsultPool.successHeadline
+            + InsultPool.successAlternates + InsultPool.tomorrowInsults
+            + [InsultPool.onboardingHeadline, InsultPool.missCheckQuestion,
+               InsultPool.missCheckQuestionBody, InsultPool.missCheckYesAction,
+               InsultPool.silenceHeadline, InsultPool.silenceSub, InsultPool.successSub,
+               InsultPool.gutCheckPrompt, InsultPool.gutCheckQuestion,
+               InsultPool.snoozeSheetTitle, InsultPool.tomorrowOptionLabel,
+               InsultPool.tomorrowAlreadyScheduledWarning]
+        for line in allLines {
+            XCTAssertFalse(line.lowercased().contains("chef"), "chef reference survived the sweep: \"\(line)\"")
+        }
+    }
+
+    // MARK: - Push-to-tomorrow deferral
+
+    @MainActor
+    private func makeInMemoryContext() throws -> ModelContext {
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: [config])
+        return ModelContext(container)
+    }
+
+    @MainActor
+    func testRecordDeferredPreservesStreaksAndSetsStatus() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        settings.successStreak = 4
+        settings.missStreak = 0
+        context.insert(settings)
+
+        let key = DateKey.string(from: Date())
+        scheduler.recordDeferred(dateKey: key)
+
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .deferred)
+        XCTAssertEqual(settings.successStreak, 4, "deferring must not touch the success streak")
+        XCTAssertEqual(settings.missStreak, 0, "deferring is not a miss")
+    }
+
+    @MainActor
+    func testRecordDeferredDoesNotOverwriteResolvedDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+
+        scheduler.recordSuccess(on: Date(), settings: settings, viaHealthKit: false)
+        scheduler.recordDeferred(dateKey: DateKey.string(from: Date()))
+
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .completed, "a completed day must stay completed")
+    }
+
+    /// A deferred day must NOT be settled as a miss by the catch-up pass.
+    @MainActor
+    func testReconcileSkipsDeferredDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let calendar = Calendar(identifier: .gregorian)
+
+        let habit = Habit(schedule: (1...7).map { WeekdaySchedule(weekday: $0, hour: 18, minute: 0) })
+        let settings = UserSettings(hasOnboarded: true)
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: calendar.startOfDay(for: Date()))!
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))!
+        settings.lastSettledDateKey = DateKey.string(from: twoDaysAgo)
+        context.insert(habit)
+        context.insert(settings)
+        context.insert(DayLog(dateKey: DateKey.string(from: yesterday), status: .deferred))
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertEqual(settings.missStreak, 0, "a deferred day is not a miss")
+        XCTAssertEqual(scheduler.dayLog(for: yesterday)?.status, .deferred)
+    }
+
+    /// Ghosting the deferred obligation still costs a miss: a rest day that carries the
+    /// pushed deadline override counts as active for reconciliation.
+    @MainActor
+    func testReconcileMissesGhostedDeferredDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let calendar = Calendar(identifier: .gregorian)
+
+        let habit = Habit(schedule: []) // no scheduled days at all - pure rest week
+        let settings = UserSettings(hasOnboarded: true)
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: calendar.startOfDay(for: Date()))!
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))!
+        settings.lastSettledDateKey = DateKey.string(from: twoDaysAgo)
+        // Simulate push-to-tomorrow having moved the obligation onto yesterday - then the
+        // user never opened the app again.
+        settings.todayDeadlineOverride = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: yesterday)
+        settings.todayDeadlineOverrideDateKey = DateKey.string(from: yesterday)
+        context.insert(habit)
+        context.insert(settings)
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertEqual(settings.missStreak, 1, "ghosting the deferred workout must cost a miss")
+        XCTAssertEqual(scheduler.dayLog(for: yesterday)?.status, .missed)
+    }
+
+    // MARK: - Deadline override targeting
+
+    /// setOverride keys the override to the deadline's own day, so a pushed-to-tomorrow
+    /// deadline must not leak into today's countdown.
+    func testSetOverrideForTomorrowIsInvisibleToday() throws {
+        let settings = UserSettings()
+        let calendar = Calendar.current
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date())!
+        let tomorrowDeadline = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: tomorrow)!
+
+        settings.setOverride(deadline: tomorrowDeadline)
+
+        XCTAssertNil(settings.todayOverride(), "tomorrow's pushed deadline must not show today")
+        XCTAssertEqual(settings.todayDeadlineOverrideDateKey, DateKey.string(from: tomorrow))
+    }
+
+    // MARK: - Milestone rank (static accessor used by the success push)
+
+    func testStaticRankTitleMatchesInstance() {
+        let settings = UserSettings()
+        for streak in [0, 1, 7, 14, 30, 100, 365] {
+            settings.successStreak = streak
+            XCTAssertEqual(UserSettings.rankTitle(forStreak: streak), settings.rankTitle)
+        }
     }
 }

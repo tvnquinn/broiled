@@ -152,6 +152,14 @@ struct RootView: View {
         settings.setTodayOverride(deadline)
         scheduler?.startCycle(deadline: deadline, habit: habit)
         try? context.save()
+        // UI-test hook: the snooze sheet is normally only reachable after a deadline
+        // passes (or via the miss-check notification), which a UI test can't wait for.
+        if ProcessInfo.processInfo.arguments.contains("UI-TESTING-OPEN-SNOOZE") {
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                sheet = .snooze
+            }
+        }
     }
 
     private func logSuccess(settings: UserSettings, viaHealthKit: Bool) {
@@ -167,6 +175,12 @@ struct RootView: View {
     }
 
     private func tomorrowIsScheduled(habit: Habit) -> Bool {
+        // UI-test hooks: the real answer depends on the wall-clock weekday, which would
+        // make the push-to-tomorrow UI tests flake by day of week. Forcing flags pin the
+        // branch under test; production launches never pass them.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("UI-TESTING-TOMORROW-SCHEDULED") { return true }
+        if args.contains("UI-TESTING-TOMORROW-REST") { return false }
         guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) else { return false }
         return habit.isActiveDay(tomorrow)
     }
