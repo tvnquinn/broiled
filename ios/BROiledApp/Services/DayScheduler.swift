@@ -106,6 +106,20 @@ final class DayScheduler {
         try? context.save()
     }
 
+    /// v0.2 Wave 2 rest-day flow: a workout on a non-scheduled day is recorded for
+    /// history but leaves both streaks untouched - it's not a success (no streak
+    /// advance) and obviously not a miss.
+    func recordBonus(on date: Date, viaHealthKit: Bool) {
+        let key = DateKey.string(from: date)
+        let existing = fetchDayLog(key: key)
+        guard existing?.status ?? .pending == .pending else { return }
+        let log = existing ?? DayLog(dateKey: key)
+        log.status = .bonus
+        log.verifiedByHealthKit = viaHealthKit
+        if log.modelContext == nil { context.insert(log) }
+        try? context.save()
+    }
+
     func recordSnooze(dateKey: String) -> Int {
         let log = fetchDayLog(key: dateKey) ?? DayLog(dateKey: dateKey)
         log.snoozeCount += 1

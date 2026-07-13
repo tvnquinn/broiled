@@ -2,9 +2,16 @@ import SwiftUI
 
 struct OnboardingView: View {
     let habit: Habit
-    let onStart: (Date) -> Void
+    /// Nil when today isn't on the chosen schedule - the very first day can be a rest
+    /// day, and Home shows the rest-day state instead of a manufactured countdown.
+    let onStart: (Date?) -> Void
 
-    @State private var activeDays: Set<Int> = [2, 4, 6] // Mon, Wed, Fri (Calendar: 1=Sun)
+    // UI tests activate every day so "today has a deadline" holds on any wall-clock
+    // weekday (the countdown tests used to lean on a fallback deadline that no longer
+    // exists). The rest-day branch is pinned separately via UI-TESTING-REST-TODAY.
+    @State private var activeDays: Set<Int> = ProcessInfo.processInfo.arguments.contains("UI-TESTING")
+        ? Set(1...7)
+        : [2, 4, 6] // Mon, Wed, Fri (Calendar: 1=Sun)
     @State private var timesByWeekday: [Int: Date] = [:]
     @State private var minDuration = 30
 
@@ -119,8 +126,6 @@ struct OnboardingView: View {
         habit.schedule = schedule
         habit.minDurationMinutes = minDuration
 
-        let today = Date()
-        let deadline = habit.deadline(for: today) ?? calendar.date(byAdding: .day, value: 1, to: today) ?? today
-        onStart(deadline)
+        onStart(habit.deadline(for: Date()))
     }
 }

@@ -537,4 +537,44 @@
     </div>
 
   </div>
+
+  <div class="section-label">Wave 2 - rest days, pause, workout types</div>
+  <div class="rail">
+
+    <div class="card" id="frame-13">
+      <div class="step"><span class="num mono">13</span><span class="title">Home - rest day</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>9:41</span><span>100%</span></div>
+        <div class="content" style="position:relative;">
+          <div class="topline" style="position:absolute;top:20px;left:18px;right:18px;z-index:1;"><span class="streak">3 day streak</span><span></span></div>
+          <div class="timewrap">
+            <div class="tval" style="color:var(--ink-muted);font-size:30px;">rest day</div>
+            <div class="tsub">no deadline today. don't get used to it</div>
+          </div>
+          <div class="btn float">log a bonus workout</div>
+        </div>
+      </div></div>
+      <div class="note"><b>Fixes a real bug:</b> non-scheduled days used to render a red <b>0:00</b> countdown (the deadline silently fell back to "now"). A rest day is now a real state - no countdown, no miss-check, streak preserved. The floating button flips to <b>log a bonus workout</b>; tapping checks HealthKit first, then falls back to the honesty gate (frame 05) with "did you actually do a bonus workout?".</div>
+    </div>
+
+    <div class="card" id="frame-13b">
+      <div class="step"><span class="num mono">13b</span><span class="title">Home - bonus logged</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>11:02</span><span>96%</span></div>
+        <div class="content" style="position:relative;">
+          <div class="topline" style="position:absolute;top:20px;left:18px;right:18px;z-index:1;"><span class="streak">3 day streak</span><span></span></div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+            <div class="roastbox silence">
+              cute. bonus workouts don't buy back missed ones - no streak freezes here
+            </div>
+          </div>
+          <div class="btn float" style="opacity:0.4;">bonus logged ✓</div>
+        </div>
+      </div></div>
+      <div class="note">Bonus workouts are recorded in history (they'll show in the Burn Book / workout log) but <b>never advance the streak</b> - note the streak stays at 3. Ash tint, not bronze: this is an acknowledgment, not a win. Button disables exactly like "Locked in ✓".</div>
+    </div>
+
+  </div>
 </div>

@@ -154,6 +154,35 @@ final class BroiledUITests: XCTestCase {
         XCTAssertTrue(app.buttons["pushToTomorrowButton"].waitForExistence(timeout: 12), "cancel should return to the sheet")
     }
 
+    // MARK: - v0.2 Wave 2 rest-day flow
+
+    /// Rest days show a real rest state (not the old red 0:00 countdown), and the bonus
+    /// flow runs: bonus button -> honesty gate -> logged state with the no-streak-freeze
+    /// line and a disabled button.
+    func testRestDayShowsRestStateAndBonusFlow() throws {
+        app.launchArguments += ["UI-TESTING-REST-TODAY"]
+        app.launch()
+        app.buttons["Start"].tap()
+
+        XCTAssertTrue(app.staticTexts["rest day"].waitForExistence(timeout: 12))
+        XCTAssertFalse(app.staticTexts["Workout in"].exists, "no countdown on a rest day")
+
+        let bonusButton = app.buttons["bonusWorkoutButton"]
+        XCTAssertTrue(bonusButton.waitForExistence(timeout: 12))
+        bonusButton.tap()
+
+        // No HealthKit workout in the test sim, so the honesty gate appears.
+        let yesButton = app.buttons["yes!"]
+        XCTAssertTrue(yesButton.waitForExistence(timeout: 12), "bonus gut-check should appear")
+        yesButton.tap()
+
+        XCTAssertTrue(
+            app.staticTexts["cute. bonus workouts don't buy back missed ones - no streak freezes here"]
+                .waitForExistence(timeout: 12)
+        )
+        XCTAssertFalse(app.buttons["bonusWorkoutButton"].isEnabled, "bonus button disables after logging")
+    }
+
     /// "take the miss" routes through the quit path and dismisses the sheet.
     func testSnoozeSheetTakeTheMissDismisses() throws {
         app.launchArguments += ["UI-TESTING-OPEN-SNOOZE", "UI-TESTING-TOMORROW-SCHEDULED"]

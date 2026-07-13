@@ -9,6 +9,9 @@ enum DayStatus: String, Codable {
     /// is a rest day). Neither a success nor a miss - the day drops out of streak math,
     /// and reconcile() must not settle it as a miss.
     case deferred
+    /// v0.2 Wave 2: a workout logged on a rest day. Recorded for history but never
+    /// advances the streak (locked decision: bonus workouts don't buy back misses).
+    case bonus
 }
 
 @Model

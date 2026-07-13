@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct GutCheckSheet: View {
+    /// The bonus-workout flow reuses this sheet with its own question - same honesty
+    /// gate, different thing being sworn to.
+    var question: String = InsultPool.gutCheckQuestion
     let onYes: () -> Void
     let onNo: () -> Void
 
@@ -12,7 +15,7 @@ struct GutCheckSheet: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(InsultPool.gutCheckPrompt).font(.system(size: 15)).foregroundStyle(Theme.ink)
-                    Text(InsultPool.gutCheckQuestion).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
+                    Text(question).font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.ink)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)

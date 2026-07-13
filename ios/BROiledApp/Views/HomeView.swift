@@ -5,10 +5,15 @@ struct HomeView: View {
     let settings: UserSettings
     let health: HealthKitService
     let isCompletedToday: Bool
+    let bonusLoggedToday: Bool
     let notificationsDenied: Bool
+    /// UI-test hook (UI-TESTING-REST-TODAY): pins the rest-day branch regardless of the
+    /// wall-clock weekday. Production launches never set it.
+    var forceRestDay = false
     let onLoggedTapped: () -> Void
     let onMissCheckFired: () -> Void
     let onAutoSuccess: () -> Void
+    let onBonusTapped: () -> Void
     let onSettingsTapped: () -> Void
 
     @State private var now = Date()
@@ -17,19 +22,24 @@ struct HomeView: View {
 
     @State private var successHeadline: String?
 
-    private var deadline: Date {
-        settings.todayOverride() ?? habit.deadline(for: Date()) ?? Date()
+    /// Nil on a rest day. The old `?? Date()` fallback here was the "red 0:00 countdown
+    /// on rest days" bug - a non-scheduled day has no deadline, full stop.
+    private var deadline: Date? {
+        if forceRestDay { return nil }
+        return settings.todayOverride() ?? habit.deadline(for: Date())
     }
+
+    private var isRestDay: Bool { deadline == nil }
 
     /// The actual miss-check doesn't fire at the bare deadline - HealthKit needs time for
     /// a just-started workout to land even if the user heads out right at the deadline.
     /// See plan.md's notification schedule: deadline + duration + 30min.
-    private var missCheckTime: Date {
-        deadline.addingTimeInterval(Double(habit.minDurationMinutes * 60) + 30 * 60)
+    private var missCheckTime: Date? {
+        deadline?.addingTimeInterval(Double(habit.minDurationMinutes * 60) + 30 * 60)
     }
 
     private var remaining: TimeInterval {
-        deadline.timeIntervalSince(now)
+        deadline?.timeIntervalSince(now) ?? 0
     }
 
     private var yesterdayMissed: Bool {
@@ -122,7 +132,27 @@ struct HomeView: View {
                             .frame(height: 3)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                } else {
+                } else if isRestDay {
+                    // v0.2 Wave 2: a rest day is a real state, not a broken countdown.
+                    if bonusLoggedToday {
+                        Text(InsultPool.bonusLoggedLine)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.ink)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(14)
+                            .background(Theme.ash.opacity(0.35))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } else {
+                        VStack(spacing: 6) {
+                            Text(InsultPool.restDayLabel)
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
+                                .foregroundStyle(Theme.inkMuted)
+                            Text(InsultPool.restDaySub)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                    }
+                } else if let deadline {
                     VStack(spacing: 6) {
                         Text("Workout in").font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
                         Text(format(remaining))
@@ -136,19 +166,34 @@ struct HomeView: View {
                 }
                 Spacer()
 
-                Button(action: onLoggedTapped) {
-                    Text(isCompletedToday ? InsultPool.lockedInDoneButton : InsultPool.lockedInButton)
-                        .font(.system(size: 15, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(16)
-                        .background(Theme.panel)
-                        .foregroundStyle(Theme.ink)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                if isRestDay && !isCompletedToday {
+                    Button(action: onBonusTapped) {
+                        Text(bonusLoggedToday ? InsultPool.bonusDoneButton : InsultPool.bonusButton)
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(16)
+                            .background(Theme.panel)
+                            .foregroundStyle(Theme.ink)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .disabled(bonusLoggedToday)
+                    .opacity(bonusLoggedToday ? 0.4 : 1)
+                    .accessibilityIdentifier("bonusWorkoutButton")
+                } else {
+                    Button(action: onLoggedTapped) {
+                        Text(isCompletedToday ? InsultPool.lockedInDoneButton : InsultPool.lockedInButton)
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(16)
+                            .background(Theme.panel)
+                            .foregroundStyle(Theme.ink)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .disabled(isCompletedToday)
+                    .opacity(isCompletedToday ? 0.4 : 1)
                 }
-                .disabled(isCompletedToday)
-                .opacity(isCompletedToday ? 0.4 : 1)
 
-                if !isCompletedToday && remaining <= 0 {
+                if !isCompletedToday && !isRestDay && remaining <= 0 {
                     Button(action: onMissCheckFired) {
                         Text("Push it back")
                             .font(.system(size: 14, weight: .semibold))
@@ -164,7 +209,7 @@ struct HomeView: View {
         .preferredColorScheme(.dark)
         .onReceive(timer) { date in
             now = date
-            guard !isCompletedToday else { return }
+            guard !isCompletedToday, let missCheckTime else { return }
             if now >= missCheckTime && !checkedThisCycle {
                 checkedThisCycle = true
                 Task { await checkOutcome() }

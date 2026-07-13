@@ -158,6 +158,15 @@ enum InsultPool {
     static let tomorrowConfirmMiss = "take the miss"
     static let tomorrowCancel = "nvm, I'll work out"
 
+    // Rest-day flow + bonus workouts (v0.2 Wave 2)
+    static let restDayLabel = "rest day"
+    static let restDaySub = "no deadline today. don't get used to it"
+    static let bonusButton = "log a bonus workout"
+    static let bonusDoneButton = "bonus logged ✓"
+    static let bonusGutCheckQuestion = "did you actually do a bonus workout?"
+    /// Shown after a bonus workout is logged - the locked "no streak freeze" copy.
+    static let bonusLoggedLine = "cute. bonus workouts don't buy back missed ones - no streak freezes here"
+
     // Notifications-denied guard (v0.2 Wave 1)
     static let notificationsDeniedTitle = "notifications are off"
     static let notificationsDeniedBody = "this app is literally a notification. turn them back on or nothing here works"

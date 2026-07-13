@@ -20,6 +20,7 @@ struct RootView: View {
 
     enum ActiveSheet: Identifiable {
         case gutCheck
+        case bonusGutCheck
         case snooze
         case settings
         var id: Int { hashValue }
@@ -42,13 +43,16 @@ struct RootView: View {
                         settings: settings,
                         health: health,
                         isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
+                        bonusLoggedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .bonus,
                         notificationsDenied: notificationsDenied,
+                        forceRestDay: ProcessInfo.processInfo.arguments.contains("UI-TESTING-REST-TODAY"),
                         onLoggedTapped: {
                             rootLog.info("locked-in tapped; presenting gut-check (was: \(String(describing: sheet)))")
                             sheet = .gutCheck
                         },
                         onMissCheckFired: { sheet = .snooze },
                         onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) },
+                        onBonusTapped: { checkBonus(habit: habit, settings: settings) },
                         onSettingsTapped: { sheet = .settings }
                     )
                     .sheet(item: $sheet) { active in
@@ -56,6 +60,13 @@ struct RootView: View {
                         case .gutCheck:
                             GutCheckSheet(
                                 onYes: { logSuccess(settings: settings, viaHealthKit: false); sheet = nil },
+                                onNo: { sheet = nil }
+                            )
+                            .presentationDetents([.medium])
+                        case .bonusGutCheck:
+                            GutCheckSheet(
+                                question: InsultPool.bonusGutCheckQuestion,
+                                onYes: { scheduler?.recordBonus(on: Date(), viaHealthKit: false); sheet = nil },
                                 onNo: { sheet = nil }
                             )
                             .presentationDetents([.medium])
@@ -155,11 +166,15 @@ struct RootView: View {
         try? context.save()
     }
 
-    private func start(deadline: Date, habit: Habit, settings: UserSettings) {
+    private func start(deadline: Date?, habit: Habit, settings: UserSettings) {
         settings.hasOnboarded = true
         settings.lastSettledDateKey = DateKey.string(from: Date())
-        settings.setTodayOverride(deadline)
-        scheduler?.startCycle(deadline: deadline, habit: habit)
+        // Onboarding on a rest day sets no deadline and schedules nothing - the next
+        // launch on a scheduled day picks up the weekly schedule (see .task above).
+        if let deadline {
+            settings.setTodayOverride(deadline)
+            scheduler?.startCycle(deadline: deadline, habit: habit)
+        }
         try? context.save()
         // UI-test hook: the snooze sheet is normally only reachable after a deadline
         // passes (or via the miss-check notification), which a UI test can't wait for.
@@ -173,6 +188,18 @@ struct RootView: View {
 
     private func logSuccess(settings: UserSettings, viaHealthKit: Bool) {
         scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: viaHealthKit)
+    }
+
+    /// Bonus flow (rest days only): trust HealthKit first, fall back to the honesty gate.
+    private func checkBonus(habit: Habit, settings: UserSettings) {
+        Task { @MainActor in
+            let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
+            if found {
+                scheduler?.recordBonus(on: Date(), viaHealthKit: true)
+            } else {
+                sheet = .bonusGutCheck
+            }
+        }
     }
 
     private func snooze(to newDeadline: Date, habit: Habit, settings: UserSettings) {

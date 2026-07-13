@@ -317,6 +317,8 @@ final class Wave1Tests: XCTestCase {
             + InsultPool.snoozeNuclear + InsultPool.reckoning + InsultPool.streak23
             + InsultPool.streak46 + InsultPool.reactivation + InsultPool.successHeadline
             + InsultPool.successAlternates + InsultPool.tomorrowInsults
+            + [InsultPool.restDayLabel, InsultPool.restDaySub, InsultPool.bonusButton,
+               InsultPool.bonusGutCheckQuestion, InsultPool.bonusLoggedLine]
             + [InsultPool.onboardingHeadline, InsultPool.missCheckQuestion,
                InsultPool.missCheckQuestionBody, InsultPool.missCheckYesAction,
                InsultPool.silenceHeadline, InsultPool.silenceSub, InsultPool.successSub,
@@ -440,5 +442,72 @@ final class Wave1Tests: XCTestCase {
             settings.successStreak = streak
             XCTAssertEqual(UserSettings.rankTitle(forStreak: streak), settings.rankTitle)
         }
+    }
+}
+
+/// v0.2 Wave 2 coverage: rest-day bonus workouts.
+final class Wave2Tests: XCTestCase {
+
+    @MainActor
+    private func makeInMemoryContext() throws -> ModelContext {
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: [config])
+        return ModelContext(container)
+    }
+
+    // MARK: - Bonus workouts (rest-day flow)
+
+    /// The locked decision: bonus workouts are recorded but never move either streak.
+    @MainActor
+    func testRecordBonusLeavesBothStreaksUntouched() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        settings.successStreak = 5
+        settings.missStreak = 0
+        context.insert(settings)
+
+        scheduler.recordBonus(on: Date(), viaHealthKit: true)
+
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .bonus)
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.verifiedByHealthKit, true)
+        XCTAssertEqual(settings.successStreak, 5, "bonus must not advance the streak")
+        XCTAssertEqual(settings.missStreak, 0)
+    }
+
+    @MainActor
+    func testRecordBonusDoesNotOverwriteResolvedDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+
+        scheduler.recordSuccess(on: Date(), settings: settings, viaHealthKit: false)
+        scheduler.recordBonus(on: Date(), viaHealthKit: false)
+
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .completed, "a completed day stays completed")
+    }
+
+    /// A past bonus day must never be re-settled as a miss by the catch-up pass.
+    @MainActor
+    func testReconcileSkipsBonusDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let calendar = Calendar(identifier: .gregorian)
+
+        let habit = Habit(schedule: (1...7).map { WeekdaySchedule(weekday: $0, hour: 18, minute: 0) })
+        let settings = UserSettings(hasOnboarded: true)
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: calendar.startOfDay(for: Date()))!
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))!
+        settings.lastSettledDateKey = DateKey.string(from: twoDaysAgo)
+        context.insert(habit)
+        context.insert(settings)
+        context.insert(DayLog(dateKey: DateKey.string(from: yesterday), status: .bonus))
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertEqual(settings.missStreak, 0)
+        XCTAssertEqual(scheduler.dayLog(for: yesterday)?.status, .bonus)
     }
 }
