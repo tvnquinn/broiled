@@ -8,3 +8,6 @@ ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 ios/DerivedData/
 ios/*.xcworkspace/xcuserdata/
+
+# Xcode user state churn
+broiled/broiled.xcodeproj/project.xcworkspace/xcuserdata/
