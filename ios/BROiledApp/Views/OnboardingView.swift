@@ -20,7 +20,11 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             Theme.bg.ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 20) {
+            // Scrollable body with Start pinned below - seven active days of per-day
+            // time rows overflow the screen (same fix as ScheduleEditView).
+            VStack(alignment: .leading, spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
                 Text(InsultPool.onboardingHeadline)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.ink)
@@ -77,8 +81,9 @@ struct OnboardingView: View {
                 }
                 .padding(12)
                 .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line, style: StrokeStyle(lineWidth: 1.5, dash: [4])))
-
-                Spacer()
+                    }
+                    .padding(20)
+                }
 
                 Button {
                     commit()
@@ -93,8 +98,9 @@ struct OnboardingView: View {
                 }
                 .disabled(activeDays.isEmpty)
                 .opacity(activeDays.isEmpty ? 0.4 : 1)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
-            .padding(20)
         }
         .preferredColorScheme(.dark)
     }
