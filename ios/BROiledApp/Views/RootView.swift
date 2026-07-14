@@ -115,7 +115,7 @@ struct RootView: View {
             }
             if let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded {
                 engine.reconcile(habit: habit, settings: settings)
-                if !settings.isAbandoned {
+                if !settings.isAbandoned && !settings.isPausedToday {
                     let todayKey = DateKey.string(from: Date())
                     let completedToday = dayLogs.first { $0.dateKey == todayKey }?.status == .completed
                     if !completedToday, let deadline = settings.todayOverride() ?? habit.deadline(for: Date()) {
@@ -141,7 +141,10 @@ struct RootView: View {
             Task { @MainActor in
                 let habit = try? context.fetch(FetchDescriptor<Habit>()).first
                 let settings = try? context.fetch(FetchDescriptor<UserSettings>()).first
-                guard let habit, let settings, settings.hasOnboarded, !settings.isAbandoned else { return }
+                // Paused days are frozen: a workout during a pause neither advances the
+                // streak nor settles anything, so skip auto-detection entirely.
+                guard let habit, let settings, settings.hasOnboarded, !settings.isAbandoned,
+                      !settings.isPausedToday else { return }
 
                 let engine = DayScheduler(context: context)
                 let today = Date()

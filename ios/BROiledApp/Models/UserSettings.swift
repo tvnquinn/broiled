@@ -17,6 +17,14 @@ final class UserSettings {
     var todayDeadlineOverride: Date?
     var todayDeadlineOverrideDateKey: String?
 
+    /// v0.2 Wave 2 pause mode: an inclusive DateKey range with no notifications, no
+    /// misses, and a frozen streak (not broken, not growing). Reconcile clears the range
+    /// once it's over and stamps `resumeBannerDateKey` so Home can throw the welcome-back
+    /// line exactly once.
+    var pauseStartDateKey: String?
+    var pauseEndDateKey: String?
+    var resumeBannerDateKey: String?
+
     init(
         successStreak: Int = 0,
         missStreak: Int = 0,
@@ -49,6 +57,15 @@ final class UserSettings {
         guard todayDeadlineOverrideDateKey == DateKey.string(from: Date()) else { return nil }
         return todayDeadlineOverride
     }
+
+    /// yyyy-MM-dd keys sort lexicographically, so plain string comparison is a correct
+    /// date comparison here.
+    func isPaused(onKey key: String) -> Bool {
+        guard let start = pauseStartDateKey, let end = pauseEndDateKey else { return false }
+        return key >= start && key <= end
+    }
+
+    var isPausedToday: Bool { isPaused(onKey: DateKey.string(from: Date())) }
 
     /// Drops any locked-in override for today so a freshly edited schedule takes effect
     /// immediately instead of being masked by a stale snooze/onboarding deadline.

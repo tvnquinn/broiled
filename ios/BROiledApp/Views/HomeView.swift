@@ -47,6 +47,19 @@ struct HomeView: View {
         return habit.isActiveDay(yesterday) && settings.missStreak > 0
     }
 
+    private var isPausedToday: Bool { settings.isPausedToday }
+
+    /// The welcome-back jab, shown only on the calendar day reconcile stamped when the
+    /// pause ended. Takes the banner slot over the morning reckoning - it's fresher.
+    private var showResumeBanner: Bool {
+        settings.resumeBannerDateKey == DateKey.string(from: Date())
+    }
+
+    private var pauseEndsText: String {
+        guard let end = settings.pauseEndDateKey, let endDate = DateKey.date(from: end) else { return "" }
+        return "until \(endDate.formatted(date: .abbreviated, time: .omitted))"
+    }
+
     var body: some View {
         ZStack {
             Theme.bg.ignoresSafeArea()
@@ -89,7 +102,15 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
 
-                if yesterdayMissed {
+                if showResumeBanner {
+                    Text(InsultPool.resumeLine)
+                        .font(.system(size: 14, weight: .bold))
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.accent.opacity(0.13))
+                        .foregroundStyle(Theme.ink)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else if yesterdayMissed && !isPausedToday {
                     let banner = InsultPool.morningBanner(missStreak: settings.missStreak)
                     VStack(alignment: .leading, spacing: 6) {
                         Text(banner.headline).font(.system(size: 14, weight: .regular))
@@ -132,6 +153,23 @@ struct HomeView: View {
                             .frame(height: 3)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else if isPausedToday {
+                    // Pause outranks the countdown even on a scheduled day - no deadline,
+                    // no miss-check, streak frozen.
+                    VStack(spacing: 6) {
+                        Text(InsultPool.pausedLabel)
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.inkMuted)
+                        Text(InsultPool.pausedLine)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.inkMuted)
+                            .multilineTextAlignment(.center)
+                        if !pauseEndsText.isEmpty {
+                            Text(pauseEndsText)
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                    }
                 } else if isRestDay {
                     // v0.2 Wave 2: a rest day is a real state, not a broken countdown.
                     if bonusLoggedToday {
@@ -166,7 +204,9 @@ struct HomeView: View {
                 }
                 Spacer()
 
-                if isRestDay && !isCompletedToday {
+                if isPausedToday && !isCompletedToday {
+                    // No actions while paused - the whole point is that nothing is owed.
+                } else if isRestDay && !isCompletedToday {
                     Button(action: onBonusTapped) {
                         Text(bonusLoggedToday ? InsultPool.bonusDoneButton : InsultPool.bonusButton)
                             .font(.system(size: 15, weight: .semibold))
@@ -193,7 +233,7 @@ struct HomeView: View {
                     .opacity(isCompletedToday ? 0.4 : 1)
                 }
 
-                if !isCompletedToday && !isRestDay && remaining <= 0 {
+                if !isCompletedToday && !isRestDay && !isPausedToday && remaining <= 0 {
                     Button(action: onMissCheckFired) {
                         Text("Push it back")
                             .font(.system(size: 14, weight: .semibold))
@@ -209,7 +249,7 @@ struct HomeView: View {
         .preferredColorScheme(.dark)
         .onReceive(timer) { date in
             now = date
-            guard !isCompletedToday, let missCheckTime else { return }
+            guard !isCompletedToday, !isPausedToday, let missCheckTime else { return }
             if now >= missCheckTime && !checkedThisCycle {
                 checkedThisCycle = true
                 Task { await checkOutcome() }

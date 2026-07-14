@@ -39,6 +39,14 @@ final class DayScheduler {
             cursor = next
         }
         settings.lastSettledDateKey = DateKey.string(from: today)
+
+        // Pause over: clear the range and stamp today so Home shows the resume line
+        // exactly one calendar day (whichever day the user next opens the app).
+        if let end = settings.pauseEndDateKey, DateKey.string(from: today) > end {
+            settings.pauseStartDateKey = nil
+            settings.pauseEndDateKey = nil
+            settings.resumeBannerDateKey = DateKey.string(from: today)
+        }
         try? context.save()
     }
 
@@ -47,6 +55,8 @@ final class DayScheduler {
         if let existing = fetchDayLog(key: key), existing.status != .pending {
             return // already resolved (completed, explicitly missed, or deferred to tomorrow)
         }
+        // Paused days are exempt from miss logic entirely - no misses, streak frozen.
+        guard !settings.isPaused(onKey: key) else { return }
         // A day counts as active if it's on the weekly schedule OR it carries a pushed
         // deadline override (push-to-tomorrow onto a rest day) - ghosting a deferred
         // workout still costs a miss.

@@ -183,6 +183,61 @@ final class BroiledUITests: XCTestCase {
         XCTAssertFalse(app.buttons["bonusWorkoutButton"].isEnabled, "bonus button disables after logging")
     }
 
+    // MARK: - v0.2 Wave 2 pause mode
+
+    /// Pausing from Settings (default range: today + 7 days) flips Home into the paused
+    /// state - no countdown, no action button - and the pause row reflects the range.
+    func testPauseFromSettingsShowsPausedHome() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        let settingsButton = app.buttons["settingsButton"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 12))
+        settingsButton.tap()
+
+        let pauseRow = app.buttons["pauseRowButton"]
+        XCTAssertTrue(pauseRow.waitForExistence(timeout: 12))
+        pauseRow.tap()
+
+        let pauseConfirm = app.buttons["pauseConfirmButton"]
+        XCTAssertTrue(pauseConfirm.waitForExistence(timeout: 12))
+        pauseConfirm.tap()
+
+        // Back on Settings after pausing; close it to see Home.
+        XCTAssertTrue(app.buttons["closeSettingsButton"].waitForExistence(timeout: 12))
+        app.buttons["closeSettingsButton"].tap()
+
+        XCTAssertTrue(app.staticTexts["paused"].waitForExistence(timeout: 12))
+        XCTAssertFalse(app.staticTexts["Workout in"].exists, "no countdown while paused")
+        XCTAssertFalse(app.buttons["I've locked in today"].exists, "no actions while paused")
+    }
+
+    /// "resume now" clears the pause and Home throws the welcome-back line.
+    func testResumeNowRestoresHomeWithResumeLine() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        let settingsButton = app.buttons["settingsButton"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 12))
+        settingsButton.tap()
+        app.buttons["pauseRowButton"].tap()
+        XCTAssertTrue(app.buttons["pauseConfirmButton"].waitForExistence(timeout: 12))
+        app.buttons["pauseConfirmButton"].tap()
+
+        // Re-enter the pause editor - it now shows the active pause + resume button.
+        XCTAssertTrue(app.buttons["pauseRowButton"].waitForExistence(timeout: 12))
+        app.buttons["pauseRowButton"].tap()
+        let resumeButton = app.buttons["resumeNowButton"]
+        XCTAssertTrue(resumeButton.waitForExistence(timeout: 12))
+        resumeButton.tap()
+
+        XCTAssertTrue(app.buttons["closeSettingsButton"].waitForExistence(timeout: 12))
+        app.buttons["closeSettingsButton"].tap()
+
+        XCTAssertTrue(app.staticTexts["break's over. hope you're not"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts["Workout in"].waitForExistence(timeout: 12), "countdown returns after resume")
+    }
+
     /// "take the miss" routes through the quit path and dismisses the sheet.
     func testSnoozeSheetTakeTheMissDismisses() throws {
         app.launchArguments += ["UI-TESTING-OPEN-SNOOZE", "UI-TESTING-TOMORROW-SCHEDULED"]

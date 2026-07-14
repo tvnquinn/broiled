@@ -318,7 +318,8 @@ final class Wave1Tests: XCTestCase {
             + InsultPool.streak46 + InsultPool.reactivation + InsultPool.successHeadline
             + InsultPool.successAlternates + InsultPool.tomorrowInsults
             + [InsultPool.restDayLabel, InsultPool.restDaySub, InsultPool.bonusButton,
-               InsultPool.bonusGutCheckQuestion, InsultPool.bonusLoggedLine]
+               InsultPool.bonusGutCheckQuestion, InsultPool.bonusLoggedLine,
+               InsultPool.pausedLabel, InsultPool.pausedLine, InsultPool.resumeLine]
             + [InsultPool.onboardingHeadline, InsultPool.missCheckQuestion,
                InsultPool.missCheckQuestionBody, InsultPool.missCheckYesAction,
                InsultPool.silenceHeadline, InsultPool.silenceSub, InsultPool.successSub,
@@ -487,6 +488,96 @@ final class Wave2Tests: XCTestCase {
         scheduler.recordBonus(on: Date(), viaHealthKit: false)
 
         XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .completed, "a completed day stays completed")
+    }
+
+    // MARK: - Pause mode
+
+    func testIsPausedRangeIsInclusive() {
+        let settings = UserSettings()
+        settings.pauseStartDateKey = "2026-07-10"
+        settings.pauseEndDateKey = "2026-07-15"
+
+        XCTAssertFalse(settings.isPaused(onKey: "2026-07-09"))
+        XCTAssertTrue(settings.isPaused(onKey: "2026-07-10"), "start day is paused")
+        XCTAssertTrue(settings.isPaused(onKey: "2026-07-12"))
+        XCTAssertTrue(settings.isPaused(onKey: "2026-07-15"), "end day is paused")
+        XCTAssertFalse(settings.isPaused(onKey: "2026-07-16"))
+        XCTAssertFalse(UserSettings().isPaused(onKey: "2026-07-12"), "no range set = never paused")
+    }
+
+    /// The whole point of pause mode: scheduled days inside the range produce no misses
+    /// and the streak comes out the other side exactly as it went in.
+    @MainActor
+    func testReconcileSkipsPausedDaysAndFreezesStreak() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let calendar = Calendar(identifier: .gregorian)
+
+        let habit = Habit(schedule: (1...7).map { WeekdaySchedule(weekday: $0, hour: 18, minute: 0) })
+        let settings = UserSettings(hasOnboarded: true)
+        settings.successStreak = 9
+        let start = calendar.startOfDay(for: Date())
+        let fourDaysAgo = calendar.date(byAdding: .day, value: -4, to: start)!
+        let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: start)!
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: start)!
+        settings.lastSettledDateKey = DateKey.string(from: fourDaysAgo)
+        // Pause covered three days ago through yesterday - every skipped day is exempt.
+        settings.pauseStartDateKey = DateKey.string(from: threeDaysAgo)
+        settings.pauseEndDateKey = DateKey.string(from: yesterday)
+        context.insert(habit)
+        context.insert(settings)
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertEqual(settings.missStreak, 0, "paused days must not be settled as misses")
+        XCTAssertEqual(settings.successStreak, 9, "streak frozen, not broken")
+    }
+
+    /// Once the pause range is behind us, reconcile clears it and stamps today for the
+    /// one-day resume banner.
+    @MainActor
+    func testReconcileClearsExpiredPauseAndStampsResumeBanner() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let calendar = Calendar(identifier: .gregorian)
+
+        let habit = Habit(schedule: [])
+        let settings = UserSettings(hasOnboarded: true)
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))!
+        settings.lastSettledDateKey = DateKey.string(from: yesterday)
+        settings.pauseStartDateKey = DateKey.string(from: calendar.date(byAdding: .day, value: -3, to: Date())!)
+        settings.pauseEndDateKey = DateKey.string(from: yesterday)
+        context.insert(habit)
+        context.insert(settings)
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertNil(settings.pauseStartDateKey)
+        XCTAssertNil(settings.pauseEndDateKey)
+        XCTAssertEqual(settings.resumeBannerDateKey, DateKey.string(from: Date()))
+    }
+
+    /// A still-active pause must survive reconcile untouched (no premature clear).
+    @MainActor
+    func testReconcileLeavesActivePauseAlone() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+
+        let habit = Habit(schedule: [])
+        let settings = UserSettings(hasOnboarded: true)
+        settings.lastSettledDateKey = DateKey.string(from: Date())
+        settings.pauseStartDateKey = DateKey.string(from: Date())
+        let calendar = Calendar(identifier: .gregorian)
+        settings.pauseEndDateKey = DateKey.string(from: calendar.date(byAdding: .day, value: 3, to: Date())!)
+        context.insert(habit)
+        context.insert(settings)
+
+        scheduler.reconcile(habit: habit, settings: settings, calendar: calendar)
+
+        XCTAssertNotNil(settings.pauseStartDateKey)
+        XCTAssertNotNil(settings.pauseEndDateKey)
+        XCTAssertNil(settings.resumeBannerDateKey)
+        XCTAssertTrue(settings.isPausedToday)
     }
 
     /// A past bonus day must never be re-settled as a miss by the catch-up pass.

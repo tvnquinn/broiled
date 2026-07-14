@@ -167,6 +167,13 @@ enum InsultPool {
     /// Shown after a bonus workout is logged - the locked "no streak freeze" copy.
     static let bonusLoggedLine = "cute. bonus workouts don't buy back missed ones - no streak freezes here"
 
+    // Pause mode (v0.2 Wave 2) - generic guilt, deliberately not travel-specific.
+    static let pausedLabel = "paused"
+    static let pausedLine = "paused. your muscles didn't get the memo, but fine"
+    static let resumeLine = "break's over. hope you're not"
+    static let pauseButton = "Pause"
+    static let resumeNowButton = "resume now"
+
     // Notifications-denied guard (v0.2 Wave 1)
     static let notificationsDeniedTitle = "notifications are off"
     static let notificationsDeniedBody = "this app is literally a notification. turn them back on or nothing here works"
