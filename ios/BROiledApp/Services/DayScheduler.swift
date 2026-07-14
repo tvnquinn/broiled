@@ -92,6 +92,7 @@ final class DayScheduler {
         settings.successStreak += 1
         settings.missStreak = 0
         settings.isAbandoned = false
+        settings.bestStreak = max(settings.bestStreak, settings.successStreak)
         notifications.cancelDeadlinePair()
         notifications.cancelMorningReckoning()
         try? context.save()

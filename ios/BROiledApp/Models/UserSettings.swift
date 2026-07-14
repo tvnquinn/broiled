@@ -25,6 +25,14 @@ final class UserSettings {
     var pauseEndDateKey: String?
     var resumeBannerDateKey: String?
 
+    /// v0.2 Wave 3: high-water mark of successStreak. Optional with a computed accessor
+    /// so rows created before the field existed migrate cleanly.
+    var bestStreakStored: Int?
+    var bestStreak: Int {
+        get { bestStreakStored ?? 0 }
+        set { bestStreakStored = newValue }
+    }
+
     init(
         successStreak: Int = 0,
         missStreak: Int = 0,

@@ -39,6 +39,10 @@ struct SettingsView: View {
 
                     row(key: "HEALTHKIT", value: health.isAuthorized ? "Connected ›" : "Not connected ›", trailing: "")
 
+                    row(key: "BEST STREAK", value: settings.bestStreak > 0
+                        ? "\(settings.bestStreak) days - \(UserSettings.rankTitle(forStreak: settings.bestStreak))"
+                        : "none yet. bold strategy", trailing: "")
+
                     Button { showPauseEditor = true } label: {
                         row(key: "PAUSE", value: pauseSummary, trailing: "date range ›")
                     }

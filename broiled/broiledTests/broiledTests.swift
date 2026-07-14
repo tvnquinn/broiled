@@ -634,6 +634,32 @@ final class Wave2Tests: XCTestCase {
         XCTAssertTrue(settings.isPausedToday)
     }
 
+    // MARK: - Best streak (v0.2 Wave 3)
+
+    /// bestStreak is a high-water mark: it rides successStreak up and survives resets.
+    @MainActor
+    func testBestStreakIsHighWaterMark() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+        let calendar = Calendar(identifier: .gregorian)
+
+        for offset in (0..<3).reversed() {
+            let day = calendar.date(byAdding: .day, value: -offset, to: Date())!
+            scheduler.recordSuccess(on: day, settings: settings, viaHealthKit: false)
+        }
+        XCTAssertEqual(settings.bestStreak, 3)
+
+        scheduler.recordMiss(dateKey: "2099-01-01", settings: settings)
+        XCTAssertEqual(settings.successStreak, 0)
+        XCTAssertEqual(settings.bestStreak, 3, "a miss resets the streak, never the best")
+
+        // Legacy rows (nil stored value) read as 0 rather than crashing.
+        let legacy = UserSettings()
+        XCTAssertEqual(legacy.bestStreak, 0)
+    }
+
     // MARK: - Burn Book (v0.2 Wave 3)
 
     /// What Home shows is what the book collects: recordSuccess stores the compliment

@@ -195,9 +195,9 @@
 
 <div class="page">
   <header class="top">
-    <p class="eyebrow">Phase 0 Wireframes - Gen-Z Voice</p>
+    <p class="eyebrow">Phase 0 + v0.2 Wireframes - Gen-Z Voice</p>
     <h1>BROiled: An iPhone App Designed to Remind You To Work Out</h1>
-    <p>Twelve screens covering the true MVP loop: set a schedule once, get counted down to every day, snooze if you must, get roasted or grudgingly congratulated, and go dark for a week if you don't show up. Push Notifications as reminders.</p>
+    <p>The true MVP loop: set a schedule once, get counted down to every day, snooze if you must, get roasted or grudgingly congratulated, and go dark for a week if you don't show up. Push Notifications as reminders. v0.2 adds rest days + bonus workouts, pause mode, workout types (frames 13-15) and the Burn Book, Live Activity countdown, and home-screen widget (frames 16-18).</p>
     <div class="palette">
       <span class="swatch"><i style="background:#0c0c0e;"></i>bg #0C0C0E</span>
       <span class="swatch"><i style="background:#1a1a1f;"></i>surface #1A1A1F</span>
@@ -693,6 +693,54 @@
         </div>
       </div></div>
       <div class="note"><b>The collection page</b> (Settings → the Burn Book). Chronological history of every line actually thrown - date + line + W/L chip. Unlock trackers count <b>distinct</b> lines against the surfaceable pools (36 roasts, 10 compliments; notification-body pools are excluded since delivery can't be observed). Badge ladder is itself insults: roasts 5 = <b>certified punching bag</b>, 10 = <b>glutton for punishment</b>, 25 = <b>roast magnet</b>, 30 = <b>well done</b>, all = <b>fully roasted</b>; compliments 3 = <b>barely tolerable</b>, 7 = <b>annoyingly consistent</b>, all = <b>too hot to roast</b> (the reserved easter egg becomes the crown badge). Thresholds are tuned down from the plan's 50/5/10 to stay attainable with the real pool sizes. This also finally surfaces the snooze escalation lines (shown under the countdown after snoozing), the success alternates, and the reactivation jabs - all previously written but unreachable.</div>
+    </div>
+
+    <div class="card" id="frame-17">
+      <div class="step"><span class="num mono">17</span><span class="title">Live Activity - lock screen + Dynamic Island</span></div>
+      <div class="phone"><div class="lockscreen">
+        <div style="width:110px;height:26px;background:#000;border-radius:14px;margin-bottom:2px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;font-size:10px;">
+          <span>🔥</span><span style="color:var(--accent);font-weight:700;">1:22:07</span>
+        </div>
+        <div class="locktime" style="font-size:44px;">4:38</div>
+        <div class="lockdate">Wednesday, July 15</div>
+        <div class="notifcard" style="background:rgba(12,12,14,0.92);align-items:center;">
+          <div class="notif-body">
+            <div style="font-size:11.5px;opacity:0.7;">lift in</div>
+            <div style="font-size:26px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;">1:22:07</div>
+          </div>
+          <div style="font-size:11px;opacity:0.7;align-self:center;white-space:nowrap;">3 day streak</div>
+        </div>
+      </div></div>
+      <div class="note"><b>The persistent countdown</b>, done the only way iOS allows (pinned notifications don't exist; ActivityKit is the system mechanism). Starts whenever a countdown is running, updates on snooze/push-to-tomorrow, ends the moment the day resolves (success, miss, pause). Counts down live via <code>Text(timerInterval:)</code> - no pushes needed. Dynamic Island: 🔥 compact-leading, ticking timer compact-trailing, expanded shows type + streak + big timer. Goes stale (system-dimmed) 30min past the deadline - accurate, since by then you're being asked if you're working out.</div>
+    </div>
+
+    <div class="card" id="frame-18">
+      <div class="step"><span class="num mono">18</span><span class="title">Home-screen widget</span></div>
+      <div class="phone"><div class="lockscreen" style="background:linear-gradient(190deg,#3a3d42 0%,#17181b 70%);padding:22px 14px 0;align-items:stretch;">
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;aspect-ratio:1;background:var(--bg);border-radius:20px;padding:12px;display:flex;flex-direction:column;">
+            <div style="font-size:10.5px;color:var(--ink-muted);font-weight:600;">3 day streak</div>
+            <div style="flex:1;"></div>
+            <div style="font-size:10px;color:var(--ink-muted);">lift in</div>
+            <div style="font-size:21px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;">1:22:07</div>
+            <div style="flex:1;"></div>
+          </div>
+          <div style="flex:1;aspect-ratio:1;background:var(--bg);border-radius:20px;padding:12px;display:flex;flex-direction:column;">
+            <div style="font-size:10.5px;color:var(--ink-muted);font-weight:600;">4 day streak</div>
+            <div style="flex:1;"></div>
+            <div style="font-size:14px;font-weight:700;color:var(--success);">locked in ✓</div>
+            <div style="font-size:9.5px;color:var(--ink-muted);margin-top:2px;">let's see about tomorrow</div>
+            <div style="flex:1;"></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;background:var(--bg);border-radius:20px;padding:12px;display:flex;flex-direction:column;min-height:74px;">
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-muted);font-weight:600;"><span>9 day streak</span><span style="font-weight:400;">best 12</span></div>
+          <div style="flex:1;"></div>
+          <div style="font-size:10px;color:var(--ink-muted);">run in</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;">0:47:19</div>
+        </div>
+      </div></div>
+      <div class="note">systemSmall + systemMedium. Streak on top, then per-state: <b>ticking countdown</b> (pending), <b>locked in ✓</b> (done), <b>rest day</b>, <b>paused</b>, or "…" (silence - the widget goes quiet too). Medium adds the new <b>best-streak stat</b> (also a Settings row: "12 days - left no crumbs"). Data flows app → widget via an app-group snapshot written on every state change; the widget can't read the database directly. Countdown ticks via <code>Text(timerInterval:)</code>, so no timeline churn - the app pokes WidgetCenter when state actually changes.</div>
     </div>
 
   </div>

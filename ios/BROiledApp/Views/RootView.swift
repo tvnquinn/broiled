@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 import os
 
 let rootLog = Logger(subsystem: "com.quinnnguyen.broiled", category: "root")
@@ -123,6 +124,7 @@ struct RootView: View {
                         engine.startCycle(deadline: deadline, habit: habit)
                     }
                 }
+                syncWidgets()
             }
         }
         // Re-check on every foreground so the denied banner clears the moment the user
@@ -130,7 +132,50 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
             Task { notificationsDenied = await NotificationService.shared.isDenied() }
+            syncWidgets()
         }
+        // dayLogs covers success/miss/bonus/snooze; the settings row covers pause and
+        // streak changes. Between them every widget-relevant mutation lands here.
+        .onChange(of: dayLogs) { _, _ in syncWidgets() }
+    }
+
+    /// v0.2 Wave 3: keep the home-screen widget snapshot and the countdown Live
+    /// Activity in lockstep with app state. Cheap enough to call generously.
+    private func syncWidgets() {
+        guard let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded else { return }
+        let todayKey = DateKey.string(from: Date())
+        let status = dayLogs.first { $0.dateKey == todayKey }?.status
+        let deadline = settings.todayOverride() ?? habit.deadline(for: Date())
+
+        let state: WidgetSnapshot.DayState
+        if settings.isAbandoned {
+            state = .silence
+        } else if settings.isPausedToday {
+            state = .paused
+        } else if status == .completed {
+            state = .completed
+        } else if deadline == nil {
+            state = .rest
+        } else {
+            state = .pending
+        }
+
+        WidgetSnapshot.write(WidgetSnapshot.Data(
+            state: state,
+            deadline: state == .pending ? deadline : nil,
+            workoutType: habit.workoutType(for: Date()),
+            streak: settings.successStreak,
+            bestStreak: settings.bestStreak
+        ))
+        WidgetCenter.shared.reloadAllTimelines()
+
+        // The Live Activity only exists while a countdown is actually running.
+        let activityDeadline = (state == .pending && status ?? .pending == .pending) ? deadline : nil
+        LiveActivityService.shared.sync(
+            deadline: activityDeadline,
+            workoutType: habit.workoutType(for: Date()),
+            streak: settings.successStreak
+        )
     }
 
     /// v0.2 Wave 1: when a workout syncs to HealthKit while backgrounded, settle the day,
@@ -238,6 +283,8 @@ struct RootView: View {
         settings.setTodayOverride(newDeadline)
         scheduler?.startCycle(deadline: newDeadline, habit: habit)
         try? context.save()
+        // In-place mutations don't trip the dayLogs onChange - sync explicitly.
+        syncWidgets()
     }
 
     private func tomorrowIsScheduled(habit: Habit) -> Bool {
@@ -268,6 +315,7 @@ struct RootView: View {
             scheduler?.startCycle(deadline: tomorrowDeadline, habit: habit)
         }
         try? context.save()
+        syncWidgets()
     }
 
     private func quitToday(habit: Habit, settings: UserSettings) {
