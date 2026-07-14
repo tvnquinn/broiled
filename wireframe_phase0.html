@@ -355,7 +355,7 @@
           </div>
         </div>
       </div></div>
-      <div class="note">Fires T-30min before today's deadline (per-day time from frame 01). <b>v0.2 rich notification</b> - shown here in the long-press <b>expanded</b> state (Notification Content Extension: big icon, big stacked buttons; the collapsed banner stays a normal small notification - iOS doesn't allow buttons on collapsed banners). <b>Snooze</b> opens the app to the snooze sheet; <b>I'm heading out</b> just dismisses.</div>
+      <div class="note">Fires T-30min before today's deadline (per-day time from frame 01). <b>v0.2 rich notification</b> - shown here in the long-press <b>expanded</b> state (Notification Content Extension: big icon, big stacked buttons; the collapsed banner stays a normal small notification - iOS doesn't allow buttons on collapsed banners). <b>Snooze</b> opens the app to the snooze sheet; <b>I'm heading out</b> just dismisses. Days with a scheduled workout type (frame 15) retitle this to <b>"30 min till lift"</b>.</div>
     </div>
 
     <div class="card">
@@ -611,6 +611,37 @@
         </div>
       </div></div>
       <div class="note">The resume banner shows for exactly <b>one calendar day</b> - whichever day the user first opens the app after the range ends (reconcile stamps it). It takes the banner slot over the morning reckoning. "resume now" inside the pause editor ends the pause early and earns the same line.</div>
+    </div>
+
+    <div class="card" id="frame-15">
+      <div class="step"><span class="num mono">15</span><span class="title">Schedule editor - workout types</span></div>
+      <div class="phone"><div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>9:41</span><span>100%</span></div>
+        <div class="content">
+          <div style="margin-top:8px;font-size:18px;font-weight:700;">Edit schedule</div>
+          <div>
+            <div class="label" style="margin-bottom:8px;">Deadline per day</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div class="day-time-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div style="display:flex;justify-content:space-between;"><span class="d">Mon</span><span class="t">6:00 PM ›</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--accent);">lift</span><span style="color:var(--ink-muted);">⌄</span></div>
+              </div>
+              <div class="day-time-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div style="display:flex;justify-content:space-between;"><span class="d">Wed</span><span class="t">7:30 PM ›</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--accent);">run</span><span style="color:var(--ink-muted);">⌄</span></div>
+              </div>
+              <div class="day-time-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div style="display:flex;justify-content:space-between;"><span class="d">Fri</span><span class="t">6:00 PM ›</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--ink-muted);">any workout</span><span style="color:var(--ink-muted);">⌄</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;"></div>
+          <div class="btn primary">Save</div>
+        </div>
+      </div></div>
+      <div class="note"><b>Workout types.</b> Each scheduled day gets an optional type - Apple-Fitness-style picker (lift / run / cycle / swim / yoga / walk / HIIT / row / climb / sport) plus <b>custom…</b> free text; "any workout" clears it. Typed days rename the T-30 reminder to <b>"30 min till lift"</b> and the Home label to <b>"lift in"</b>. HealthKit-detected workouts record their <b>real</b> activity type in history (a WorkoutEntry per workout - multiple per day allowed, double sessions and bonus workouts included). DayLog still owns the day's status.</div>
     </div>
 
   </div>

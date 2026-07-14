@@ -67,10 +67,13 @@ final class DayScheduler {
 
     // MARK: - Recording outcomes
 
-    func recordSuccess(on date: Date, settings: UserSettings, viaHealthKit: Bool) {
+    /// Returns false when the day was already resolved (nothing recorded) - callers use
+    /// this to avoid writing duplicate history entries on double-logs.
+    @discardableResult
+    func recordSuccess(on date: Date, settings: UserSettings, viaHealthKit: Bool) -> Bool {
         let key = DateKey.string(from: date)
         let existing = fetchDayLog(key: key)
-        guard existing?.status ?? .pending == .pending else { return } // already resolved today - don't double-count the streak
+        guard existing?.status ?? .pending == .pending else { return false } // already resolved today - don't double-count the streak
         let log = existing ?? DayLog(dateKey: key)
         log.status = .completed
         log.verifiedByHealthKit = viaHealthKit
@@ -82,6 +85,7 @@ final class DayScheduler {
         notifications.cancelDeadlinePair()
         notifications.cancelMorningReckoning()
         try? context.save()
+        return true
     }
 
     func recordMiss(dateKey: String, settings: UserSettings) {
@@ -119,15 +123,17 @@ final class DayScheduler {
     /// v0.2 Wave 2 rest-day flow: a workout on a non-scheduled day is recorded for
     /// history but leaves both streaks untouched - it's not a success (no streak
     /// advance) and obviously not a miss.
-    func recordBonus(on date: Date, viaHealthKit: Bool) {
+    @discardableResult
+    func recordBonus(on date: Date, viaHealthKit: Bool) -> Bool {
         let key = DateKey.string(from: date)
         let existing = fetchDayLog(key: key)
-        guard existing?.status ?? .pending == .pending else { return }
+        guard existing?.status ?? .pending == .pending else { return false }
         let log = existing ?? DayLog(dateKey: key)
         log.status = .bonus
         log.verifiedByHealthKit = viaHealthKit
         if log.modelContext == nil { context.insert(log) }
         try? context.save()
+        return true
     }
 
     func recordSnooze(dateKey: String) -> Int {
@@ -144,10 +150,34 @@ final class DayScheduler {
         recordSuccess(on: date, settings: settings, viaHealthKit: false)
     }
 
+    // MARK: - Workout history (v0.2 Wave 2)
+
+    /// One row per actual workout - multiple per day allowed (double sessions, bonus
+    /// workouts). DayLog still owns the day's status; these are the history under it.
+    func recordWorkoutEntry(on date: Date, type: String?, source: WorkoutSource, durationMinutes: Int) {
+        let entry = WorkoutEntry(
+            dateKey: DateKey.string(from: date),
+            type: (type?.isEmpty == false ? type! : WorkoutEntry.genericType),
+            source: source,
+            durationMinutes: durationMinutes
+        )
+        context.insert(entry)
+        try? context.save()
+    }
+
+    func workoutEntries(forKey key: String) -> [WorkoutEntry] {
+        let descriptor = FetchDescriptor<WorkoutEntry>(predicate: #Predicate { $0.dateKey == key })
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
     // MARK: - Deadline scheduling
 
     func startCycle(deadline: Date, habit: Habit) {
-        notifications.scheduleDeadlinePair(deadline: deadline, durationMinutes: habit.minDurationMinutes)
+        notifications.scheduleDeadlinePair(
+            deadline: deadline,
+            durationMinutes: habit.minDurationMinutes,
+            workoutType: habit.workoutType(for: deadline)
+        )
     }
 
     private func fetchDayLog(key: String) -> DayLog? {

@@ -6,6 +6,10 @@ struct WeekdaySchedule: Codable, Identifiable, Equatable {
     var weekday: Int
     var hour: Int
     var minute: Int
+    /// v0.2 Wave 2: optional per-day workout type ("run", "lift"...). Optional keeps
+    /// previously-stored schedule JSON (which lacks the key) decoding cleanly, and the
+    /// `= nil` default keeps the memberwise init compatible with existing call sites.
+    var workoutType: String? = nil
 
     var id: Int { weekday }
 
@@ -50,5 +54,11 @@ final class Habit {
     func isActiveDay(_ date: Date, calendar: Calendar = .current) -> Bool {
         let weekday = calendar.component(.weekday, from: date)
         return schedule.contains { $0.weekday == weekday }
+    }
+
+    /// The scheduled workout type for a date, if that day is active and has one set.
+    func workoutType(for date: Date, calendar: Calendar = .current) -> String? {
+        let weekday = calendar.component(.weekday, from: date)
+        return schedule.first { $0.weekday == weekday }?.workoutType
     }
 }

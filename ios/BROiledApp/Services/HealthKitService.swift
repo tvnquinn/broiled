@@ -53,7 +53,14 @@ final class HealthKitService {
     /// True if any workout source (Watch, Garmin via Health sync, Strava, gym
     /// equipment, etc.) logged a workout today meeting the minimum duration.
     func hasQualifyingWorkoutToday(minDurationMinutes: Int) async -> Bool {
-        guard isHealthDataAvailable else { return false }
+        await qualifyingWorkoutToday(minDurationMinutes: minDurationMinutes) != nil
+    }
+
+    /// v0.2 Wave 2 workout types: the qualifying workout's real activity type and
+    /// duration, for the history entry ("run", not just "workout"). Nil when nothing
+    /// today meets the minimum duration.
+    func qualifyingWorkoutToday(minDurationMinutes: Int) async -> (type: String, durationMinutes: Int)? {
+        guard isHealthDataAvailable else { return nil }
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: Date())
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date(), options: .strictStartDate)
@@ -67,10 +74,39 @@ final class HealthKitService {
             ) { _, samples, _ in
                 let workouts = (samples as? [HKWorkout]) ?? []
                 let minSeconds = Double(minDurationMinutes * 60)
-                let qualifies = workouts.contains { $0.duration >= minSeconds }
-                continuation.resume(returning: qualifies)
+                if let match = workouts.first(where: { $0.duration >= minSeconds }) {
+                    continuation.resume(returning: (match.workoutActivityType.displayName, Int(match.duration / 60)))
+                } else {
+                    continuation.resume(returning: nil)
+                }
             }
             store.execute(query)
+        }
+    }
+}
+
+extension HKWorkoutActivityType {
+    /// Lowercase display names to match the app voice. Only the common cases get real
+    /// names; everything else is a generic "workout" rather than a 70-case enum dump.
+    var displayName: String {
+        switch self {
+        case .traditionalStrengthTraining, .functionalStrengthTraining: return "lift"
+        case .running: return "run"
+        case .cycling: return "cycle"
+        case .swimming: return "swim"
+        case .yoga: return "yoga"
+        case .walking: return "walk"
+        case .hiking: return "hike"
+        case .highIntensityIntervalTraining: return "HIIT"
+        case .rowing: return "row"
+        case .climbing: return "climb"
+        case .pilates: return "pilates"
+        case .elliptical: return "elliptical"
+        case .coreTraining: return "core"
+        case .boxing, .kickboxing, .martialArts: return "fight training"
+        case .soccer, .basketball, .tennis, .badminton, .volleyball, .pickleball, .racquetball, .squash, .tableTennis: return "sport"
+        case .dance, .danceInspiredTraining, .cardioDance: return "dance"
+        default: return WorkoutEntry.genericType
         }
     }
 }

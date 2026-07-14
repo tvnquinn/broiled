@@ -446,15 +446,69 @@ final class Wave1Tests: XCTestCase {
     }
 }
 
-/// v0.2 Wave 2 coverage: rest-day bonus workouts.
+/// v0.2 Wave 2 coverage: rest-day bonus workouts, pause mode, workout types.
 final class Wave2Tests: XCTestCase {
 
     @MainActor
     private func makeInMemoryContext() throws -> ModelContext {
-        let schema = Schema([Habit.self, UserSettings.self, DayLog.self])
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self, WorkoutEntry.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
         return ModelContext(container)
+    }
+
+    // MARK: - Workout types
+
+    /// Schedule JSON stored before workoutType existed must keep decoding (the field is
+    /// optional precisely for this).
+    func testScheduleDecodesLegacyJSONWithoutWorkoutType() throws {
+        let legacy = #"[{"weekday":2,"hour":18,"minute":30}]"#.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode([WeekdaySchedule].self, from: legacy)
+        XCTAssertEqual(decoded.first?.weekday, 2)
+        XCTAssertNil(decoded.first?.workoutType)
+    }
+
+    func testHabitWorkoutTypeForDate() {
+        let habit = Habit(schedule: [
+            WeekdaySchedule(weekday: 2, hour: 18, minute: 0, workoutType: "lift"), // Monday
+            WeekdaySchedule(weekday: 4, hour: 18, minute: 0),                      // Wednesday, untyped
+        ])
+        let calendar = Calendar(identifier: .gregorian)
+        var comps = DateComponents()
+        comps.year = 2026; comps.month = 7; comps.day = 6 // a Monday
+        let monday = calendar.date(from: comps)!
+        comps.day = 8 // a Wednesday
+        let wednesday = calendar.date(from: comps)!
+        comps.day = 7 // a Tuesday (rest day)
+        let tuesday = calendar.date(from: comps)!
+
+        XCTAssertEqual(habit.workoutType(for: monday, calendar: calendar), "lift")
+        XCTAssertNil(habit.workoutType(for: wednesday, calendar: calendar))
+        XCTAssertNil(habit.workoutType(for: tuesday, calendar: calendar))
+    }
+
+    func testReminderTitleAndCountdownLabel() {
+        XCTAssertEqual(InsultPool.reminderTitle(workoutType: "run"), "30 min till run")
+        XCTAssertEqual(InsultPool.reminderTitle(workoutType: nil), "30 minutes left today")
+        XCTAssertEqual(InsultPool.reminderTitle(workoutType: ""), "30 minutes left today")
+        XCTAssertEqual(InsultPool.countdownLabel(workoutType: "swim"), "swim in")
+        XCTAssertEqual(InsultPool.countdownLabel(workoutType: nil), "Workout in")
+    }
+
+    /// Multiple workouts on one day are all kept - DayLog owns status, entries are history.
+    @MainActor
+    func testMultipleWorkoutEntriesPerDay() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+
+        scheduler.recordWorkoutEntry(on: Date(), type: "run", source: .healthKit, durationMinutes: 32)
+        scheduler.recordWorkoutEntry(on: Date(), type: nil, source: .manual, durationMinutes: 30)
+
+        let entries = scheduler.workoutEntries(forKey: DateKey.string(from: Date()))
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertTrue(entries.contains { $0.type == "run" && $0.source == .healthKit })
+        XCTAssertTrue(entries.contains { $0.type == WorkoutEntry.genericType && $0.source == .manual },
+                      "a typeless entry falls back to the generic type")
     }
 
     // MARK: - Bonus workouts (rest-day flow)

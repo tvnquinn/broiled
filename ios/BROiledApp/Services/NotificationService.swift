@@ -57,7 +57,8 @@ final class NotificationService {
     }
 
     /// Call whenever a deadline is (re)set - onboarding, a new day, or a snooze.
-    func scheduleDeadlinePair(deadline: Date, durationMinutes: Int) {
+    /// `workoutType` names the reminder ("30 min till run") when the day has one.
+    func scheduleDeadlinePair(deadline: Date, durationMinutes: Int, workoutType: String? = nil) {
         cancelDeadlinePair()
         UserDefaults.standard.set(durationMinutes, forKey: durationKey)
 
@@ -65,7 +66,7 @@ final class NotificationService {
         if reminderDate > Date() {
             schedule(
                 id: NotificationID.reminder,
-                title: "30 minutes left today",
+                title: InsultPool.reminderTitle(workoutType: workoutType),
                 body: InsultPool.reminder.randomElement() ?? InsultPool.reminder[0],
                 date: reminderDate
             )

@@ -192,7 +192,8 @@ struct HomeView: View {
                     }
                 } else if let deadline {
                     VStack(spacing: 6) {
-                        Text("Workout in").font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
+                        Text(InsultPool.countdownLabel(workoutType: habit.workoutType(for: Date())))
+                            .font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
                         Text(format(remaining))
                             .font(.system(size: 46, weight: .bold, design: .rounded))
                             .foregroundStyle(remaining > 0 ? Theme.accent : Theme.flame)

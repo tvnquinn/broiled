@@ -14,6 +14,7 @@
 		7399D3FE300062B9007FC0E9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F2300062B9007FC0E9 /* RootView.swift */; };
 		7399D3FF300062B9007FC0E9 /* SnoozeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F5300062B9007FC0E9 /* SnoozeSheet.swift */; };
 		7399D400300062B9007FC0E9 /* DayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E6300062B9007FC0E9 /* DayLog.swift */; };
+		005E37DA7EE44941AF6FCBCA /* WorkoutEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F73115D9F564B66BC2E7DA8 /* WorkoutEntry.swift */; };
 		7399D401300062B9007FC0E9 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F8300062B9007FC0E9 /* Theme.swift */; };
 		7399D402300062B9007FC0E9 /* Habit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E7300062B9007FC0E9 /* Habit.swift */; };
 		7399D403300062B9007FC0E9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3F3300062B9007FC0E9 /* SettingsView.swift */; };
@@ -50,6 +51,7 @@
 
 /* Begin PBXFileReference section */
 		7399D3E6300062B9007FC0E9 /* DayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLog.swift; sourceTree = "<group>"; };
+		6F73115D9F564B66BC2E7DA8 /* WorkoutEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEntry.swift; sourceTree = "<group>"; };
 		7399D3E7300062B9007FC0E9 /* Habit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit.swift; sourceTree = "<group>"; };
 		7399D3E8300062B9007FC0E9 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		7399D3EA300062B9007FC0E9 /* DayScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayScheduler.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				7399D3E6300062B9007FC0E9 /* DayLog.swift */,
+				6F73115D9F564B66BC2E7DA8 /* WorkoutEntry.swift */,
 				7399D3E7300062B9007FC0E9 /* Habit.swift */,
 				7399D3E8300062B9007FC0E9 /* UserSettings.swift */,
 			);
@@ -344,6 +347,7 @@
 				7399D3FE300062B9007FC0E9 /* RootView.swift in Sources */,
 				7399D3FF300062B9007FC0E9 /* SnoozeSheet.swift in Sources */,
 				7399D400300062B9007FC0E9 /* DayLog.swift in Sources */,
+				005E37DA7EE44941AF6FCBCA /* WorkoutEntry.swift in Sources */,
 				7399D401300062B9007FC0E9 /* Theme.swift in Sources */,
 				7399D402300062B9007FC0E9 /* Habit.swift in Sources */,
 				7399D403300062B9007FC0E9 /* SettingsView.swift in Sources */,

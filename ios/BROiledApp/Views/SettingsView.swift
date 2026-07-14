@@ -218,7 +218,7 @@ struct PauseEditView: View {
         // Re-arm today's cycle - pausing cancelled everything pending, and the
         // per-launch scheduling only runs at launch.
         if let deadline = settings.todayOverride() ?? habit.deadline(for: Date()) {
-            NotificationService.shared.scheduleDeadlinePair(deadline: deadline, durationMinutes: habit.minDurationMinutes)
+            NotificationService.shared.scheduleDeadlinePair(deadline: deadline, durationMinutes: habit.minDurationMinutes, workoutType: habit.workoutType(for: Date()))
         }
         dismiss()
     }

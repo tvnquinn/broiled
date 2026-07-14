@@ -66,7 +66,7 @@ struct RootView: View {
                         case .bonusGutCheck:
                             GutCheckSheet(
                                 question: InsultPool.bonusGutCheckQuestion,
-                                onYes: { scheduler?.recordBonus(on: Date(), viaHealthKit: false); sheet = nil },
+                                onYes: { logManualBonus(habit: habit); sheet = nil },
                                 onNo: { sheet = nil }
                             )
                             .presentationDetents([.medium])
@@ -155,9 +155,9 @@ struct RootView: View {
                 let isActive = habit.isActiveDay(today) || settings.todayDeadlineOverrideDateKey == todayKey
                 guard isActive else { return }
 
-                let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
-                guard found else { return }
-                engine.recordSuccess(on: today, settings: settings, viaHealthKit: true)
+                guard let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes) else { return }
+                guard engine.recordSuccess(on: today, settings: settings, viaHealthKit: true) else { return }
+                engine.recordWorkoutEntry(on: today, type: detail.type, source: .healthKit, durationMinutes: detail.durationMinutes)
                 NotificationService.shared.fireSuccessPush(successStreak: settings.successStreak)
             }
         }
@@ -190,19 +190,45 @@ struct RootView: View {
     }
 
     private func logSuccess(settings: UserSettings, viaHealthKit: Bool) {
-        scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: viaHealthKit)
+        guard let habit = habits.first else { return }
+        guard scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: viaHealthKit) == true else { return }
+        if viaHealthKit {
+            // The detection query already ran; re-fetch for the entry's real type/duration.
+            Task { @MainActor in
+                let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
+                scheduler?.recordWorkoutEntry(
+                    on: Date(),
+                    type: detail?.type ?? habit.workoutType(for: Date()),
+                    source: .healthKit,
+                    durationMinutes: detail?.durationMinutes ?? habit.minDurationMinutes
+                )
+            }
+        } else {
+            scheduler?.recordWorkoutEntry(
+                on: Date(),
+                type: habit.workoutType(for: Date()),
+                source: .manual,
+                durationMinutes: habit.minDurationMinutes
+            )
+        }
     }
 
     /// Bonus flow (rest days only): trust HealthKit first, fall back to the honesty gate.
     private func checkBonus(habit: Habit, settings: UserSettings) {
         Task { @MainActor in
-            let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
-            if found {
-                scheduler?.recordBonus(on: Date(), viaHealthKit: true)
+            if let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes) {
+                if scheduler?.recordBonus(on: Date(), viaHealthKit: true) == true {
+                    scheduler?.recordWorkoutEntry(on: Date(), type: detail.type, source: .healthKit, durationMinutes: detail.durationMinutes)
+                }
             } else {
                 sheet = .bonusGutCheck
             }
         }
+    }
+
+    private func logManualBonus(habit: Habit) {
+        guard scheduler?.recordBonus(on: Date(), viaHealthKit: false) == true else { return }
+        scheduler?.recordWorkoutEntry(on: Date(), type: nil, source: .manual, durationMinutes: habit.minDurationMinutes)
     }
 
     private func snooze(to newDeadline: Date, habit: Habit, settings: UserSettings) {
@@ -254,5 +280,13 @@ struct RootView: View {
 
     private func reactivate(settings: UserSettings) {
         scheduler?.reactivate(on: Date(), settings: settings)
+        if let habit = habits.first {
+            scheduler?.recordWorkoutEntry(
+                on: Date(),
+                type: habit.workoutType(for: Date()),
+                source: .manual,
+                durationMinutes: habit.minDurationMinutes
+            )
+        }
     }
 }
