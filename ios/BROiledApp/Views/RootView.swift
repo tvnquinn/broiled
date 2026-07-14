@@ -44,6 +44,7 @@ struct RootView: View {
                         health: health,
                         isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
                         bonusLoggedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .bonus,
+                        todayInsult: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.insultShown,
                         notificationsDenied: notificationsDenied,
                         forceRestDay: ProcessInfo.processInfo.arguments.contains("UI-TESTING-REST-TODAY"),
                         onLoggedTapped: {
@@ -74,7 +75,7 @@ struct RootView: View {
                             SnoozeSheet(
                                 tomorrowIsScheduled: tomorrowIsScheduled(habit: habit),
                                 onSnooze: { newDeadline in snooze(to: newDeadline, habit: habit, settings: settings); sheet = nil },
-                                onPushToTomorrow: { pushToTomorrow(habit: habit, settings: settings); sheet = nil },
+                                onPushToTomorrow: { insult in pushToTomorrow(habit: habit, settings: settings, shownInsult: insult); sheet = nil },
                                 onTakeMiss: { quitToday(habit: habit, settings: settings); sheet = nil },
                                 onQuit: { quitToday(habit: habit, settings: settings); sheet = nil }
                             )
@@ -253,9 +254,10 @@ struct RootView: View {
     /// Rest-day-tomorrow only (the sheet routes scheduled tomorrows to onTakeMiss).
     /// Today drops out of streak math; the deadline override moves onto tomorrow at the
     /// same time-of-day, and reconcile() treats that day as active so ghosting it is a miss.
-    private func pushToTomorrow(habit: Habit, settings: UserSettings) {
+    private func pushToTomorrow(habit: Habit, settings: UserSettings, shownInsult: String) {
         let todayKey = DateKey.string(from: Date())
         scheduler?.recordDeferred(dateKey: todayKey)
+        scheduler?.recordRoast(shownInsult, kind: .roast, situation: "push-to-tomorrow")
 
         let calendar = Calendar.current
         let currentDeadline = settings.todayOverride() ?? habit.deadline(for: Date()) ?? Date()

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A929D155FCFE46DEA360CC6D /* BurnBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B92C6C581BA4C61A29C1509 /* BurnBookView.swift */; };
+		13B2E9716AED43AE9878F491 /* RoastRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12EBF01400FA4F9B9F34DD73 /* RoastRecord.swift */; };
 		7399D3FA300062B9007FC0E9 /* GutCheckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3EF300062B9007FC0E9 /* GutCheckSheet.swift */; };
 		7399D3FB300062B9007FC0E9 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3ED300062B9007FC0E9 /* NotificationService.swift */; };
 		7399D3FC300062B9007FC0E9 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7399D3E8300062B9007FC0E9 /* UserSettings.swift */; };
@@ -50,6 +52,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7B92C6C581BA4C61A29C1509 /* BurnBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnBookView.swift; sourceTree = "<group>"; };
+		12EBF01400FA4F9B9F34DD73 /* RoastRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoastRecord.swift; sourceTree = "<group>"; };
 		7399D3E6300062B9007FC0E9 /* DayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLog.swift; sourceTree = "<group>"; };
 		6F73115D9F564B66BC2E7DA8 /* WorkoutEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEntry.swift; sourceTree = "<group>"; };
 		7399D3E7300062B9007FC0E9 /* Habit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit.swift; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				7399D3E6300062B9007FC0E9 /* DayLog.swift */,
+				12EBF01400FA4F9B9F34DD73 /* RoastRecord.swift */,
 				6F73115D9F564B66BC2E7DA8 /* WorkoutEntry.swift */,
 				7399D3E7300062B9007FC0E9 /* Habit.swift */,
 				7399D3E8300062B9007FC0E9 /* UserSettings.swift */,
@@ -131,6 +136,7 @@
 			children = (
 				7399D3EF300062B9007FC0E9 /* GutCheckSheet.swift */,
 				7399D3F0300062B9007FC0E9 /* HomeView.swift */,
+				7B92C6C581BA4C61A29C1509 /* BurnBookView.swift */,
 				7399D3F1300062B9007FC0E9 /* OnboardingView.swift */,
 				7399D3F2300062B9007FC0E9 /* RootView.swift */,
 				7399D3F3300062B9007FC0E9 /* SettingsView.swift */,
@@ -347,6 +353,7 @@
 				7399D3FE300062B9007FC0E9 /* RootView.swift in Sources */,
 				7399D3FF300062B9007FC0E9 /* SnoozeSheet.swift in Sources */,
 				7399D400300062B9007FC0E9 /* DayLog.swift in Sources */,
+				13B2E9716AED43AE9878F491 /* RoastRecord.swift in Sources */,
 				005E37DA7EE44941AF6FCBCA /* WorkoutEntry.swift in Sources */,
 				7399D401300062B9007FC0E9 /* Theme.swift in Sources */,
 				7399D402300062B9007FC0E9 /* Habit.swift in Sources */,
@@ -356,6 +363,7 @@
 				7399D405300062B9007FC0E9 /* DayScheduler.swift in Sources */,
 				7399D406300062B9007FC0E9 /* InsultPool.swift in Sources */,
 				7399D407300062B9007FC0E9 /* HomeView.swift in Sources */,
+				A929D155FCFE46DEA360CC6D /* BurnBookView.swift in Sources */,
 				7399D408300062B9007FC0E9 /* OnboardingView.swift in Sources */,
 				7399D409300062B9007FC0E9 /* SilenceView.swift in Sources */,
 			);

@@ -183,6 +183,31 @@ final class BroiledUITests: XCTestCase {
         XCTAssertFalse(app.buttons["bonusWorkoutButton"].isEnabled, "bonus button disables after logging")
     }
 
+    // MARK: - v0.2 Wave 3 Burn Book
+
+    /// Logging a workout collects the shown compliment: the Burn Book opens from
+    /// Settings and the tracker reads 1/N compliments, 0/N insults.
+    func testBurnBookCollectsLoggedCompliment() throws {
+        app.launch()
+        app.buttons["Start"].tap()
+
+        let lockedInButton = app.buttons["I've locked in today"]
+        XCTAssertTrue(lockedInButton.waitForExistence(timeout: 12))
+        lockedInButton.tap()
+        XCTAssertTrue(app.buttons["yes!"].waitForExistence(timeout: 12))
+        app.buttons["yes!"].tap()
+        XCTAssertTrue(app.buttons["Locked in ✓"].waitForExistence(timeout: 12))
+
+        app.buttons["settingsButton"].tap()
+        let burnBookRow = app.buttons["burnBookRowButton"]
+        XCTAssertTrue(burnBookRow.waitForExistence(timeout: 12))
+        burnBookRow.tap()
+
+        XCTAssertTrue(app.staticTexts["the Burn Book"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts["1/10"].waitForExistence(timeout: 12), "one compliment unlocked after one success")
+        XCTAssertTrue(app.staticTexts["0/36"].exists, "no roasts earned yet")
+    }
+
     // MARK: - v0.2 Wave 2 pause mode
 
     /// Pausing from Settings (default range: today + 7 days) flips Home into the paused

@@ -6,6 +6,9 @@ struct HomeView: View {
     let health: HealthKitService
     let isCompletedToday: Bool
     let bonusLoggedToday: Bool
+    /// Today's stored line (DayLog.insultShown) - the compliment on a completed day, the
+    /// snooze escalation line on a pending one. What's shown is what the Burn Book keeps.
+    let todayInsult: String?
     let notificationsDenied: Bool
     /// UI-test hook (UI-TESTING-REST-TODAY): pins the rest-day branch regardless of the
     /// wall-clock weekday. Production launches never set it.
@@ -19,8 +22,6 @@ struct HomeView: View {
     @State private var now = Date()
     @State private var checkedThisCycle = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    @State private var successHeadline: String?
 
     /// Nil on a rest day. The old `?? Date()` fallback here was the "red 0:00 countdown
     /// on rest days" bug - a non-scheduled day has no deadline, full stop.
@@ -135,7 +136,7 @@ struct HomeView: View {
                 Spacer()
                 if isCompletedToday {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(successHeadline ?? InsultPool.successHeadline[0])
+                        Text(todayInsult ?? InsultPool.successHeadline[0])
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(Theme.success)
                         Text(InsultPool.successSub)
@@ -201,6 +202,15 @@ struct HomeView: View {
                         Text("deadline \(deadline.formatted(date: .omitted, time: .shortened))")
                             .font(.system(size: 15))
                             .foregroundStyle(Theme.inkMuted)
+                        // Snooze escalation line - stuck under the countdown for the
+                        // rest of the cycle, exactly as collected in the Burn Book.
+                        if let todayInsult {
+                            Text(todayInsult)
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.accent)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 6)
+                        }
                     }
                 }
                 Spacer()
@@ -254,16 +264,6 @@ struct HomeView: View {
             if now >= missCheckTime && !checkedThisCycle {
                 checkedThisCycle = true
                 Task { await checkOutcome() }
-            }
-        }
-        .onChange(of: isCompletedToday) { _, completed in
-            if completed {
-                successHeadline = InsultPool.successHeadlineLine()
-            }
-        }
-        .onAppear {
-            if isCompletedToday && successHeadline == nil {
-                successHeadline = InsultPool.successHeadlineLine()
             }
         }
         .onChange(of: deadline) { _, _ in checkedThisCycle = false }

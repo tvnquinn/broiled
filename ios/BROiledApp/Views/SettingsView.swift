@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showScheduleEditor = false
     @State private var showPauseEditor = false
+    @State private var showBurnBook = false
 
     var body: some View {
         // NavigationStack push instead of a nested sheet: presenting a .sheet from inside
@@ -44,6 +45,12 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("pauseRowButton")
 
+                    Button { showBurnBook = true } label: {
+                        row(key: "THE BURN BOOK", value: "every line you've earned", trailing: "open ›")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("burnBookRowButton")
+
                     Spacer()
                 }
                 .padding(20)
@@ -54,6 +61,9 @@ struct SettingsView: View {
             }
             .navigationDestination(isPresented: $showPauseEditor) {
                 PauseEditView(habit: habit, settings: settings)
+            }
+            .navigationDestination(isPresented: $showBurnBook) {
+                BurnBookView()
             }
         }
         .preferredColorScheme(.dark)
@@ -214,6 +224,7 @@ struct PauseEditView: View {
         settings.pauseEndDateKey = nil
         // Ending it yourself still earns the welcome-back jab today.
         settings.resumeBannerDateKey = DateKey.string(from: Date())
+        context.insert(RoastRecord(dateKey: DateKey.string(from: Date()), line: InsultPool.resumeLine, kind: .roast, situation: "resume"))
         try? context.save()
         // Re-arm today's cycle - pausing cancelled everything pending, and the
         // per-launch scheduling only runs at launch.

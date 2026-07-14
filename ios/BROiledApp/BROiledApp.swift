@@ -14,9 +14,9 @@ struct BROiledApp: App {
             // store instead of accumulating onboarding/streak state across test runs.
             if ProcessInfo.processInfo.arguments.contains("UI-TESTING") {
                 let config = ModelConfiguration(isStoredInMemoryOnly: true)
-                container = try ModelContainer(for: Habit.self, DayLog.self, UserSettings.self, WorkoutEntry.self, configurations: config)
+                container = try ModelContainer(for: Habit.self, DayLog.self, UserSettings.self, WorkoutEntry.self, RoastRecord.self, configurations: config)
             } else {
-                container = try ModelContainer(for: Habit.self, DayLog.self, UserSettings.self, WorkoutEntry.self)
+                container = try ModelContainer(for: Habit.self, DayLog.self, UserSettings.self, WorkoutEntry.self, RoastRecord.self)
             }
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")

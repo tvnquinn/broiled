@@ -119,7 +119,7 @@ final class BroiledTests: XCTestCase {
 
     @MainActor
     private func makeInMemoryContext() throws -> ModelContext {
-        let schema = Schema([Habit.self, UserSettings.self, DayLog.self])
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self, WorkoutEntry.self, RoastRecord.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
         return ModelContext(container)
@@ -335,7 +335,7 @@ final class Wave1Tests: XCTestCase {
 
     @MainActor
     private func makeInMemoryContext() throws -> ModelContext {
-        let schema = Schema([Habit.self, UserSettings.self, DayLog.self])
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self, WorkoutEntry.self, RoastRecord.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
         return ModelContext(container)
@@ -451,7 +451,7 @@ final class Wave2Tests: XCTestCase {
 
     @MainActor
     private func makeInMemoryContext() throws -> ModelContext {
-        let schema = Schema([Habit.self, UserSettings.self, DayLog.self, WorkoutEntry.self])
+        let schema = Schema([Habit.self, UserSettings.self, DayLog.self, WorkoutEntry.self, RoastRecord.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
         return ModelContext(container)
@@ -632,6 +632,97 @@ final class Wave2Tests: XCTestCase {
         XCTAssertNotNil(settings.pauseEndDateKey)
         XCTAssertNil(settings.resumeBannerDateKey)
         XCTAssertTrue(settings.isPausedToday)
+    }
+
+    // MARK: - Burn Book (v0.2 Wave 3)
+
+    /// What Home shows is what the book collects: recordSuccess stores the compliment
+    /// on the day AND records it, and the two must match.
+    @MainActor
+    func testRecordSuccessStoresAndCollectsSameComplimentLine() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+
+        scheduler.recordSuccess(on: Date(), settings: settings, viaHealthKit: false)
+
+        let stored = try XCTUnwrap(scheduler.dayLog(for: Date())?.insultShown)
+        XCTAssertTrue(InsultPool.burnBookCompliments.contains(stored), "line comes from the compliment pool")
+        let records = try context.fetch(FetchDescriptor<RoastRecord>())
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.line, stored)
+        XCTAssertEqual(records.first?.kind, .compliment)
+        XCTAssertEqual(records.first?.situation, "success")
+    }
+
+    /// Snoozing surfaces (and collects) the escalation line, tier matching the count.
+    @MainActor
+    func testRecordSnoozeStoresAndCollectsEscalationLine() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let key = DateKey.string(from: Date())
+
+        XCTAssertEqual(scheduler.recordSnooze(dateKey: key), 1)
+        let first = try XCTUnwrap(scheduler.dayLog(for: Date())?.insultShown)
+        XCTAssertTrue(InsultPool.snoozeMild.contains(first), "first snooze pulls MILD")
+
+        XCTAssertEqual(scheduler.recordSnooze(dateKey: key), 2)
+        let second = try XCTUnwrap(scheduler.dayLog(for: Date())?.insultShown)
+        XCTAssertTrue(InsultPool.snoozeSpicy.contains(second), "second snooze escalates to SPICY")
+
+        let records = try context.fetch(FetchDescriptor<RoastRecord>())
+        XCTAssertEqual(records.count, 2)
+        XCTAssertTrue(records.allSatisfy { $0.kind == .roast && $0.situation == "snooze" })
+    }
+
+    /// The miss reckoning line lands in the book, and it's the same deterministic line
+    /// the banner and the noon push will show.
+    @MainActor
+    func testRecordMissCollectsReckoningLine() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+
+        scheduler.recordMiss(dateKey: DateKey.string(from: Date()), settings: settings)
+
+        let records = try context.fetch(FetchDescriptor<RoastRecord>())
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.line, InsultPool.morningBanner(missStreak: 1).line)
+        XCTAssertEqual(records.first?.situation, "reckoning")
+    }
+
+    /// Unlock counting is by distinct line, intersected with the live pool.
+    func testUnlockedCountDistinctAndPoolBound() {
+        let pool = ["a", "b", "c"]
+        XCTAssertEqual(BurnBook.unlockedCount(seenLines: ["a", "a", "b"], pool: pool), 2)
+        XCTAssertEqual(BurnBook.unlockedCount(seenLines: ["a", "zombie-line"], pool: pool), 1, "lines no longer in the pool don't count")
+        XCTAssertEqual(BurnBook.unlockedCount(seenLines: [], pool: pool), 0)
+    }
+
+    func testBadgeLadders() {
+        let total = InsultPool.burnBookRoasts.count
+        XCTAssertNil(BurnBook.roastBadge(unlocked: 4, total: total))
+        XCTAssertEqual(BurnBook.roastBadge(unlocked: 5, total: total), "certified punching bag")
+        XCTAssertEqual(BurnBook.roastBadge(unlocked: 10, total: total), "glutton for punishment")
+        XCTAssertEqual(BurnBook.roastBadge(unlocked: 25, total: total), "roast magnet")
+        XCTAssertEqual(BurnBook.roastBadge(unlocked: 30, total: total), "well done")
+        XCTAssertEqual(BurnBook.roastBadge(unlocked: total, total: total), "fully roasted")
+
+        let cTotal = InsultPool.burnBookCompliments.count
+        XCTAssertNil(BurnBook.complimentBadge(unlocked: 2, total: cTotal))
+        XCTAssertEqual(BurnBook.complimentBadge(unlocked: 3, total: cTotal), "barely tolerable")
+        XCTAssertEqual(BurnBook.complimentBadge(unlocked: 7, total: cTotal), "annoyingly consistent")
+        XCTAssertEqual(BurnBook.complimentBadge(unlocked: cTotal, total: cTotal), InsultPool.tooHotToRoast)
+    }
+
+    /// Every badge threshold must be reachable with the actual pool sizes.
+    func testBadgeThresholdsAreAttainable() {
+        XCTAssertGreaterThanOrEqual(InsultPool.burnBookRoasts.count, 30, "the top numeric roast tier must be reachable")
+        XCTAssertGreaterThanOrEqual(InsultPool.burnBookCompliments.count, 7, "the top numeric compliment tier must be reachable")
+        XCTAssertEqual(Set(InsultPool.burnBookRoasts).count, InsultPool.burnBookRoasts.count, "no duplicate roast lines")
+        XCTAssertEqual(Set(InsultPool.burnBookCompliments).count, InsultPool.burnBookCompliments.count, "no duplicate compliment lines")
     }
 
     /// A past bonus day must never be re-settled as a miss by the catch-up pass.

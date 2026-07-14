@@ -200,6 +200,27 @@ enum InsultPool {
         successHeadline.randomElement() ?? successHeadline[0]
     }
 
+    /// The full compliment rotation - v0.2 Wave 3 finally puts successAlternates into
+    /// play (they were written for Phase 0 but never surfaced).
+    static func complimentLine() -> String {
+        (successHeadline + successAlternates).randomElement() ?? successHeadline[0]
+    }
+
+    // Burn Book pools (v0.2 Wave 3). Only lines the app actually surfaces AND records
+    // belong here - notification-body pools (reminder, missCheckMsg, zeroStreak) are
+    // excluded because their delivery can't be observed, and an unattainable tracker
+    // is worse than a smaller one.
+    static var burnBookRoasts: [String] {
+        reckoning + streak23 + streak46
+            + snoozeMild + snoozeSpicy + snoozeNuclear
+            + tomorrowInsults + reactivation
+            + [bonusLoggedLine, silenceSub, resumeLine]
+    }
+
+    static var burnBookCompliments: [String] {
+        successHeadline + successAlternates
+    }
+
     /// Morning-after banner headline + line, tiered by consecutive miss count.
     /// 7+ is handled separately by the silence state, not this function.
     ///

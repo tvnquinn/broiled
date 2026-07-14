@@ -46,6 +46,7 @@ final class DayScheduler {
             settings.pauseStartDateKey = nil
             settings.pauseEndDateKey = nil
             settings.resumeBannerDateKey = DateKey.string(from: today)
+            recordRoast(InsultPool.resumeLine, kind: .roast, situation: "resume")
         }
         try? context.save()
     }
@@ -69,14 +70,23 @@ final class DayScheduler {
 
     /// Returns false when the day was already resolved (nothing recorded) - callers use
     /// this to avoid writing duplicate history entries on double-logs.
+    /// `collectLine: false` skips the compliment pick entirely (reactivation overrides
+    /// the line with its own jab, so a compliment would land in the book unseen).
     @discardableResult
-    func recordSuccess(on date: Date, settings: UserSettings, viaHealthKit: Bool) -> Bool {
+    func recordSuccess(on date: Date, settings: UserSettings, viaHealthKit: Bool, collectLine: Bool = true) -> Bool {
         let key = DateKey.string(from: date)
         let existing = fetchDayLog(key: key)
         guard existing?.status ?? .pending == .pending else { return false } // already resolved today - don't double-count the streak
         let log = existing ?? DayLog(dateKey: key)
         log.status = .completed
         log.verifiedByHealthKit = viaHealthKit
+        if collectLine {
+            // The line Home displays is the line the Burn Book collects - picked once
+            // here, stored on the day, never re-rolled by a re-render.
+            let line = InsultPool.complimentLine()
+            log.insultShown = line
+            recordRoast(line, kind: .compliment, situation: "success", on: date)
+        }
         if log.modelContext == nil { context.insert(log) }
 
         settings.successStreak += 1
@@ -100,8 +110,12 @@ final class DayScheduler {
         if settings.missStreak >= 7 {
             settings.isAbandoned = true
             notifications.cancelAll()
+            recordRoast(InsultPool.silenceSub, kind: .roast, situation: "silence")
         } else {
             notifications.scheduleMorningReckoning(missStreak: settings.missStreak)
+            // The reckoning line is deterministic per streak, so what lands in the book
+            // is exactly what the banner and the noon push will say.
+            recordRoast(InsultPool.morningBanner(missStreak: settings.missStreak).line, kind: .roast, situation: "reckoning")
         }
         try? context.save()
     }
@@ -131,6 +145,8 @@ final class DayScheduler {
         let log = existing ?? DayLog(dateKey: key)
         log.status = .bonus
         log.verifiedByHealthKit = viaHealthKit
+        log.insultShown = InsultPool.bonusLoggedLine
+        recordRoast(InsultPool.bonusLoggedLine, kind: .roast, situation: "bonus", on: date)
         if log.modelContext == nil { context.insert(log) }
         try? context.save()
         return true
@@ -139,6 +155,11 @@ final class DayScheduler {
     func recordSnooze(dateKey: String) -> Int {
         let log = fetchDayLog(key: dateKey) ?? DayLog(dateKey: dateKey)
         log.snoozeCount += 1
+        // v0.2 Wave 3: the escalation line (MILD -> SPICY -> NUCLEAR) finally surfaces -
+        // stored on the day so Home shows it under the countdown, and collected.
+        let line = InsultPool.snoozeLine(forSnoozeCount: log.snoozeCount)
+        log.insultShown = line
+        recordRoast(line, kind: .roast, situation: "snooze")
         if log.modelContext == nil { context.insert(log) }
         try? context.save()
         return log.snoozeCount
@@ -147,7 +168,23 @@ final class DayScheduler {
     func reactivate(on date: Date, settings: UserSettings) {
         settings.isAbandoned = false
         settings.missStreak = 0
-        recordSuccess(on: date, settings: settings, viaHealthKit: false)
+        recordSuccess(on: date, settings: settings, viaHealthKit: false, collectLine: false)
+        // Coming back from silence doesn't earn a compliment - store the reactivation
+        // jab instead, so that's what Home shows and the book keeps.
+        if let log = dayLog(for: date) {
+            let line = InsultPool.reactivation.randomElement() ?? InsultPool.reactivation[0]
+            log.insultShown = line
+            recordRoast(line, kind: .roast, situation: "reactivation", on: date)
+            try? context.save()
+        }
+    }
+
+    // MARK: - Burn Book (v0.2 Wave 3)
+
+    /// Every line the app throws gets collected - the Burn Book is the history page.
+    func recordRoast(_ line: String, kind: RoastKind, situation: String, on date: Date = Date()) {
+        context.insert(RoastRecord(dateKey: DateKey.string(from: date), line: line, kind: kind, situation: situation))
+        try? context.save()
     }
 
     // MARK: - Workout history (v0.2 Wave 2)

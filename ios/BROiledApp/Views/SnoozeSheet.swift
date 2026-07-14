@@ -11,7 +11,8 @@ struct SnoozeSheet: View {
     /// Snooze to an exact time later today.
     let onSnooze: (Date) -> Void
     /// Rest-day tomorrow path - caller defers today and moves the deadline to tomorrow.
-    let onPushToTomorrow: () -> Void
+    /// Passes the insult that was on screen so the Burn Book collects the real one.
+    let onPushToTomorrow: (String) -> Void
     /// Scheduled-tomorrow path - today becomes a miss via the normal quit flow.
     let onTakeMiss: () -> Void
     let onQuit: () -> Void
@@ -81,7 +82,7 @@ struct SnoozeSheet: View {
                                     .foregroundStyle(Theme.inkMuted)
                             }
                         } else {
-                            Button(action: onPushToTomorrow) {
+                            Button(action: { onPushToTomorrow(tomorrowInsult) }) {
                                 Text("do it")
                                     .font(.system(size: 14, weight: .semibold))
                                     .frame(maxWidth: .infinity)
