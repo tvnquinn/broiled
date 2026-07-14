@@ -19,7 +19,7 @@ struct SnoozeSheet: View {
 
     @State private var newDeadline = Date().addingTimeInterval(30 * 60)
     @State private var showTomorrowConfirm = false
-    @State private var tomorrowInsult = InsultPool.tomorrowInsults.randomElement() ?? InsultPool.tomorrowInsults[0]
+    @State private var tomorrowInsult = InsultPool.tomorrowLine()
 
     var body: some View {
         ZStack {
@@ -91,6 +91,7 @@ struct SnoozeSheet: View {
                                     .foregroundStyle(Theme.bg)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
+                            .accessibilityIdentifier("pushToTomorrowConfirmButton")
                         }
                     }
                     .padding(12)

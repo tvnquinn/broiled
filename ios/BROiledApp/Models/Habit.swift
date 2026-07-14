@@ -10,8 +10,21 @@ struct WeekdaySchedule: Codable, Identifiable, Equatable {
     /// previously-stored schedule JSON (which lacks the key) decoding cleanly, and the
     /// `= nil` default keeps the memberwise init compatible with existing call sites.
     var workoutType: String? = nil
+    /// Duration belongs to this planned workout, not to the whole habit. Optional keeps
+    /// schedule JSON from pre-multi-workout builds decoding; legacy rows fall back to
+    /// Habit.minDurationMinutes until the user next saves the schedule.
+    var durationMinutes: Int? = nil
 
-    var id: Int { weekday }
+    /// Schedule editors use their own UUID-backed drafts. This value is only a stable
+    /// read identity for display and deliberately includes all instance fields so two
+    /// workouts on the same weekday no longer collide.
+    var id: String {
+        "\(weekday)-\(hour)-\(minute)-\(workoutType ?? "any")-\(durationMinutes ?? 0)"
+    }
+
+    func resolvedDuration(fallback: Int) -> Int {
+        durationMinutes ?? fallback
+    }
 
     /// Display/storage order is always Monday-first (MTWTFSS), independent of Calendar's
     /// Sunday=1 convention and independent of the order days were selected in - a Swift
@@ -44,11 +57,31 @@ final class Habit {
         set { scheduleData = (try? JSONEncoder().encode(newValue)) ?? Data() }
     }
 
-    /// Today's deadline as a concrete Date, if today is an active day.
+    /// The day's final planned workout time. Consequences wait until this last chance:
+    /// completing any one planned workout satisfies the day, so missing an earlier
+    /// session must never settle the day as a miss while another is still ahead.
     func deadline(for date: Date, calendar: Calendar = .current) -> Date? {
-        let weekday = calendar.component(.weekday, from: date)
-        guard let entry = schedule.first(where: { $0.weekday == weekday }) else { return nil }
+        guard let entry = scheduledWorkouts(for: date, calendar: calendar).last else { return nil }
         return calendar.date(bySettingHour: entry.hour, minute: entry.minute, second: 0, of: date)
+    }
+
+    func scheduledWorkouts(for date: Date, calendar: Calendar = .current) -> [WeekdaySchedule] {
+        let weekday = calendar.component(.weekday, from: date)
+        return schedule
+            .filter { $0.weekday == weekday }
+            .sorted { lhs, rhs in
+                (lhs.hour, lhs.minute) < (rhs.hour, rhs.minute)
+            }
+    }
+
+    /// The next planned workout for Home/Live Activity. After all planned times pass,
+    /// keep showing the final one at 0:00 until the user logs or snoozes.
+    func displayWorkout(for date: Date, now: Date = Date(), calendar: Calendar = .current) -> WeekdaySchedule? {
+        let entries = scheduledWorkouts(for: date, calendar: calendar)
+        return entries.first { entry in
+            guard let deadline = calendar.date(bySettingHour: entry.hour, minute: entry.minute, second: 0, of: date) else { return false }
+            return deadline > now
+        } ?? entries.last
     }
 
     func isActiveDay(_ date: Date, calendar: Calendar = .current) -> Bool {
@@ -58,7 +91,19 @@ final class Habit {
 
     /// The scheduled workout type for a date, if that day is active and has one set.
     func workoutType(for date: Date, calendar: Calendar = .current) -> String? {
-        let weekday = calendar.component(.weekday, from: date)
-        return schedule.first { $0.weekday == weekday }?.workoutType
+        displayWorkout(for: date, now: date, calendar: calendar)?.workoutType
+    }
+
+    /// Any qualifying workout satisfies a multi-workout day, so HealthKit uses the
+    /// shortest planned duration as its threshold.
+    func minimumQualifyingDuration(for date: Date, calendar: Calendar = .current) -> Int {
+        scheduledWorkouts(for: date, calendar: calendar)
+            .map { $0.resolvedDuration(fallback: minDurationMinutes) }
+            .min() ?? minDurationMinutes
+    }
+
+    func finalWorkoutDuration(for date: Date, calendar: Calendar = .current) -> Int {
+        scheduledWorkouts(for: date, calendar: calendar).last?
+            .resolvedDuration(fallback: minDurationMinutes) ?? minDurationMinutes
     }
 }

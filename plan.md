@@ -2,49 +2,32 @@
 name: BROiled
 overview: Build BROiled - an iOS SwiftUI workout accountability app with a savage persona who holds you to a schedule you set. Miss your deadline and you're cooked; snooze and each snooze escalates the roast; hit a full week of misses and the app goes silent until you prove it wrong. Verification defaults to Apple Health (Watch, Garmin, Strava, whatever writes there) with a manual "I've locked in today" fallback. MVP (Phase 0) is deliberately small; persona voice packs, AI consequence photos, and shareable roast cards layer on in later phases.
 
-## Xcode Build Progress (Real Device Testing - July 9, 2026)
-**Status:** Waiting on macOS update to download iOS 18 device support  
-**Current device:** iPhone 16  
-**Xcode version:** Requires macOS 26.2 or later for iOS 18 support
+## Current build status (July 13, 2026)
 
-| Step | Status | Notes |
-|------|--------|-------|
-| Create Xcode project (SwiftUI + SwiftData) | ✅ Done | Bundle ID: com.quinnnguyen.broiled |
-| Delete template files (ContentView.swift, default model) | ✅ Done | |
-| Add BROiledApp folder from repo | ✅ Done | All Swift source files imported |
-| Add HealthKit capability | ✅ Done | Debug & Release configured |
-| Add NSHealthShareUsageDescription to Info.plist | ✅ Done | Permission string added |
-| Connect iPhone 16 to Mac | ✅ Done | Plugged in via cable |
-| Enable Developer Mode on device | ✅ Done | iPhone restarted |
-| Update macOS to 26.2+ | ⏳ In Progress | Needed for iOS 18 device support files |
-| Select iPhone as run destination | ⏳ Blocked | Awaiting Xcode update |
-| Build & run app (⌘R) | ⏳ Blocked | Awaiting device support files |
+The SwiftUI app is built and running on the development iPhone. Phase 0 and v0.2 Waves 1–3 are implemented, including HealthKit verification/background delivery, pause/rest-day flows, workout types, the Burn Book, Live Activity, and home-screen widgets. The current phase is **on-device validation and dogfood fixes**, not initial scaffolding.
 
-**Next step when macOS update completes:** Restart Xcode, select iPhone 16 from device dropdown, hit ⌘R to build and run.
+The July 13 dogfood pass added typed/duration-aware manual logging, multiple planned workouts per weekday, per-instance time and duration, and the Burn Book collection redesign. Simulator build/tests cover deterministic logic; HealthKit background delivery, Live Activity, widget refresh, and real notification timing still require device verification.
 
 ---
 
 todos:
-  - id: phase0-scaffold
-    content: "Phase 0: BROiled SwiftUI iOS 17 project at ~/Projects/broiled, SwiftData models (Habit, DayLog, UserSettings), single-habit schedule setup (weekday × time × duration)"
+  - id: device-validation
+    content: "Validate HealthKit background success, Live Activity, widgets, and notification timing/actions on the development iPhone"
     status: in_progress
-  - id: phase0-healthkit
-    content: "Phase 0: HealthKitService - deadline query (any source), manual 'I've locked in today' fallback button"
-    status: pending
-  - id: phase0-scheduler
-    content: "Phase 0: deadline notification, 12:00 PM reckoning push, uncapped escalating snooze, morning reckoning message, backhanded-celebration success state"
-    status: pending
-  - id: phase0-insults
-    content: "Phase 0: static curated insult list (~40 lines, mild/spicy/nuclear tagged, no persona system yet), plain in-app miss/success screens"
-    status: pending
-  - id: phase0-streaks
-    content: "Phase 0: miss-streak escalation ladder (2-3 / 4-6 / 7-day) and the silence + reactivation mechanic"
+  - id: dogfood-multi-workout
+    content: "Typed/duration-aware manual logs; multiple planned workout instances per weekday; any completed workout satisfies the day"
+    status: completed
+  - id: dogfood-burn-book
+    content: "Grouped collection counts, compact date history, lifetime volume totals, rare collectibles, and cleaned user-facing labels"
+    status: completed
+  - id: rich-notifications
+    content: "Notification Content Extension for expanded T-30 and miss-check layouts"
     status: pending
   - id: phase1-persona
-    content: "Phase 1: named persona + voice (incl. non-bro options), Insults.json namespaced by persona × intensity, polished full-screen ShameView, Live Activity/Dynamic Island countdown"
+    content: "Named persona + voice (incl. non-bro options), Insults.json namespaced by persona × intensity, and polished full-screen roast UI"
     status: pending
   - id: phase1-schedule-gen
-    content: "Phase 1: auto-generate weekly schedule from a frequency goal (e.g. 3x/week), user-adjustable"
+    content: "Phase 1: auto-generate a multi-workout weekly schedule from a frequency goal (e.g. 3x/week), user-adjustable"
     status: pending
   - id: phase1-weekly
     content: "Phase 1: WeeklyReportBuilder + Sunday notification + shareable card"
@@ -104,16 +87,17 @@ It's not therapy and it doesn't pretend to be encouraging. It's a rival and a di
 
 ---
 
-## Build phases
+## Roadmap baseline
 
 | Phase | Scope |
 |-------|-------|
-| **Phase 0 (true MVP - build this first)** | One habit ("Workout"), manual weekday × time × duration setup, HealthKit deadline check + manual fallback, uncapped escalating snooze, morning reckoning message, backhanded celebration, miss-streak ladder + silence/reactivation mechanic, static ~40-line insult list. No persona system, no Live Activity, no auto-schedule, no weekly report, no AI photo. |
-| **Phase 1** | Named persona + voice (`Insults.json` namespaced by persona × intensity), polished full-screen roast UI, Live Activity/Dynamic Island countdown (real ActivityKit work - needs a widget extension), auto-generated weekly schedule from a frequency goal, weekly roast report + shareable card |
-| **Phase 2** | Opt-in AI "consequence photo," Hall of Shame history screen, share cards for roast moments and streak milestones, multiple persona packs |
+| **Shipped: Phase 0 + v0.2** | HealthKit/manual verification, multi-instance weekly schedules, per-workout type/time/duration, escalating snooze, morning reckoning, success/miss streaks, silence/reactivation, rest days, pause mode, Burn Book, Live Activity, and home-screen widget. |
+| **Validating now** | Real-device reliability and daily-use friction. A day is satisfied by any completed workout; multiple workouts can still be logged as history without advancing the streak twice. |
+| **Next: Phase 1** | Named persona + voice (`Insults.json` namespaced by persona × intensity), polished full-screen roast UI, auto-generated weekly schedule from a frequency goal, weekly roast report + shareable card. |
+| **Phase 2** | Opt-in AI "consequence photo," share cards for roast moments/badge unlocks/streak milestones, multiple persona packs, and user-generated insults with moderation. |
 | **Phase 3 (deferred)** | Friend shame SMS (Twilio, double opt-in), app blocking via `FamilyControls` (requires Apple entitlement approval, 2-4 week lead time - submit early if you get here) |
 
-Phase 0 is intentionally small enough to build in days and use on your own phone before touching TestFlight. Everything that makes the app *feel* like a finished product - the persona, the countdown widget, the shareability - is Phase 1+, deliberately deferred so the core loop can be validated first.
+Feature work now follows dogfood evidence rather than the original phase numbering. Reliability and false-positive prevention outrank new scope; persona and weekly sharing remain the highest-leverage new product work after the core loop is trustworthy.
 
 ---
 
@@ -121,7 +105,7 @@ Phase 0 is intentionally small enough to build in days and use on your own phone
 
 ```mermaid
 flowchart TD
-  setup[Set weekday/time/duration] --> morning[Morning: show countdown]
+  setup[Set one or more workout type/time/duration instances per weekday] --> morning[Morning: show next countdown]
   morning -->|yesterday was a miss| reckoning["In-app: you skipped yesterday"]
   reckoning --> noonPush["12:00 PM reckoning push (same copy)"]
   noonPush --> morning
@@ -144,7 +128,7 @@ flowchart TD
 
 **Notification schedule (Phase 0):**
 1. **12:00 PM (day after a miss)** - morning reckoning push: "you skipped yesterday" / "is this who you are, or can you be better today?" - same copy as the in-app banner (frame 03). Only fires if yesterday was missed. Tapping opens home with reckoning + today's countdown. Suppressed if the user already opened the app and saw the reckoning banner today.
-2. **T-30min before deadline** - reminder push ("30 minutes left today") with the taunt "still time to lock in and complete" so the deadline doesn't arrive as a surprise. Tapping opens the snooze sheet directly, since that's the only decision left to make at that point.
+2. **T-30min before each planned workout** - prospective reminder push (for example, "30 min till run" / "still time to lock in") so a session doesn't arrive as a surprise. Meal-specific variants are filtered by the planned time. Tapping opens the snooze sheet directly.
 3. **T + workout duration + 30min after deadline** - this is the actual miss check, not the deadline itself, since HealthKit needs time for a just-started workout to land even if the user heads out right at the deadline. **It asks, it doesn't accuse:** the notification is an interactive "are you working out right now?" / "tap yes if you're mid-session" with two actions - **"yes, i'm working out 💪"** and **"no"**. A flat "you didn't work out" is unfair when a workout started near the deadline can still be running when the check fires. **Yes** gives grace (no penalty) and re-arms the check for roughly one more workout's worth of time so HealthKit can log the finished session; **No** (or a plain tap) opens the snooze sheet. Copy scales with streak on the morning reckoning, but the miss-check question itself stays neutral by design.
 4. **On success** - if HealthKit picks up the workout while the app is backgrounded, the backhanded-celebration line fires as a push ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"). If the user is already in-app and taps "I've locked in today," it just shows inline (no notification needed, they're already looking at it).
 
@@ -160,7 +144,7 @@ flowchart TD
 
 Default to reading HealthKit, with a manual fallback - no geofencing, no source-filtering games. If people self-report a workout that didn't happen, they're only lying to themselves; Strava allows manual entries for the same reason, and the psychological pressure in this app comes from the escalation/silence design, not from surveillance rigor.
 
-- **Primary:** query HealthKit for a workout meeting `minDuration` on the current day. This covers Apple Watch, Garmin (via Garmin Connect's Health sync), Strava, Peloton, gym equipment with Bluetooth, or anything else that writes an `HKWorkout` - no device requirement, no app-specific integration needed.
+- **Primary:** query HealthKit for a workout meeting the shortest planned duration on the current day. This covers Apple Watch, Garmin (via Garmin Connect's Health sync), Strava, Peloton, gym equipment with Bluetooth, or anything else that writes an `HKWorkout` - no device requirement, no app-specific integration needed. On a day with multiple planned instances, any one qualifying workout satisfies the day; remaining sessions can still be logged but never advance the streak twice.
 - **Fallback:** if nothing's found by the deadline, a manual "I've locked in today" button in-app satisfies the day - but tapping it surfaces one gut-check before it counts: *"this app is private, lying to it is embarrassing. did you work out today?"* with **"yes!"** / **"...no I lied"**. This isn't a real gate (there's no way to verify a manual claim regardless), it's a beat that makes the user say the lie out loud to themselves if they're going to tell it - which fits the theme better than pretending the button is bulletproof. "yes!" logs success normally; "...no I lied" just returns to the countdown, nothing logged.
 
 This also fixes a real market-sizing risk: requiring an Apple Watch specifically would exclude most of the target audience (only ~50% of US adults own any tracker, and Watch-specific figures are murkier), and the people who most need this app are disproportionately *less* likely to already have a disciplined tracking habit. Defaulting to HealthKit-with-fallback keeps the addressable market at "anyone who wants to work out," not "anyone who already owns a wearable."
@@ -184,13 +168,16 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 - "set your schedule then prove it"
 
 **Pre-deadline reminder (T-30min)**
-- "still time to lock in and complete" - MILD (wireframe default)
+- "still time to lock in" - MILD (generic)
 - "timer's running, move" - MILD
-- "breakfast time - are you toasting or toast" - MILD (morning-slot variant)
-- "lunch time, crunch time" - MILD (midday-slot variant)
-- "winner winner or are you the chicken dinner" - MILD (evening/dinner-slot variant only - the punchline needs "dinner" to land)
-- "fire work today" - MILD
+- "the workout isn't gonna start itself" - MILD (generic)
+- "30 minutes. plenty of time to stop negotiating" - MILD (generic)
 - "your body's gonna be tea" - MILD
+- "breakfast time - are you toasting or toast" - MILD (scheduled before 11:00 AM only)
+- "lunch time, crunch time" - MILD (scheduled 11:00 AM–2:59 PM only)
+- "winner winner or are you the chicken dinner" - MILD (scheduled 5:00 PM or later only)
+
+T-30 copy must describe a workout that has **not happened yet**. Do not use completed-work language or praise in this slot. Time-of-day variants are selected only when their meal context matches the planned workout; generic lines fill the remaining times.
 
 **Miss check @ deadline**
 - "will you later?" - MILD (wireframe default)
@@ -292,8 +279,16 @@ All lines lowercase with minimal punctuation (no trailing periods, question mark
 ```swift
 @Model class Habit {
   var name: String = "Workout"
-  var minDurationMinutes: Int
-  var deadlinesByWeekday: [Int: DateComponents] // 1=Sun...7=Sat, each active day has its own hour/minute
+  var minDurationMinutes: Int // legacy migration fallback only
+  var schedule: [WeekdaySchedule] // multiple instances may share a weekday
+}
+
+struct WeekdaySchedule {
+  var weekday: Int // 1=Sun...7=Sat
+  var hour: Int
+  var minute: Int
+  var workoutType: String?
+  var durationMinutes: Int?
 }
 
 @Model class DayLog {
@@ -330,12 +325,12 @@ Phase 0 also adds a success-streak counter and a computed rankTitle property (fr
 
 ## Phase 0 screens
 
-1. **Onboarding - Set your schedule** - headline "when are you working out?"; pick active weekdays, then set a deadline time **per active day** (not one shared time), plus minimum workout duration; HealthKit permission requested once, first run only
+1. **Onboarding - Set your schedule** - headline "when are you working out?"; pick active weekdays, then configure one workout by default or add more. Every instance has its own type, time, and duration; HealthKit permission requested once, first run only.
 2. **Home - Countdown (on track)** - today's countdown to deadline, current rank title displayed above or beside countdown, manual "I've locked in today" button
 3. **Home - Morning reckoning** - shown first if yesterday was a miss: "you skipped yesterday" + "is this who you are, or can you be better today?", then today's countdown with rank title
 4. **Notification - Morning reckoning (12:00 PM)** - lock-screen push the day after a miss; same copy as frame 03. Tapping opens home with banner + countdown. Skipped if user already saw in-app reckoning today.
 5. **Gut-check sheet** - shown on tapping "I've locked in today": "this app is private, lying to it is embarrassing" / "did you work out today?" / **yes!** / **...no I lied**
-6. **Notification - T-30min reminder** - lock-screen banner ("30 minutes left today" / "still time to lock in and complete"), taps into the snooze sheet
+6. **Notification - T-30min reminder** - lock-screen banner ("30 min till run" / "still time to lock in"), taps into the snooze sheet
 7. **Notification - miss check** - interactive lock-screen banner asking "are you working out right now?" with **yes, i'm working out 💪** / **no** actions. Yes = grace + later re-check; No (or plain tap) opens the snooze sheet
 8. **Snooze sheet** - title "push it back?"; pick a new deadline time; buttons are **Snooze** / **I'm a Quitter**
 9. **Notification - success** - lock-screen banner ("you're not a loser today" or "you're not a dud today" / "let's see about tomorrow"), fires when HealthKit catches the workout in the background
@@ -426,7 +421,7 @@ Block selected apps until habit satisfied for the day. Requires [Apple Family Co
 
 ## v0.2 update plan (post daily-use feedback)
 
-Driven by real on-device usage of the Phase 0 build. Organized in three waves; each item ships across all four surfaces (wireframe, prototype, iOS code, this plan) before moving on. *(July 13: Wave 2 items 6-8 and all of Wave 3 shipped across wireframe + iOS + plan; `prototype.html` still reflects Wave 1 and needs a catch-up pass.)*
+Driven by real on-device usage of the Phase 0 build. Waves 1–3 established the feature baseline; subsequent work is prioritized from dogfood findings. `prototype.html` still reflects Wave 1 and is reference-only until a catch-up pass is justified for demos or user research.
 
 ### Wave 1 - bugs, copy, daily frictions
 
@@ -449,6 +444,13 @@ Driven by real on-device usage of the Phase 0 build. Organized in three waves; e
 9. **The Burn Book (collection/history page).** ✅ *Shipped July 13.* `RoastRecord` model + Settings drill-in: chronological list (date + line + W/L chip), unlock trackers counting **distinct** lines. Implementation decisions: the trackable pools are only lines the app surfaces *and* can observe (36 roasts / 10 compliments; notification-body pools like `reminder`/`missCheckMsg`/`zeroStreak` are excluded - local-notification delivery can't be observed, and an unattainable tracker is worse than a smaller one). Numeric badge tiers tuned to the real pool sizes: roasts 5 = "certified punching bag", 10 = "glutton for punishment", 25 = "roast magnet", **30** = "well done" (was 50), all = "fully roasted"; compliments **3** = "barely tolerable", **7** = "annoyingly consistent", all = "too hot to roast" (crown badge). Side effect that matters: `DayLog.insultShown` is now real - Home displays the stored line, and the previously written-but-unreachable snooze escalation lines (shown under the countdown after snoozing), `successAlternates`, and reactivation jabs all finally surface.
 10. **Live Activity countdown** (lock screen + Dynamic Island). ✅ *Shipped July 13.* New `BROiledWidgets` extension target. `LiveActivityService` starts/updates/ends one activity mirroring today's pending deadline (updates on snooze/push-to-tomorrow, ends on success/miss/pause); counts down via `Text(timerInterval:)` with no pushes; goes stale 30min past deadline. `NSSupportsLiveActivities` set on the app.
 11. **Home-screen widget + best-streak stat.** ✅ *Shipped July 13.* systemSmall/Medium widget: streak + per-state body (ticking countdown / locked in ✓ / rest day / paused / "…" for silence); medium adds best streak. Data flows app → widget via an app-group UserDefaults snapshot (`group.com.quinnnguyen.broiled`) written by `RootView.syncWidgets()` on every state change. `UserSettings.bestStreak` is a high-water mark (nil-safe for legacy rows), also a Settings row with its rank title. Note: the HealthKit **background-delivery entitlement** is now set in `broiled.entitlements` directly - the manual Xcode checkbox step from Wave 1 is no longer needed.
+
+### Dogfood fixes - July 13
+
+12. **Manual logging that actually settles the day.** ✅ The honesty gate now captures workout type and actual duration, persists the `WorkoutEntry`, dismisses into the completed state, and cancels consequences. Once complete, Home offers **log another workout** so double sessions are preserved without incrementing the streak again. Rest-day bonus logging uses the same typed/duration-aware flow.
+13. **Multiple planned workouts per weekday.** ✅ Onboarding and Settings default to one instance per active day and allow more. Every instance owns its type, time, and duration. Home follows the next planned instance; all session reminders may fire, but the miss check waits until the final planned session. Any one completed workout satisfies the day, so missing one of two plans never produces a day-level insult after another was completed.
+14. **Burn Book collection redesign.** ✅ Header standardized to lowercase. Records are grouped by line with an occurrence count and a compact horizontally scrolling date rail. The page separately tracks distinct unlock progress and lifetime insult/compliment volume, shows a fixed jab while insults outnumber compliments, hides internal situation labels, and weights selected random lines as rare/uncommon collection pieces.
+15. **Notification copy context audit.** ✅ T-30 copy now stays prospective (no praise for work not yet done), removes "fire work today," and selects breakfast/lunch/dinner variants only for matching scheduled times. Miss checks remain neutral questions, success copy only fires post-verification, and miss/streak copy remains morning-after.
 
 ### Parked to Phase 2
 

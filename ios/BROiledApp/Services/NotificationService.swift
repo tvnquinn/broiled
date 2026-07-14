@@ -3,6 +3,7 @@ import UserNotifications
 
 enum NotificationID {
     static let reminder = "broiled.reminder"
+    static func reminder(_ index: Int) -> String { "\(reminder).\(index)" }
     static let missCheck = "broiled.missCheck"
     static let morningReckoning = "broiled.morningReckoning"
     static let success = "broiled.success"
@@ -67,13 +68,44 @@ final class NotificationService {
             schedule(
                 id: NotificationID.reminder,
                 title: InsultPool.reminderTitle(workoutType: workoutType),
-                body: InsultPool.reminder.randomElement() ?? InsultPool.reminder[0],
+                body: InsultPool.reminderLine(for: deadline),
                 date: reminderDate
             )
         }
 
         let missCheckDate = deadline.addingTimeInterval(Double(durationMinutes * 60) + 30 * 60)
         scheduleMissCheck(date: missCheckDate)
+    }
+
+    /// Schedule every planned-session reminder for the day, but only one consequence
+    /// check after the final session. A run at 8am and lift at 6pm can both prompt the
+    /// user, while skipping the run cannot mark the day missed before the lift happens.
+    func scheduleDay(workouts: [WeekdaySchedule], on date: Date, fallbackDuration: Int, calendar: Calendar = .current) {
+        cancelDeadlinePair()
+        let sorted = workouts.sorted { ($0.hour, $0.minute) < ($1.hour, $1.minute) }
+        for (index, workout) in sorted.enumerated() {
+            guard let deadline = calendar.date(
+                bySettingHour: workout.hour,
+                minute: workout.minute,
+                second: 0,
+                of: date
+            ) else { continue }
+            let reminderDate = deadline.addingTimeInterval(-30 * 60)
+            if reminderDate > Date() {
+                schedule(
+                    id: NotificationID.reminder(index),
+                    title: InsultPool.reminderTitle(workoutType: workout.workoutType),
+                    body: InsultPool.reminderLine(for: deadline, calendar: calendar),
+                    date: reminderDate
+                )
+            }
+        }
+
+        guard let final = sorted.last,
+              let deadline = calendar.date(bySettingHour: final.hour, minute: final.minute, second: 0, of: date) else { return }
+        let duration = final.resolvedDuration(fallback: fallbackDuration)
+        UserDefaults.standard.set(duration, forKey: durationKey)
+        scheduleMissCheck(date: deadline.addingTimeInterval(Double(duration * 60) + 30 * 60))
     }
 
     private func scheduleMissCheck(date: Date) {
@@ -95,7 +127,8 @@ final class NotificationService {
     }
 
     func cancelDeadlinePair() {
-        center.removePendingNotificationRequests(withIdentifiers: [NotificationID.reminder, NotificationID.missCheck])
+        let reminderIDs = [NotificationID.reminder] + (0..<20).map(NotificationID.reminder)
+        center.removePendingNotificationRequests(withIdentifiers: reminderIDs + [NotificationID.missCheck])
     }
 
     /// Fires at 12:00 PM the day after a miss. Suppressed by the caller if the user

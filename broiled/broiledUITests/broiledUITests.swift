@@ -42,9 +42,9 @@ final class BroiledUITests: XCTestCase {
         XCTAssertTrue(yesButton.waitForExistence(timeout: 12), "gut-check sheet should appear")
         yesButton.tap()
 
-        let doneButton = app.buttons["Locked in ✓"]
+        let doneButton = app.buttons["log another workout"]
         XCTAssertTrue(doneButton.waitForExistence(timeout: 12))
-        XCTAssertFalse(doneButton.isEnabled, "should be disabled after logging today")
+        XCTAssertTrue(doneButton.isEnabled, "completed days should allow another workout entry")
     }
 
     func testGutCheckNoReturnsToCountdownWithoutLogging() throws {
@@ -126,7 +126,7 @@ final class BroiledUITests: XCTestCase {
         XCTAssertTrue(tomorrowButton.exists)
         tomorrowButton.tap()
 
-        let doIt = app.buttons["do it"]
+        let doIt = app.buttons["pushToTomorrowConfirmButton"]
         XCTAssertTrue(doIt.waitForExistence(timeout: 12), "rest-day branch should offer 'do it'")
         doIt.tap()
 
@@ -158,7 +158,7 @@ final class BroiledUITests: XCTestCase {
 
     /// Rest days show a real rest state (not the old red 0:00 countdown), and the bonus
     /// flow runs: bonus button -> honesty gate -> logged state with the no-streak-freeze
-    /// line and a disabled button.
+    /// line and keeps the button available for another bonus workout entry.
     func testRestDayShowsRestStateAndBonusFlow() throws {
         app.launchArguments += ["UI-TESTING-REST-TODAY"]
         app.launch()
@@ -180,7 +180,7 @@ final class BroiledUITests: XCTestCase {
             app.staticTexts["cute. bonus workouts don't buy back missed ones - no streak freezes here"]
                 .waitForExistence(timeout: 12)
         )
-        XCTAssertFalse(app.buttons["bonusWorkoutButton"].isEnabled, "bonus button disables after logging")
+        XCTAssertTrue(app.buttons["bonusWorkoutButton"].isEnabled, "rest days should allow another workout entry")
     }
 
     // MARK: - v0.2 Wave 3 Burn Book
@@ -196,14 +196,14 @@ final class BroiledUITests: XCTestCase {
         lockedInButton.tap()
         XCTAssertTrue(app.buttons["yes!"].waitForExistence(timeout: 12))
         app.buttons["yes!"].tap()
-        XCTAssertTrue(app.buttons["Locked in ✓"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.buttons["log another workout"].waitForExistence(timeout: 12))
 
         app.buttons["settingsButton"].tap()
         let burnBookRow = app.buttons["burnBookRowButton"]
         XCTAssertTrue(burnBookRow.waitForExistence(timeout: 12))
         burnBookRow.tap()
 
-        XCTAssertTrue(app.staticTexts["the Burn Book"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts["the burn book"].waitForExistence(timeout: 12))
         XCTAssertTrue(app.staticTexts["1/10"].waitForExistence(timeout: 12), "one compliment unlocked after one success")
         XCTAssertTrue(app.staticTexts["0/36"].exists, "no roasts earned yet")
     }

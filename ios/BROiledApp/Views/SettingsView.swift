@@ -50,7 +50,7 @@ struct SettingsView: View {
                     .accessibilityIdentifier("pauseRowButton")
 
                     Button { showBurnBook = true } label: {
-                        row(key: "THE BURN BOOK", value: "every line you've earned", trailing: "open ›")
+                        row(key: "the burn book", value: "every line you've earned", trailing: "open ›")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("burnBookRowButton")

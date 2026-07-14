@@ -466,6 +466,42 @@ final class Wave2Tests: XCTestCase {
         let decoded = try JSONDecoder().decode([WeekdaySchedule].self, from: legacy)
         XCTAssertEqual(decoded.first?.weekday, 2)
         XCTAssertNil(decoded.first?.workoutType)
+        XCTAssertNil(decoded.first?.durationMinutes)
+    }
+
+    func testMultiplePlannedWorkoutsUseNextForDisplayAndLastForConsequences() throws {
+        let habit = Habit(minDurationMinutes: 30, schedule: [
+            WeekdaySchedule(weekday: 2, hour: 8, minute: 0, workoutType: "run", durationMinutes: 25),
+            WeekdaySchedule(weekday: 2, hour: 18, minute: 0, workoutType: "lift", durationMinutes: 60),
+        ])
+        let calendar = Calendar(identifier: .gregorian)
+        let monday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 6, hour: 0)))
+        let noon = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 6, hour: 12)))
+
+        XCTAssertEqual(habit.scheduledWorkouts(for: monday, calendar: calendar).count, 2)
+        XCTAssertEqual(habit.displayWorkout(for: monday, now: noon, calendar: calendar)?.workoutType, "lift")
+        XCTAssertEqual(calendar.component(.hour, from: try XCTUnwrap(habit.deadline(for: monday, calendar: calendar))), 18)
+        XCTAssertEqual(habit.minimumQualifyingDuration(for: monday, calendar: calendar), 25)
+        XCTAssertEqual(habit.finalWorkoutDuration(for: monday, calendar: calendar), 60)
+    }
+
+    @MainActor
+    func testOneSuccessSatisfiesMultiWorkoutDayAndCannotBecomeMiss() throws {
+        let context = try makeInMemoryContext()
+        let scheduler = DayScheduler(context: context)
+        let settings = UserSettings()
+        context.insert(settings)
+        let key = DateKey.string(from: Date())
+
+        XCTAssertTrue(scheduler.recordSuccess(on: Date(), settings: settings, viaHealthKit: false))
+        scheduler.recordWorkoutEntry(on: Date(), type: "run", source: .manual, durationMinutes: 25)
+        scheduler.recordMiss(dateKey: key, settings: settings)
+        scheduler.recordWorkoutEntry(on: Date(), type: "lift", source: .manual, durationMinutes: 60)
+
+        XCTAssertEqual(scheduler.dayLog(for: Date())?.status, .completed)
+        XCTAssertEqual(settings.successStreak, 1, "the day advances once even with two logged workouts")
+        XCTAssertEqual(settings.missStreak, 0, "a completed multi-workout day can never be insulted as missed")
+        XCTAssertEqual(scheduler.workoutEntries(forKey: key).count, 2)
     }
 
     func testHabitWorkoutTypeForDate() {
@@ -493,6 +529,31 @@ final class Wave2Tests: XCTestCase {
         XCTAssertEqual(InsultPool.reminderTitle(workoutType: ""), "30 minutes left today")
         XCTAssertEqual(InsultPool.countdownLabel(workoutType: "swim"), "swim in")
         XCTAssertEqual(InsultPool.countdownLabel(workoutType: nil), "Workout in")
+    }
+
+    func testReminderCopyMatchesScheduledTimeContext() throws {
+        let calendar = Calendar(identifier: .gregorian)
+        func date(hour: Int) throws -> Date {
+            try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 7, day: 13, hour: hour)))
+        }
+
+        for _ in 0..<100 {
+            let morning = InsultPool.reminderLine(for: try date(hour: 8), calendar: calendar)
+            XCTAssertTrue((InsultPool.reminderGeneric + InsultPool.reminderMorning).contains(morning))
+            XCTAssertFalse(InsultPool.reminderMidday.contains(morning))
+            XCTAssertFalse(InsultPool.reminderEvening.contains(morning))
+
+            let midday = InsultPool.reminderLine(for: try date(hour: 12), calendar: calendar)
+            XCTAssertTrue((InsultPool.reminderGeneric + InsultPool.reminderMidday).contains(midday))
+            XCTAssertFalse(InsultPool.reminderMorning.contains(midday))
+            XCTAssertFalse(InsultPool.reminderEvening.contains(midday))
+
+            let evening = InsultPool.reminderLine(for: try date(hour: 18), calendar: calendar)
+            XCTAssertTrue((InsultPool.reminderGeneric + InsultPool.reminderEvening).contains(evening))
+            XCTAssertFalse(InsultPool.reminderMorning.contains(evening))
+            XCTAssertFalse(InsultPool.reminderMidday.contains(evening))
+        }
+        XCTAssertFalse(InsultPool.reminder.contains("fire work today"))
     }
 
     /// Multiple workouts on one day are all kept - DayLog owns status, entries are history.
@@ -749,6 +810,13 @@ final class Wave2Tests: XCTestCase {
         XCTAssertGreaterThanOrEqual(InsultPool.burnBookCompliments.count, 7, "the top numeric compliment tier must be reachable")
         XCTAssertEqual(Set(InsultPool.burnBookRoasts).count, InsultPool.burnBookRoasts.count, "no duplicate roast lines")
         XCTAssertEqual(Set(InsultPool.burnBookCompliments).count, InsultPool.burnBookCompliments.count, "no duplicate compliment lines")
+    }
+
+    func testRareCollectiblesBelongToTrackablePools() {
+        let allTrackable = Set(InsultPool.burnBookRoasts + InsultPool.burnBookCompliments)
+        XCTAssertTrue(InsultPool.rareCollectibles.isSubset(of: allTrackable))
+        XCTAssertTrue(InsultPool.uncommonCollectibles.isSubset(of: allTrackable))
+        XCTAssertTrue(InsultPool.rareCollectibles.isDisjoint(with: InsultPool.uncommonCollectibles))
     }
 
     /// A past bonus day must never be re-settled as a miss by the catch-up pass.

@@ -6,6 +6,7 @@ struct HomeView: View {
     let health: HealthKitService
     let isCompletedToday: Bool
     let bonusLoggedToday: Bool
+    let todayWorkouts: [WorkoutEntry]
     /// Today's stored line (DayLog.insultShown) - the compliment on a completed day, the
     /// snooze escalation line on a pending one. What's shown is what the Burn Book keeps.
     let todayInsult: String?
@@ -18,6 +19,7 @@ struct HomeView: View {
     let onAutoSuccess: () -> Void
     let onBonusTapped: () -> Void
     let onSettingsTapped: () -> Void
+    let onCountdownChanged: () -> Void
 
     @State private var now = Date()
     @State private var checkedThisCycle = false
@@ -27,7 +29,18 @@ struct HomeView: View {
     /// on rest days" bug - a non-scheduled day has no deadline, full stop.
     private var deadline: Date? {
         if forceRestDay { return nil }
-        return settings.todayOverride() ?? habit.deadline(for: Date())
+        if let override = settings.todayOverride() { return override }
+        guard let plan = habit.displayWorkout(for: Date(), now: now) else { return nil }
+        return Calendar.current.date(bySettingHour: plan.hour, minute: plan.minute, second: 0, of: Date())
+    }
+
+    private var currentPlan: WeekdaySchedule? {
+        guard settings.todayOverride() == nil else { return habit.scheduledWorkouts(for: Date()).last }
+        return habit.displayWorkout(for: Date(), now: now)
+    }
+
+    private var consequenceDeadline: Date? {
+        settings.todayOverride() ?? habit.deadline(for: Date())
     }
 
     private var isRestDay: Bool { deadline == nil }
@@ -36,7 +49,7 @@ struct HomeView: View {
     /// a just-started workout to land even if the user heads out right at the deadline.
     /// See plan.md's notification schedule: deadline + duration + 30min.
     private var missCheckTime: Date? {
-        deadline?.addingTimeInterval(Double(habit.minDurationMinutes * 60) + 30 * 60)
+        consequenceDeadline?.addingTimeInterval(Double(habit.finalWorkoutDuration(for: Date()) * 60) + 30 * 60)
     }
 
     private var remaining: TimeInterval {
@@ -154,6 +167,7 @@ struct HomeView: View {
                             .frame(height: 3)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 10))
+                    workoutHistory
                 } else if isPausedToday {
                     // Pause outranks the countdown even on a scheduled day - no deadline,
                     // no miss-check, streak frozen.
@@ -174,13 +188,16 @@ struct HomeView: View {
                 } else if isRestDay {
                     // v0.2 Wave 2: a rest day is a real state, not a broken countdown.
                     if bonusLoggedToday {
-                        Text(InsultPool.bonusLoggedLine)
-                            .font(.system(size: 14))
-                            .foregroundStyle(Theme.ink)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(14)
-                            .background(Theme.ash.opacity(0.35))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        VStack(spacing: 12) {
+                            Text(InsultPool.bonusLoggedLine)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Theme.ink)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(14)
+                                .background(Theme.ash.opacity(0.35))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            workoutHistory
+                        }
                     } else {
                         VStack(spacing: 6) {
                             Text(InsultPool.restDayLabel)
@@ -193,7 +210,7 @@ struct HomeView: View {
                     }
                 } else if let deadline {
                     VStack(spacing: 6) {
-                        Text(InsultPool.countdownLabel(workoutType: habit.workoutType(for: Date())))
+                        Text(InsultPool.countdownLabel(workoutType: currentPlan?.workoutType))
                             .font(.system(size: 15)).foregroundStyle(Theme.inkMuted)
                         Text(format(remaining))
                             .font(.system(size: 46, weight: .bold, design: .rounded))
@@ -211,6 +228,15 @@ struct HomeView: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.top, 6)
                         }
+                        let plans = habit.scheduledWorkouts(for: Date())
+                        if plans.count > 1 {
+                            Text(plans.map(planSummary).joined(separator: "  ·  "))
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(Theme.inkMuted)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                                .padding(.top, 6)
+                        }
                     }
                 }
                 Spacer()
@@ -219,7 +245,7 @@ struct HomeView: View {
                     // No actions while paused - the whole point is that nothing is owed.
                 } else if isRestDay && !isCompletedToday {
                     Button(action: onBonusTapped) {
-                        Text(bonusLoggedToday ? InsultPool.bonusDoneButton : InsultPool.bonusButton)
+                        Text(bonusLoggedToday ? "log another workout" : InsultPool.bonusButton)
                             .font(.system(size: 15, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .padding(16)
@@ -227,12 +253,10 @@ struct HomeView: View {
                             .foregroundStyle(Theme.ink)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
-                    .disabled(bonusLoggedToday)
-                    .opacity(bonusLoggedToday ? 0.4 : 1)
                     .accessibilityIdentifier("bonusWorkoutButton")
                 } else {
                     Button(action: onLoggedTapped) {
-                        Text(isCompletedToday ? InsultPool.lockedInDoneButton : InsultPool.lockedInButton)
+                        Text(isCompletedToday ? "log another workout" : InsultPool.lockedInButton)
                             .font(.system(size: 15, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .padding(16)
@@ -240,8 +264,6 @@ struct HomeView: View {
                             .foregroundStyle(Theme.ink)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
-                    .disabled(isCompletedToday)
-                    .opacity(isCompletedToday ? 0.4 : 1)
                 }
 
                 if !isCompletedToday && !isRestDay && !isPausedToday && remaining <= 0 {
@@ -266,11 +288,14 @@ struct HomeView: View {
                 Task { await checkOutcome() }
             }
         }
-        .onChange(of: deadline) { _, _ in checkedThisCycle = false }
+        .onChange(of: deadline) { _, _ in
+            checkedThisCycle = false
+            onCountdownChanged()
+        }
     }
 
     private func checkOutcome() async {
-        let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
+        let found = await health.hasQualifyingWorkoutToday(minDurationMinutes: habit.minimumQualifyingDuration(for: Date()))
         if found {
             onAutoSuccess()
         }
@@ -285,5 +310,23 @@ struct HomeView: View {
         let total = max(0, Int(interval))
         let h = total / 3600, m = (total % 3600) / 60, s = total % 60
         return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%d:%02d", m, s)
+    }
+
+    private var workoutHistory: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(todayWorkouts) { workout in
+                HStack {
+                    Text(workout.type).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.ink)
+                    Spacer()
+                    Text("\(workout.durationMinutes) min").font(.system(size: 12)).foregroundStyle(Theme.inkMuted)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func planSummary(_ plan: WeekdaySchedule) -> String {
+        let date = Calendar.current.date(bySettingHour: plan.hour, minute: plan.minute, second: 0, of: Date()) ?? Date()
+        return "\(plan.workoutType ?? "workout") \(date.formatted(date: .omitted, time: .shortened)) · \(plan.resolvedDuration(fallback: habit.minDurationMinutes))m"
     }
 }

@@ -173,7 +173,7 @@ final class DayScheduler {
         // Coming back from silence doesn't earn a compliment - store the reactivation
         // jab instead, so that's what Home shows and the book keeps.
         if let log = dayLog(for: date) {
-            let line = InsultPool.reactivation.randomElement() ?? InsultPool.reactivation[0]
+            let line = InsultPool.reactivationLine()
             log.insultShown = line
             recordRoast(line, kind: .roast, situation: "reactivation", on: date)
             try? context.save()
@@ -213,8 +213,16 @@ final class DayScheduler {
     func startCycle(deadline: Date, habit: Habit) {
         notifications.scheduleDeadlinePair(
             deadline: deadline,
-            durationMinutes: habit.minDurationMinutes,
-            workoutType: habit.workoutType(for: deadline)
+            durationMinutes: habit.finalWorkoutDuration(for: deadline),
+            workoutType: habit.displayWorkout(for: deadline, now: deadline)?.workoutType
+        )
+    }
+
+    func startDay(on date: Date = Date(), habit: Habit) {
+        notifications.scheduleDay(
+            workouts: habit.scheduledWorkouts(for: date),
+            on: date,
+            fallbackDuration: habit.minDurationMinutes
         )
     }
 

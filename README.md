@@ -8,18 +8,18 @@ BROiled is an iOS workout accountability app with tough-love energy. Set a per-d
 
 ## Status
 
-**Phase 0 — design & planning.** Interactive wireframes and product spec live in this repo; the SwiftUI app is not built yet.
+**Native iOS build — active dogfooding.** The SwiftUI/SwiftData app, HealthKit verification, notifications, pause/rest-day flows, Burn Book, Live Activity, and widgets are implemented. Current work is focused on real-device reliability and daily-use fixes before external TestFlight distribution.
 
 ## How it works
 
-1. **Onboarding** — pick workout days, set a **deadline per day**, and choose a minimum duration.
+1. **Onboarding** — pick workout days and configure one or more planned workouts per day, each with its own type, time, and duration.
 2. **Countdown** — home screen shows time left until today's deadline (HealthKit-verified).
 3. **Miss the window** — notifications escalate (MILD → SPICY → NUCLEAR). Snooze pushes the deadline back.
 4. **Morning reckoning** — day after a miss: in-app banner on first open **and** a 12:00 PM push with the same copy.
-5. **Success** — backhanded celebration (bronze, not cheerleader green).
+5. **Success** — HealthKit or typed manual logging settles the day; extra workouts can still be logged without advancing the streak twice.
 6. **Silence** — after 7 consecutive misses, the app stops nagging until you log a workout again.
 
-Open [`wireframe_phase0.html`](wireframe_phase0.html) in a browser for all 12 Phase 0 screens (gen-z/meme voice) with design notes. [`wireframe_phase1.html`](wireframe_phase1.html) is the same 12 screens with the original tough-love voice, kept as reference for the Phase 1 persona system.
+The wireframes document the original product flow and the native app is now the behavior source of truth. [`wireframe_phase1.html`](wireframe_phase1.html) remains a reference for the planned tough-love persona system; `prototype.html` has not yet caught up with the latest native screens.
 
 ## Screenshots
 
@@ -57,12 +57,13 @@ node scripts/capture-screenshots.mjs wireframe_phase0.html
 node scripts/capture-screenshots.mjs wireframe_phase1.html
 ```
 
-## Stack (planned)
+## Stack
 
 - SwiftUI + SwiftData (iOS 17+)
 - HealthKit for workout verification
 - Local notifications + background checks
-- Phase 1+: persona voices, Live Activity countdown, weekly roast report
+- ActivityKit + WidgetKit for Live Activity and home-screen widgets
+- Phase 1 next: persona voices and weekly roast report/share card
 
 ## License
 

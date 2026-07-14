@@ -14,15 +14,44 @@ enum InsultPool {
         "nobody's roasted you yet, rare mercy",
     ]
 
-    static let reminder = [
-        "still time to lock in and complete",
+    static let reminderGeneric = [
+        "still time to lock in",
         "timer's running, move",
-        "breakfast time - are you toasting or toast",
-        "lunch time, crunch time",
-        "winner winner or are you the chicken dinner",
-        "fire work today",
+        "the workout isn't gonna start itself",
+        "30 minutes. plenty of time to stop negotiating",
         "your body's gonna be tea",
     ]
+
+    static let reminderMorning = [
+        "breakfast time - are you toasting or toast",
+    ]
+
+    static let reminderMidday = [
+        "lunch time, crunch time",
+    ]
+
+    static let reminderEvening = [
+        "winner winner or are you the chicken dinner",
+    ]
+
+    /// All T-30 copy, retained as a single audit surface for content tests. Delivery
+    /// uses reminderLine(for:) so meal-specific lines never fire at the wrong hour.
+    static var reminder: [String] {
+        reminderGeneric + reminderMorning + reminderMidday + reminderEvening
+    }
+
+    static func reminderLine(for deadline: Date, calendar: Calendar = .current) -> String {
+        let hour = calendar.component(.hour, from: deadline)
+        let contextual: [String]
+        switch hour {
+        case ..<11: contextual = reminderMorning
+        case 11..<15: contextual = reminderMidday
+        case 17...: contextual = reminderEvening
+        default: contextual = []
+        }
+        let pool = reminderGeneric + contextual
+        return pool.randomElement() ?? reminderGeneric[0]
+    }
 
     static let missCheckMsg = [
         "will you later?",
@@ -80,7 +109,7 @@ enum InsultPool {
         case 2...3: pool = snoozeSpicy
         default: pool = snoozeNuclear
         }
-        return pool.randomElement() ?? pool[0]
+        return collectibleLine(from: pool)
     }
 
     static let reckoningCanonical = "is this who you are, or can you be better today?"
@@ -136,6 +165,9 @@ enum InsultPool {
     /// Rare easter-egg line for very high streaks (100+ days) - reserved, not part of
     /// the regular success rotation. See plan.md.
     static let tooHotToRoast = "too hot to roast"
+
+    /// Fixed Burn Book jab shown whenever lifetime insults outnumber compliments.
+    static let burnBookLosingLine = "your losses are outnumbering your wins. impressive, in the worst way"
 
     static let gutCheckPrompt = "this app is private, lying to it is embarrassing"
     static let gutCheckQuestion = "did you work out today?"
@@ -203,8 +235,39 @@ enum InsultPool {
     /// The full compliment rotation - v0.2 Wave 3 finally puts successAlternates into
     /// play (they were written for Phase 0 but never surfaced).
     static func complimentLine() -> String {
-        (successHeadline + successAlternates).randomElement() ?? successHeadline[0]
+        collectibleLine(from: successHeadline + successAlternates)
     }
+
+    /// Some collection pieces are intentionally much rarer than others. Paths such as
+    /// a seven-day silence are already mechanically rare; this weighting makes selected
+    /// random-pool lines genuine chase items too instead of a flat coupon collection.
+    static let rareCollectibles: Set<String> = [
+        "ash",
+        "character development",
+        "aura +100 allegedly",
+        "slay but let's not get ahead of ourselves",
+        "tomorrow-you is gonna love this. they won't",
+    ]
+
+    static let uncommonCollectibles: Set<String> = [
+        "toast",
+        "folded",
+        "redemption arc or fluke, we'll see",
+        "michelin behavior - for today",
+        "understood the assignment - barely",
+    ]
+
+    static func collectibleLine(from pool: [String]) -> String {
+        guard let first = pool.first else { return "" }
+        let weighted = pool.flatMap { line -> [String] in
+            let weight = rareCollectibles.contains(line) ? 1 : (uncommonCollectibles.contains(line) ? 4 : 16)
+            return Array(repeating: line, count: weight)
+        }
+        return weighted.randomElement() ?? first
+    }
+
+    static func tomorrowLine() -> String { collectibleLine(from: tomorrowInsults) }
+    static func reactivationLine() -> String { collectibleLine(from: reactivation) }
 
     // Burn Book pools (v0.2 Wave 3). Only lines the app actually surfaces AND records
     // belong here - notification-body pools (reminder, missCheckMsg, zeroStreak) are

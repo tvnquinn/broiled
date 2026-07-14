@@ -12,6 +12,7 @@ struct RootView: View {
     @Query private var habits: [Habit]
     @Query private var allSettings: [UserSettings]
     @Query private var dayLogs: [DayLog]
+    @Query(sort: \WorkoutEntry.loggedAt) private var workoutEntries: [WorkoutEntry]
 
     @State private var health = HealthKitService()
     @State private var scheduler: DayScheduler?
@@ -22,6 +23,7 @@ struct RootView: View {
     enum ActiveSheet: Identifiable {
         case gutCheck
         case bonusGutCheck
+        case reactivationGutCheck
         case snooze
         case settings
         var id: Int { hashValue }
@@ -37,7 +39,21 @@ struct RootView: View {
                 if !settings.hasOnboarded {
                     OnboardingView(habit: habit) { start(deadline: $0, habit: habit, settings: settings) }
                 } else if settings.isAbandoned {
-                    SilenceView { reactivate(settings: settings) }
+                    SilenceView { sheet = .reactivationGutCheck }
+                        .sheet(item: $sheet) { active in
+                            if case .reactivationGutCheck = active {
+                                GutCheckSheet(
+                                    question: "did you actually work out?",
+                                    defaultType: WorkoutEntry.genericType,
+                                    onYes: { type, duration in
+                                        reactivate(type: type, durationMinutes: duration, settings: settings)
+                                        sheet = nil
+                                    },
+                                    onNo: { sheet = nil }
+                                )
+                                .presentationDetents([.large])
+                            }
+                        }
                 } else {
                     HomeView(
                         habit: habit,
@@ -45,6 +61,7 @@ struct RootView: View {
                         health: health,
                         isCompletedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .completed,
                         bonusLoggedToday: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.status == .bonus,
+                        todayWorkouts: workoutEntries.filter { $0.dateKey == DateKey.string(from: Date()) },
                         todayInsult: dayLogs.first { $0.dateKey == DateKey.string(from: Date()) }?.insultShown,
                         notificationsDenied: notificationsDenied,
                         forceRestDay: ProcessInfo.processInfo.arguments.contains("UI-TESTING-REST-TODAY"),
@@ -53,25 +70,39 @@ struct RootView: View {
                             sheet = .gutCheck
                         },
                         onMissCheckFired: { sheet = .snooze },
-                        onAutoSuccess: { logSuccess(settings: settings, viaHealthKit: true) },
+                        onAutoSuccess: { logHealthKitSuccess(settings: settings) },
                         onBonusTapped: { checkBonus(habit: habit, settings: settings) },
-                        onSettingsTapped: { sheet = .settings }
+                        onSettingsTapped: { sheet = .settings },
+                        onCountdownChanged: { syncWidgets() }
                     )
                     .sheet(item: $sheet) { active in
                         switch active {
                         case .gutCheck:
+                            let plans = habit.scheduledWorkouts(for: Date())
                             GutCheckSheet(
-                                onYes: { logSuccess(settings: settings, viaHealthKit: false); sheet = nil },
+                                suggestedTypes: plans.compactMap(\.workoutType),
+                                defaultType: plans.first?.workoutType ?? WorkoutEntry.genericType,
+                                defaultDuration: plans.first?.resolvedDuration(fallback: habit.minDurationMinutes) ?? 30,
+                                onYes: { type, duration in
+                                    logManualWorkout(type: type, durationMinutes: duration, settings: settings)
+                                    sheet = nil
+                                },
                                 onNo: { sheet = nil }
                             )
-                            .presentationDetents([.medium])
+                            .presentationDetents([.large])
                         case .bonusGutCheck:
                             GutCheckSheet(
                                 question: InsultPool.bonusGutCheckQuestion,
-                                onYes: { logManualBonus(habit: habit); sheet = nil },
+                                defaultType: WorkoutEntry.genericType,
+                                onYes: { type, duration in
+                                    logManualBonus(type: type, durationMinutes: duration)
+                                    sheet = nil
+                                },
                                 onNo: { sheet = nil }
                             )
-                            .presentationDetents([.medium])
+                            .presentationDetents([.large])
+                        case .reactivationGutCheck:
+                            EmptyView()
                         case .snooze:
                             SnoozeSheet(
                                 tomorrowIsScheduled: tomorrowIsScheduled(habit: habit),
@@ -120,8 +151,12 @@ struct RootView: View {
                 if !settings.isAbandoned && !settings.isPausedToday {
                     let todayKey = DateKey.string(from: Date())
                     let completedToday = dayLogs.first { $0.dateKey == todayKey }?.status == .completed
-                    if !completedToday, let deadline = settings.todayOverride() ?? habit.deadline(for: Date()) {
-                        engine.startCycle(deadline: deadline, habit: habit)
+                    if !completedToday {
+                        if let override = settings.todayOverride() {
+                            engine.startCycle(deadline: override, habit: habit)
+                        } else if habit.isActiveDay(Date()) {
+                            engine.startDay(habit: habit)
+                        }
                     }
                 }
                 syncWidgets()
@@ -145,7 +180,12 @@ struct RootView: View {
         guard let habit = habits.first, let settings = allSettings.first, settings.hasOnboarded else { return }
         let todayKey = DateKey.string(from: Date())
         let status = dayLogs.first { $0.dateKey == todayKey }?.status
-        let deadline = settings.todayOverride() ?? habit.deadline(for: Date())
+        let displayPlan = habit.displayWorkout(for: Date(), now: Date())
+        let plannedDeadline = displayPlan.flatMap {
+            Calendar.current.date(bySettingHour: $0.hour, minute: $0.minute, second: 0, of: Date())
+        }
+        let deadline = settings.todayOverride() ?? plannedDeadline
+        let displayType = displayPlan?.workoutType
 
         let state: WidgetSnapshot.DayState
         if settings.isAbandoned {
@@ -163,7 +203,7 @@ struct RootView: View {
         WidgetSnapshot.write(WidgetSnapshot.Data(
             state: state,
             deadline: state == .pending ? deadline : nil,
-            workoutType: habit.workoutType(for: Date()),
+            workoutType: displayType,
             streak: settings.successStreak,
             bestStreak: settings.bestStreak
         ))
@@ -173,7 +213,7 @@ struct RootView: View {
         let activityDeadline = (state == .pending && status ?? .pending == .pending) ? deadline : nil
         LiveActivityService.shared.sync(
             deadline: activityDeadline,
-            workoutType: habit.workoutType(for: Date()),
+            workoutType: displayType,
             streak: settings.successStreak
         )
     }
@@ -201,7 +241,7 @@ struct RootView: View {
                 let isActive = habit.isActiveDay(today) || settings.todayDeadlineOverrideDateKey == todayKey
                 guard isActive else { return }
 
-                guard let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes) else { return }
+                guard let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minimumQualifyingDuration(for: today)) else { return }
                 guard engine.recordSuccess(on: today, settings: settings, viaHealthKit: true) else { return }
                 engine.recordWorkoutEntry(on: today, type: detail.type, source: .healthKit, durationMinutes: detail.durationMinutes)
                 NotificationService.shared.fireSuccessPush(successStreak: settings.successStreak)
@@ -220,9 +260,8 @@ struct RootView: View {
         settings.lastSettledDateKey = DateKey.string(from: Date())
         // Onboarding on a rest day sets no deadline and schedules nothing - the next
         // launch on a scheduled day picks up the weekly schedule (see .task above).
-        if let deadline {
-            settings.setTodayOverride(deadline)
-            scheduler?.startCycle(deadline: deadline, habit: habit)
+        if deadline != nil {
+            scheduler?.startDay(habit: habit)
         }
         try? context.save()
         // UI-test hook: the snooze sheet is normally only reachable after a deadline
@@ -235,34 +274,48 @@ struct RootView: View {
         }
     }
 
-    private func logSuccess(settings: UserSettings, viaHealthKit: Bool) {
+    private func logHealthKitSuccess(settings: UserSettings) {
         guard let habit = habits.first else { return }
-        guard scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: viaHealthKit) == true else { return }
-        if viaHealthKit {
-            // The detection query already ran; re-fetch for the entry's real type/duration.
-            Task { @MainActor in
-                let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes)
-                scheduler?.recordWorkoutEntry(
-                    on: Date(),
-                    type: detail?.type ?? habit.workoutType(for: Date()),
-                    source: .healthKit,
-                    durationMinutes: detail?.durationMinutes ?? habit.minDurationMinutes
-                )
-            }
-        } else {
+        guard scheduler?.recordSuccess(on: Date(), settings: settings, viaHealthKit: true) == true else { return }
+        // The detection query already ran; re-fetch for the entry's real type/duration.
+        Task { @MainActor in
+            let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minimumQualifyingDuration(for: Date()))
             scheduler?.recordWorkoutEntry(
                 on: Date(),
-                type: habit.workoutType(for: Date()),
-                source: .manual,
-                durationMinutes: habit.minDurationMinutes
+                type: detail?.type ?? habit.workoutType(for: Date()),
+                source: .healthKit,
+                durationMinutes: detail?.durationMinutes ?? habit.minimumQualifyingDuration(for: Date())
             )
         }
     }
 
+    /// The first manual entry settles the day; later entries are history only and never
+    /// advance the streak twice. Saving both operations before dismissing fixes the old
+    /// 0:00 screen that lingered after the honesty gate.
+    private func logManualWorkout(type: String?, durationMinutes: Int, settings: UserSettings) {
+        let today = Date()
+        let pending = (scheduler?.dayLog(for: today)?.status ?? .pending) == .pending
+        if pending {
+            _ = scheduler?.recordSuccess(on: today, settings: settings, viaHealthKit: false)
+        }
+        scheduler?.recordWorkoutEntry(
+            on: today,
+            type: type,
+            source: .manual,
+            durationMinutes: durationMinutes
+        )
+        try? context.save()
+        syncWidgets()
+    }
+
     /// Bonus flow (rest days only): trust HealthKit first, fall back to the honesty gate.
     private func checkBonus(habit: Habit, settings: UserSettings) {
+        if scheduler?.dayLog(for: Date())?.status == .bonus {
+            sheet = .bonusGutCheck
+            return
+        }
         Task { @MainActor in
-            if let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minDurationMinutes) {
+            if let detail = await health.qualifyingWorkoutToday(minDurationMinutes: habit.minimumQualifyingDuration(for: Date())) {
                 if scheduler?.recordBonus(on: Date(), viaHealthKit: true) == true {
                     scheduler?.recordWorkoutEntry(on: Date(), type: detail.type, source: .healthKit, durationMinutes: detail.durationMinutes)
                 }
@@ -272,9 +325,11 @@ struct RootView: View {
         }
     }
 
-    private func logManualBonus(habit: Habit) {
-        guard scheduler?.recordBonus(on: Date(), viaHealthKit: false) == true else { return }
-        scheduler?.recordWorkoutEntry(on: Date(), type: nil, source: .manual, durationMinutes: habit.minDurationMinutes)
+    private func logManualBonus(type: String?, durationMinutes: Int) {
+        let today = Date()
+        _ = scheduler?.recordBonus(on: today, viaHealthKit: false)
+        scheduler?.recordWorkoutEntry(on: today, type: type, source: .manual, durationMinutes: durationMinutes)
+        try? context.save()
     }
 
     private func snooze(to newDeadline: Date, habit: Habit, settings: UserSettings) {
@@ -322,21 +377,19 @@ struct RootView: View {
         let key = DateKey.string(from: Date())
         scheduler?.recordMiss(dateKey: key, settings: settings)
         let tomorrowDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        if let tomorrow = habit.deadline(for: tomorrowDate) {
-            scheduler?.startCycle(deadline: tomorrow, habit: habit)
+        if habit.isActiveDay(tomorrowDate) {
+            scheduler?.startDay(on: tomorrowDate, habit: habit)
         }
         try? context.save()
     }
 
-    private func reactivate(settings: UserSettings) {
+    private func reactivate(type: String?, durationMinutes: Int, settings: UserSettings) {
         scheduler?.reactivate(on: Date(), settings: settings)
-        if let habit = habits.first {
-            scheduler?.recordWorkoutEntry(
-                on: Date(),
-                type: habit.workoutType(for: Date()),
-                source: .manual,
-                durationMinutes: habit.minDurationMinutes
-            )
-        }
+        scheduler?.recordWorkoutEntry(
+            on: Date(),
+            type: type,
+            source: .manual,
+            durationMinutes: durationMinutes
+        )
     }
 }
